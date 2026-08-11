@@ -1,0 +1,469 @@
+"use client";
+
+import { useEditorStore } from "@/lib/store/editorStore";
+import { TextLayer, ImageLayer, ShapeLayer, Background, GradientStop } from "@/lib/types";
+import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Trash2, Copy } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const FONT_FAMILIES = [
+  "Geist Sans",
+  "Arial",
+  "Helvetica",
+  "Georgia",
+  "Times New Roman",
+  "Courier New",
+  "Verdana",
+  "Trebuchet MS",
+];
+
+const GRADIENT_DIRECTIONS = [
+  { value: "to-b", label: "Top → Bottom" },
+  { value: "to-r", label: "Left → Right" },
+  { value: "to-br", label: "↘ Diagonal" },
+  { value: "to-bl", label: "↙ Diagonal" },
+  { value: "to-tr", label: "↗ Diagonal" },
+  { value: "to-tl", label: "↖ Diagonal" },
+];
+
+export function PropertiesPanel() {
+  const {
+    activeLayerId,
+    getActiveLayer,
+    getActiveScreen,
+    getActiveSet,
+    updateLayer,
+    deleteLayer,
+    duplicateLayer,
+    updateBackground,
+  } = useEditorStore();
+
+  const layer = getActiveLayer();
+  const screen = getActiveScreen();
+  const set = getActiveSet();
+
+  const handleLayerUpdate = (updates: Record<string, unknown>) => {
+    if (!set || !screen || !activeLayerId) return;
+    updateLayer(set.id, screen.id, activeLayerId, updates as Parameters<typeof updateLayer>[3]);
+  };
+
+  const handleBackgroundUpdate = (updates: Partial<Background>) => {
+    if (!set || !screen) return;
+    const newBg = { ...screen.background, ...updates };
+    updateBackground(set.id, screen.id, newBg);
+  };
+
+  return (
+    <div className="w-72 border-l border-border/60 bg-card/50 flex flex-col shrink-0 overflow-hidden">
+      <div className="px-4 py-3 border-b border-border/40">
+        <h3 className="text-sm font-semibold">
+          {layer ? "Layer Properties" : "Background"}
+        </h3>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        {layer ? (
+          /* ——— Layer properties ——— */
+          <div className="p-4 space-y-4">
+            {/* Actions */}
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 gap-1.5 text-xs"
+                onClick={() => {
+                  if (set && screen) duplicateLayer(set.id, screen.id, layer.id);
+                }}
+              >
+                <Copy className="w-3.5 h-3.5" />
+                Duplicate
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 gap-1.5 text-xs text-destructive hover:text-destructive"
+                onClick={() => {
+                  if (set && screen) deleteLayer(set.id, screen.id, layer.id);
+                }}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Delete
+              </Button>
+            </div>
+
+            <Separator />
+
+            {/* Position & Size */}
+            <div className="space-y-3">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Position & Size</p>
+              <div className="grid grid-cols-2 gap-2">
+                {(["x", "y", "width", "height"] as const).map((prop) => (
+                  <div key={prop} className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">{prop.toUpperCase()}</Label>
+                    <Input
+                      type="number"
+                      value={Math.round(layer[prop] as number)}
+                      onChange={(e) =>
+                        handleLayerUpdate({ [prop]: Number(e.target.value) })
+                      }
+                      className="h-8 text-xs bg-secondary border-0"
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex justify-between">
+                  <Label className="text-xs text-muted-foreground">Opacity</Label>
+                  <span className="text-xs text-muted-foreground">{Math.round((layer.opacity ?? 1) * 100)}%</span>
+                </div>
+                <Slider
+                  value={[(layer.opacity ?? 1) * 100]}
+                  min={0}
+                  max={100}
+                  step={1}
+                  onValueChange={([v]) => handleLayerUpdate({ opacity: v / 100 })}
+                  className="h-1.5"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex justify-between">
+                  <Label className="text-xs text-muted-foreground">Rotation</Label>
+                  <span className="text-xs text-muted-foreground">{Math.round(layer.rotation ?? 0)}°</span>
+                </div>
+                <Slider
+                  value={[layer.rotation ?? 0]}
+                  min={-180}
+                  max={180}
+                  step={1}
+                  onValueChange={([v]) => handleLayerUpdate({ rotation: v })}
+                  className="h-1.5"
+                />
+              </div>
+            </div>
+
+            {/* Text-specific */}
+            {layer.type === "text" && (
+              <>
+                <Separator />
+                <TextProperties
+                  layer={layer as TextLayer}
+                  onUpdate={handleLayerUpdate}
+                />
+              </>
+            )}
+
+            {/* Shape-specific */}
+            {layer.type === "shape" && (
+              <>
+                <Separator />
+                <ShapeProperties
+                  layer={layer as ShapeLayer}
+                  onUpdate={handleLayerUpdate}
+                />
+              </>
+            )}
+          </div>
+        ) : (
+          /* ——— Background properties ——— */
+          <div className="p-4">
+            {screen && (
+              <BackgroundProperties
+                background={screen.background}
+                onUpdate={handleBackgroundUpdate}
+              />
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function TextProperties({
+  layer,
+  onUpdate,
+}: {
+  layer: TextLayer;
+  onUpdate: (u: Record<string, unknown>) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Typography</p>
+
+      {/* Content */}
+      <div className="space-y-1">
+        <Label className="text-xs text-muted-foreground">Content</Label>
+        <textarea
+          value={layer.content}
+          onChange={(e) => onUpdate({ content: e.target.value })}
+          rows={3}
+          className="w-full text-xs bg-secondary border-0 rounded-lg p-2 resize-none text-foreground outline-none focus:ring-1 focus:ring-primary"
+        />
+      </div>
+
+      {/* Font family */}
+      <div className="space-y-1">
+        <Label className="text-xs text-muted-foreground">Font</Label>
+        <Select value={layer.fontFamily} onValueChange={(v) => onUpdate({ fontFamily: v })}>
+          <SelectTrigger className="h-8 text-xs bg-secondary border-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {FONT_FAMILIES.map((f) => (
+              <SelectItem key={f} value={f} className="text-xs">{f}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Font size & weight */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-1">
+          <Label className="text-xs text-muted-foreground">Size</Label>
+          <Input
+            type="number"
+            value={layer.fontSize}
+            onChange={(e) => onUpdate({ fontSize: Number(e.target.value) })}
+            className="h-8 text-xs bg-secondary border-0"
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs text-muted-foreground">Weight</Label>
+          <Select
+            value={String(layer.fontWeight)}
+            onValueChange={(v) => onUpdate({ fontWeight: Number(v) })}
+          >
+            <SelectTrigger className="h-8 text-xs bg-secondary border-0">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {[300, 400, 500, 600, 700, 800, 900].map((w) => (
+                <SelectItem key={w} value={String(w)} className="text-xs">{w}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Alignment */}
+      <div className="space-y-1">
+        <Label className="text-xs text-muted-foreground">Alignment</Label>
+        <div className="flex gap-1">
+          {(["left", "center", "right"] as const).map((a) => (
+            <button
+              key={a}
+              onClick={() => onUpdate({ align: a })}
+              className={cn(
+                "flex-1 h-8 rounded-lg text-xs font-medium transition-colors",
+                layer.align === a
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {a.charAt(0).toUpperCase() + a.slice(1)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Color */}
+      <div className="space-y-1">
+        <Label className="text-xs text-muted-foreground">Color</Label>
+        <div className="flex gap-2">
+          <input
+            type="color"
+            value={layer.color}
+            onChange={(e) => onUpdate({ color: e.target.value })}
+            className="w-10 h-8 rounded-lg cursor-pointer bg-transparent border-0"
+          />
+          <Input
+            value={layer.color}
+            onChange={(e) => onUpdate({ color: e.target.value })}
+            className="h-8 text-xs bg-secondary border-0 font-mono"
+          />
+        </div>
+      </div>
+
+      {/* Line height */}
+      <div className="space-y-1.5">
+        <div className="flex justify-between">
+          <Label className="text-xs text-muted-foreground">Line Height</Label>
+          <span className="text-xs text-muted-foreground">{layer.lineHeight.toFixed(1)}</span>
+        </div>
+        <Slider
+          value={[layer.lineHeight * 10]}
+          min={8}
+          max={30}
+          step={1}
+          onValueChange={([v]) => onUpdate({ lineHeight: v / 10 })}
+          className="h-1.5"
+        />
+      </div>
+    </div>
+  );
+}
+
+function ShapeProperties({
+  layer,
+  onUpdate,
+}: {
+  layer: ShapeLayer;
+  onUpdate: (u: Record<string, unknown>) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Shape</p>
+      <div className="space-y-1">
+        <Label className="text-xs text-muted-foreground">Fill Color</Label>
+        <div className="flex gap-2">
+          <input
+            type="color"
+            value={layer.fill}
+            onChange={(e) => onUpdate({ fill: e.target.value })}
+            className="w-10 h-8 rounded-lg cursor-pointer bg-transparent border-0"
+          />
+          <Input
+            value={layer.fill}
+            onChange={(e) => onUpdate({ fill: e.target.value })}
+            className="h-8 text-xs bg-secondary border-0 font-mono"
+          />
+        </div>
+      </div>
+      {layer.cornerRadius !== undefined && (
+        <div className="space-y-1.5">
+          <div className="flex justify-between">
+            <Label className="text-xs text-muted-foreground">Corner Radius</Label>
+            <span className="text-xs text-muted-foreground">{layer.cornerRadius}px</span>
+          </div>
+          <Slider
+            value={[layer.cornerRadius]}
+            min={0}
+            max={200}
+            step={1}
+            onValueChange={([v]) => onUpdate({ cornerRadius: v })}
+            className="h-1.5"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BackgroundProperties({
+  background,
+  onUpdate,
+}: {
+  background: Background;
+  onUpdate: (u: Partial<Background>) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Background</p>
+
+      {/* Type selector */}
+      <div className="flex gap-1">
+        {(["solid", "gradient"] as const).map((type) => (
+          <button
+            key={type}
+            onClick={() => onUpdate({ type })}
+            className={cn(
+              "flex-1 h-8 rounded-lg text-xs font-medium transition-colors capitalize",
+              background.type === type
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {type}
+          </button>
+        ))}
+      </div>
+
+      {background.type === "solid" && (
+        <div className="space-y-1">
+          <Label className="text-xs text-muted-foreground">Color</Label>
+          <div className="flex gap-2">
+            <input
+              type="color"
+              value={background.color ?? "#6366f1"}
+              onChange={(e) => onUpdate({ color: e.target.value })}
+              className="w-10 h-8 rounded-lg cursor-pointer bg-transparent border-0"
+            />
+            <Input
+              value={background.color ?? "#6366f1"}
+              onChange={(e) => onUpdate({ color: e.target.value })}
+              className="h-8 text-xs bg-secondary border-0 font-mono"
+            />
+          </div>
+        </div>
+      )}
+
+      {background.type === "gradient" && background.gradient && (
+        <div className="space-y-3">
+          {/* Direction */}
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Direction</Label>
+            <Select
+              value={background.gradient.direction}
+              onValueChange={(v) =>
+                onUpdate({
+                  gradient: { ...background.gradient!, direction: v as Background["gradient"]["direction"] },
+                })
+              }
+            >
+              <SelectTrigger className="h-8 text-xs bg-secondary border-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {GRADIENT_DIRECTIONS.map((d) => (
+                  <SelectItem key={d.value} value={d.value} className="text-xs">
+                    {d.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Color stops */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">Color Stops</Label>
+            {background.gradient.stops.map((stop, i) => (
+              <div key={i} className="flex gap-2 items-center">
+                <input
+                  type="color"
+                  value={stop.color}
+                  onChange={(e) => {
+                    const stops = [...background.gradient!.stops];
+                    stops[i] = { ...stops[i], color: e.target.value };
+                    onUpdate({ gradient: { ...background.gradient!, stops } });
+                  }}
+                  className="w-8 h-8 rounded cursor-pointer bg-transparent border-0 shrink-0"
+                />
+                <Slider
+                  value={[stop.position]}
+                  min={0}
+                  max={100}
+                  step={1}
+                  onValueChange={([v]) => {
+                    const stops = [...background.gradient!.stops];
+                    stops[i] = { ...stops[i], position: v };
+                    onUpdate({ gradient: { ...background.gradient!, stops } });
+                  }}
+                  className="h-1.5 flex-1"
+                />
+                <span className="text-xs text-muted-foreground w-8 text-right shrink-0">
+                  {stop.position}%
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
