@@ -16,7 +16,7 @@ import {
   RotateCcw, Upload, Maximize2, Minimize2, Smartphone,
   AlignCenterHorizontal, AlignCenterVertical,
   ArrowUpToLine, ArrowDownToLine, ArrowLeftToLine, ArrowRightToLine,
-  MoveHorizontal, MoveVertical,
+  MoveHorizontal, MoveVertical, RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -125,6 +125,7 @@ export function FloatingToolbar() {
   const {
     getActiveLayer, getActiveScreen, getActiveSet,
     updateLayer, deleteLayer, duplicateLayer, setActiveLayer,
+    syncTextToScreens,
   } = useEditorStore();
 
   const layer = getActiveLayer();
@@ -314,11 +315,61 @@ export function FloatingToolbar() {
               <TooltipTrigger>
                 <label className="w-6 h-6 rounded-lg cursor-pointer ring-1 ring-border overflow-hidden shrink-0 block">
                   <input type="color" value={tl.color.startsWith("rgba") ? "#ffffff" : tl.color} onChange={(e) => update({ color: e.target.value } as Partial<TextLayer>)} className="opacity-0 w-0 h-0" />
-                  <div className="w-full h-full" style={{ background: tl.color }} />
+                  <div className="w-full h-full" style={{ background: tl.gradientColor ? `linear-gradient(to right, ${tl.gradientColor[0]}, ${tl.gradientColor[1]})` : tl.color }} />
                 </label>
               </TooltipTrigger>
               <TooltipContent>Text color</TooltipContent>
             </Tooltip>
+
+            {/* Gradient text toggle */}
+            <button
+              type="button"
+              title={tl.gradientColor ? "Remove gradient" : "Enable gradient text"}
+              onClick={() => {
+                if (tl.gradientColor) {
+                  update({ gradientColor: undefined } as Partial<TextLayer>);
+                } else {
+                  update({ gradientColor: [tl.color, "#f59e0b", "vertical"] } as Partial<TextLayer>);
+                }
+              }}
+              className={cn(
+                "w-7 h-7 rounded-lg flex items-center justify-center transition-colors text-sm font-black",
+                tl.gradientColor
+                  ? "ring-1 ring-primary/40 bg-primary/10"
+                  : "hover:bg-secondary text-muted-foreground"
+              )}
+            >
+              <span style={tl.gradientColor ? { background: `linear-gradient(to right, ${tl.gradientColor[0]}, ${tl.gradientColor[1]})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } : {}}>
+                G
+              </span>
+            </button>
+
+            {/* Gradient pickers — shown only when gradient enabled */}
+            {tl.gradientColor && (
+              <div className="flex items-center gap-0.5 shrink-0">
+                <label className="w-5 h-5 rounded cursor-pointer ring-1 ring-border overflow-hidden block" title="Gradient start color">
+                  <input type="color" value={tl.gradientColor[0]} onChange={(e) => update({ gradientColor: [e.target.value, tl.gradientColor![1], tl.gradientColor![2]] } as Partial<TextLayer>)} className="opacity-0 w-0 h-0" />
+                  <div className="w-full h-full" style={{ background: tl.gradientColor[0] }} />
+                </label>
+                <label className="w-5 h-5 rounded cursor-pointer ring-1 ring-border overflow-hidden block" title="Gradient end color">
+                  <input type="color" value={tl.gradientColor[1]} onChange={(e) => update({ gradientColor: [tl.gradientColor![0], e.target.value, tl.gradientColor![2]] } as Partial<TextLayer>)} className="opacity-0 w-0 h-0" />
+                  <div className="w-full h-full" style={{ background: tl.gradientColor[1] }} />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const dirs: Array<"vertical" | "horizontal" | "diagonal"> = ["vertical", "horizontal", "diagonal"];
+                    const cur = tl.gradientColor![2];
+                    const next = dirs[(dirs.indexOf(cur) + 1) % 3];
+                    update({ gradientColor: [tl.gradientColor![0], tl.gradientColor![1], next] } as Partial<TextLayer>);
+                  }}
+                  className="w-6 h-5 rounded hover:bg-secondary flex items-center justify-center"
+                  title={`Direction: ${tl.gradientColor[2]}`}
+                >
+                  <span className="text-[8px] font-bold text-muted-foreground uppercase">{tl.gradientColor[2][0]}</span>
+                </button>
+              </div>
+            )}
 
             <Separator orientation="vertical" className="h-5 mx-0.5 shrink-0" />
 
@@ -387,6 +438,30 @@ export function FloatingToolbar() {
             <Separator orientation="vertical" className="h-5 mx-0.5 shrink-0" />
           </>
         )}
+
+        {/* ── SYNC TEXT TO ALL SCREENS ───────────────────────────────────── */}
+        {isText && tl && (() => {
+          const screenSet = set;
+          if (!screenSet || !screen) return null;
+          const layerIndex = screen.layers.findIndex((l) => l.id === layer.id);
+          const hasMultipleScreens = screenSet.screens.length > 1;
+          if (!hasMultipleScreens || layerIndex === -1) return null;
+          return (
+            <Tooltip>
+              <TooltipTrigger>
+                <button
+                  type="button"
+                  onClick={() => syncTextToScreens(screenSet.id, screen.id, layerIndex)}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 text-xs font-medium transition-colors shrink-0"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  Sync
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>Copy this text to all screens in set</TooltipContent>
+            </Tooltip>
+          );
+        })()}
 
         {/* ── DUPLICATE / DELETE ─────────────────────────────────────────── */}
         <Btn onClick={() => { if (set && screen) duplicateLayer(set.id, screen.id, layer.id); }} title="Duplicate (Ctrl+D)">

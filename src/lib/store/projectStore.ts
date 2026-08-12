@@ -11,6 +11,7 @@ interface ProjectStore {
   deleteProject: (id: string) => void;
   duplicateProject: (id: string) => Project;
   getProject: (id: string) => Project | undefined;
+  saveProjectThumbnail: (id: string, dataUrl: string) => void;
 }
 
 export const useProjectStore = create<ProjectStore>()(
@@ -162,6 +163,14 @@ export const useProjectStore = create<ProjectStore>()(
       },
 
       getProject: (id) => get().projects.find((p) => p.id === id),
+
+      saveProjectThumbnail: (id, dataUrl) => {
+        set((state) => ({
+          projects: state.projects.map((p) =>
+            p.id === id ? { ...p, thumbnail: dataUrl } : p
+          ),
+        }));
+      },
     }),
     {
       name: "snapframe-projects",

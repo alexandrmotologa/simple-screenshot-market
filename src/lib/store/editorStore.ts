@@ -15,6 +15,8 @@ interface EditorStore {
   activeSetId: string | null;
   activeScreenId: string | null;
   activeLayerId: string | null;
+  /** IDs of layers in multi-select (Shift+click) */
+  selectedLayerIds: string[];
 
   // UI state
   zoom: number;
@@ -35,6 +37,8 @@ interface EditorStore {
   setActiveSet: (id: string) => void;
   setActiveScreen: (id: string) => void;
   setActiveLayer: (id: string | null) => void;
+  toggleSelectLayer: (id: string) => void;
+  clearSelection: () => void;
 
   // Actions: screens
   addScreen: (setId: string) => void;
@@ -52,8 +56,13 @@ interface EditorStore {
   addLayer: (setId: string, screenId: string, layer: any) => void;
   updateLayer: (setId: string, screenId: string, layerId: string, updates: Partial<Layer>) => void;
   deleteLayer: (setId: string, screenId: string, layerId: string) => void;
+  deleteSelectedLayers: () => void;
   reorderLayers: (setId: string, screenId: string, layerIds: string[]) => void;
   duplicateLayer: (setId: string, screenId: string, layerId: string) => void;
+  lockLayer: (setId: string, screenId: string, layerId: string, locked: boolean) => void;
+  bringForward: (setId: string, screenId: string, layerId: string) => void;
+  sendBackward: (setId: string, screenId: string, layerId: string) => void;
+  syncTextToScreens: (setId: string, srcScreenId: string, layerIndex: number) => void;
 
   // Actions: mockup
   updateMockup: (setId: string, updates: Partial<MockupSettings>) => void;
@@ -89,6 +98,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   activeSetId: null,
   activeScreenId: null,
   activeLayerId: null,
+  selectedLayerIds: [],
   zoom: 0.65,
   showGrid: false,
   showGuides: true,
@@ -157,9 +167,23 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     return screen?.layers.find((l) => l.id === activeLayerId);
   },
 
-  setActiveSet: (id) => set({ activeSetId: id, activeLayerId: null }),
-  setActiveScreen: (id) => set({ activeScreenId: id, activeLayerId: null }),
-  setActiveLayer: (id) => set({ activeLayerId: id }),
+  setActiveSet: (id) => set({ activeSetId: id, activeLayerId: null, selectedLayerIds: [] }),
+  setActiveScreen: (id) => set({ activeScreenId: id, activeLayerId: null, selectedLayerIds: [] }),
+  setActiveLayer: (id) => set({ activeLayerId: id, selectedLayerIds: id ? [id] : [] }),
+
+  toggleSelectLayer: (id) => {
+    const { selectedLayerIds, activeLayerId } = get();
+    const already = selectedLayerIds.includes(id);
+    const next = already
+      ? selectedLayerIds.filter((x) => x !== id)
+      : [...selectedLayerIds, id];
+    set({
+      selectedLayerIds: next,
+      activeLayerId: next.length > 0 ? (next[next.length - 1]) : activeLayerId,
+    });
+  },
+
+  clearSelection: () => set({ selectedLayerIds: [], activeLayerId: null }),
 
   addScreen: (setId) => {
     get().pushHistory();
@@ -355,6 +379,109 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
             const newLayers = [...s.layers];
             newLayers.splice(idx + 1, 0, duplicate);
             return { ...s, layers: newLayers };
+          }),
+        };
+      }),
+    }));
+  },
+
+  deleteSelectedLayers: () => {
+    const { activeSetId, activeScreenId, selectedLayerIds } = get();
+    if (!activeSetId || !activeScreenId || selectedLayerIds.length === 0) return;
+    get().pushHistory();
+    set((state) => ({
+      screenSets: state.screenSets.map((ss) =>
+        ss.id !== activeSetId ? ss : {
+          ...ss,
+          screens: ss.screens.map((s) =>
+            s.id !== activeScreenId ? s : {
+              ...s,
+              layers: s.layers.filter((l) => !selectedLayerIds.includes(l.id)),
+            }
+          ),
+        }
+      ),
+      activeLayerId: null,
+      selectedLayerIds: [],
+    }));
+  },
+
+  lockLayer: (setId, screenId, layerId, locked) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    set((state: any) => ({
+      screenSets: state.screenSets.map((ss: any) =>
+        ss.id !== setId ? ss : {
+          ...ss,
+          screens: ss.screens.map((s: any) =>
+            s.id !== screenId ? s : {
+              ...s,
+              layers: s.layers.map((l: any) =>
+                l.id !== layerId ? l : { ...l, locked }
+              ),
+            }
+          ),
+        }
+      ),
+    }));
+  },
+
+  bringForward: (setId, screenId, layerId) => {
+    set((state) => ({
+      screenSets: state.screenSets.map((ss) =>
+        ss.id !== setId ? ss : {
+          ...ss,
+          screens: ss.screens.map((s) => {
+            if (s.id !== screenId) return s;
+            const idx = s.layers.findIndex((l) => l.id === layerId);
+            if (idx === -1 || idx === s.layers.length - 1) return s;
+            const next = [...s.layers];
+            [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+            return { ...s, layers: next };
+          }),
+        }
+      ),
+    }));
+  },
+
+  sendBackward: (setId, screenId, layerId) => {
+    set((state) => ({
+      screenSets: state.screenSets.map((ss) =>
+        ss.id !== setId ? ss : {
+          ...ss,
+          screens: ss.screens.map((s) => {
+            if (s.id !== screenId) return s;
+            const idx = s.layers.findIndex((l) => l.id === layerId);
+            if (idx <= 0) return s;
+            const next = [...s.layers];
+            [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+            return { ...s, layers: next };
+          }),
+        }
+      ),
+    }));
+  },
+
+  syncTextToScreens: (setId, srcScreenId, layerIndex) => {
+    get().pushHistory();
+    set((state) => ({
+      screenSets: state.screenSets.map((ss) => {
+        if (ss.id !== setId) return ss;
+        const srcScreen = ss.screens.find((s) => s.id === srcScreenId);
+        if (!srcScreen) return ss;
+        const srcLayer = srcScreen.layers[layerIndex];
+        if (!srcLayer || srcLayer.type !== "text") return ss;
+        return {
+          ...ss,
+          screens: ss.screens.map((s) => {
+            if (s.id === srcScreenId) return s;
+            const targetLayer = s.layers[layerIndex];
+            if (!targetLayer || targetLayer.type !== "text") return s;
+            return {
+              ...s,
+              layers: s.layers.map((l, i) =>
+                i !== layerIndex ? l : { ...l, content: (srcLayer as import("@/lib/types").TextLayer).content }
+              ),
+            };
           }),
         };
       }),

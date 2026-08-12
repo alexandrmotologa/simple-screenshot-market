@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useEffect, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, Copy, ArrowUp, ArrowDown, Lock, RefreshCw } from "lucide-react";
 import { useEditorStore } from "@/lib/store/editorStore";
 import {
   Screen, ScreenSet, TextLayer, ShapeLayer,
@@ -49,10 +49,17 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
   const [editingCaption, setEditingCaption] = useState(false);
   const [captionDraft, setCaptionDraft] = useState(screen.caption ?? "");
   const captionRef = useRef<HTMLInputElement>(null);
+  // Text inline edit state
+  const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  // Right-click context menu
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; layerId: string } | null>(null);
+
   const {
-    activeSetId, activeScreenId, activeLayerId,
-    setActiveSet, setActiveScreen, setActiveLayer,
-    deleteScreen, updateLayer, updateScreen, zoom,
+    activeSetId, activeScreenId, activeLayerId, selectedLayerIds,
+    setActiveSet, setActiveScreen, setActiveLayer, toggleSelectLayer,
+    deleteScreen, deleteLayer, duplicateLayer, updateLayer, updateScreen,
+    lockLayer, bringForward, sendBackward, zoom,
   } = useEditorStore();
 
   const saveCaption = () => {
@@ -124,7 +131,21 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
       if (layer.type === "text") {
         const tl = layer as TextLayer;
         ctx.font = `${tl.fontWeight} ${tl.fontSize}px "${tl.fontFamily}", -apple-system, sans-serif`;
-        ctx.fillStyle = tl.color;
+
+        // Gradient text support
+        if (tl.gradientColor) {
+          const [c1, c2, dir] = tl.gradientColor;
+          let grad: CanvasGradient;
+          if (dir === "horizontal") grad = ctx.createLinearGradient(tl.x, 0, tl.x + tl.width, 0);
+          else if (dir === "diagonal") grad = ctx.createLinearGradient(tl.x, tl.y, tl.x + tl.width, tl.y + tl.height);
+          else grad = ctx.createLinearGradient(0, tl.y, 0, tl.y + tl.height);
+          grad.addColorStop(0, c1);
+          grad.addColorStop(1, c2);
+          ctx.fillStyle = grad;
+        } else {
+          ctx.fillStyle = tl.color;
+        }
+
         ctx.textAlign = tl.align as CanvasTextAlign;
         if (tl.letterSpacing) ctx.letterSpacing = `${tl.letterSpacing}px`;
         const lines = tl.content.split("\n");
@@ -296,14 +317,24 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    // Close context menu on any click
+    setCtxMenu(null);
     setActiveSet(screenSet.id);
     setActiveScreen(screen.id);
     const { x, y } = getCanvasCoords(e);
     const hit = hitTest(x, y);
-    setActiveLayer(hit);
+    if (e.shiftKey && hit) {
+      // Multi-select mode
+      toggleSelectLayer(hit);
+    } else {
+      setActiveLayer(hit);
+    }
     if (hit) {
       const layer = screen.layers.find((l) => l.id === hit);
-      if (layer) dragRef.current = { layerId: hit, startX: x, startY: y, origX: layer.x, origY: layer.y };
+      // Don't drag locked layers
+      if (layer && !layer.locked) {
+        dragRef.current = { layerId: hit, startX: x, startY: y, origX: layer.x, origY: layer.y };
+      }
     }
     e.stopPropagation();
   };
@@ -320,6 +351,28 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
   };
 
   const handleMouseUp = () => { dragRef.current = null; };
+
+  // ── Double-click: inline text edit ─────────────────────────────────────────
+  const handleDoubleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const { x, y } = getCanvasCoords(e);
+    const hit = hitTest(x, y);
+    if (!hit) return;
+    const layer = screen.layers.find((l) => l.id === hit);
+    if (!layer || layer.type !== "text") return;
+    setEditingLayerId(hit);
+    setEditText((layer as TextLayer).content);
+    setActiveLayer(hit);
+  };
+
+  // ── Right-click: context menu ──────────────────────────────────────────────
+  const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    const { x, y } = getCanvasCoords(e);
+    const hit = hitTest(x, y);
+    if (!hit) return;
+    setActiveLayer(hit);
+    setCtxMenu({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY, layerId: hit });
+  };
 
   const activeLayer = screen.layers.find(l => l.id === activeLayerId);
   const isScreenshotActive = isActiveScreen && activeLayer?.type === "screenshot";
@@ -437,17 +490,149 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
+          onDoubleClick={handleDoubleClick}
+          onContextMenu={handleContextMenu}
           className={dragRef.current || isScreenshotActive ? "cursor-move" : "cursor-pointer"}
         />
 
         {/* Resize handles overlay — shown when layer is selected */}
-        {isActiveScreen && activeLayer && (
+        {isActiveScreen && activeLayer && !editingLayerId && (
           <ResizeOverlay
             layer={activeLayer}
             scale={scale}
             onResizeStart={handleResizeStart}
           />
         )}
+
+        {/* Inline text edit overlay — shown on double-click */}
+        {isActiveScreen && editingLayerId && (() => {
+          const editLayer = screen.layers.find((l) => l.id === editingLayerId) as TextLayer | undefined;
+          if (!editLayer) return null;
+          return (
+            <div
+              className="absolute inset-0"
+              onClick={() => {
+                updateLayer(screenSet.id, screen.id, editingLayerId, { content: editText } as Partial<Layer>);
+                setEditingLayerId(null);
+              }}
+            >
+              <textarea
+                autoFocus
+                value={editText}
+                onChange={(e) => setEditText(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    setEditingLayerId(null);
+                  }
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    updateLayer(screenSet.id, screen.id, editingLayerId, { content: editText } as Partial<Layer>);
+                    setEditingLayerId(null);
+                  }
+                }}
+                style={{
+                  position: "absolute",
+                  left: editLayer.x * scale,
+                  top: editLayer.y * scale,
+                  width: editLayer.width * scale,
+                  minHeight: editLayer.height * scale,
+                  fontSize: editLayer.fontSize * scale,
+                  fontFamily: `"${editLayer.fontFamily}", sans-serif`,
+                  fontWeight: editLayer.fontWeight,
+                  color: editLayer.color,
+                  textAlign: editLayer.align,
+                  lineHeight: editLayer.lineHeight,
+                  letterSpacing: `${editLayer.letterSpacing * scale}px`,
+                  background: "rgba(99,102,241,0.08)",
+                  border: "2px solid #6366f1",
+                  borderRadius: 4,
+                  outline: "none",
+                  resize: "none",
+                  padding: "2px 4px",
+                }}
+              />
+              <div className="absolute bottom-2 right-2 flex gap-1">
+                <span className="px-2 py-0.5 rounded bg-black/60 text-white text-[9px]">Enter to save · Esc to cancel</span>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Right-click context menu */}
+        {ctxMenu && isActiveScreen && (() => {
+          const ctxLayer = screen.layers.find((l) => l.id === ctxMenu.layerId);
+          if (!ctxLayer) return null;
+          return (
+            <div
+              className="absolute z-50 min-w-44 bg-popover border border-border rounded-xl shadow-2xl shadow-black/30 py-1 overflow-hidden"
+              style={{ left: ctxMenu.x, top: ctxMenu.y }}
+              onMouseLeave={() => setCtxMenu(null)}
+            >
+              {/* Layer name header */}
+              <div className="px-3 py-1.5 border-b border-border/50">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  {ctxLayer.type === "text"
+                    ? (ctxLayer as TextLayer).content.slice(0, 20) || "Text"
+                    : ctxLayer.type}
+                </p>
+              </div>
+
+              {[
+                {
+                  icon: Copy, label: "Duplicate", action: () => {
+                    duplicateLayer(screenSet.id, screen.id, ctxMenu.layerId);
+                    setCtxMenu(null);
+                  }
+                },
+                {
+                  icon: ArrowUp, label: "Bring Forward", action: () => {
+                    bringForward(screenSet.id, screen.id, ctxMenu.layerId);
+                    setCtxMenu(null);
+                  }
+                },
+                {
+                  icon: ArrowDown, label: "Send Backward", action: () => {
+                    sendBackward(screenSet.id, screen.id, ctxMenu.layerId);
+                    setCtxMenu(null);
+                  }
+                },
+                {
+                  icon: ctxLayer.locked ? Lock : Lock,
+                  label: ctxLayer.locked ? "Unlock Layer" : "Lock Layer",
+                  action: () => {
+                    lockLayer(screenSet.id, screen.id, ctxMenu.layerId, !ctxLayer.locked);
+                    setCtxMenu(null);
+                  }
+                },
+              ].map(({ icon: Icon, label, action }) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={action}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs hover:bg-secondary text-foreground transition-colors text-left"
+                >
+                  <Icon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                  {label}
+                </button>
+              ))}
+
+              <div className="border-t border-border/50 mt-1 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    deleteLayer(screenSet.id, screen.id, ctxMenu.layerId);
+                    setCtxMenu(null);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs hover:bg-destructive/15 text-destructive transition-colors text-left"
+                >
+                  <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                  Delete Layer
+                </button>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Screen name */}

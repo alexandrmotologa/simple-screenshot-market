@@ -45,11 +45,14 @@ export interface TextLayer {
   fontFamily: string;
   fontWeight: number;
   color: string;
+  /** Optional gradient override: [startColor, endColor, direction] */
+  gradientColor?: [string, string, "horizontal" | "vertical" | "diagonal"];
   align: TextAlign;
   lineHeight: number;
   letterSpacing: number;
   rotation: number;
   opacity: number;
+  locked?: boolean;
   shadow?: {
     color: string;
     blur: number;
@@ -69,6 +72,7 @@ export interface ImageLayer {
   rotation: number;
   opacity: number;
   cornerRadius: number;
+  locked?: boolean;
 }
 
 /**
@@ -104,6 +108,7 @@ export interface ScreenshotLayer {
   };
   /** Slot label shown in placeholder (e.g. "Screenshot 1") */
   label?: string;
+  locked?: boolean;
 }
 
 export interface ShapeLayer {
@@ -120,6 +125,7 @@ export interface ShapeLayer {
   rotation: number;
   opacity: number;
   cornerRadius?: number;
+  locked?: boolean;
 }
 
 export interface FlagLayer {
@@ -132,6 +138,7 @@ export interface FlagLayer {
   height: number;
   rotation: number;
   opacity: number;
+  locked?: boolean;
 }
 
 export type Layer = TextLayer | ImageLayer | ScreenshotLayer | ShapeLayer | FlagLayer;

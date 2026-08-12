@@ -19,6 +19,20 @@ function ProjectThumbnail({ project }: { project: Project }) {
   const firstScreen = project.screenSets[0]?.screens[0];
   const bg = firstScreen?.background;
 
+  // If we have a saved thumbnail (from auto-save in editor), use it
+  if (project.thumbnail) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={project.thumbnail}
+        alt={project.name}
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+    );
+  }
+
+  // Fallback: render live via canvas
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || !firstScreen) return;
@@ -29,7 +43,6 @@ function ProjectThumbnail({ project }: { project: Project }) {
     canvas.width = W;
     canvas.height = H;
 
-    // Draw background
     if (bg?.type === "solid" && bg.color) {
       ctx.fillStyle = bg.color;
       ctx.fillRect(0, 0, W, H);
@@ -51,7 +64,6 @@ function ProjectThumbnail({ project }: { project: Project }) {
       ctx.fillRect(0, 0, W, H);
     }
 
-    // Draw text layers only (fast)
     const scale = W / (firstScreen.width ?? 1290);
     for (const layer of firstScreen.layers) {
       if (layer.type !== "text") continue;
@@ -66,8 +78,7 @@ function ProjectThumbnail({ project }: { project: Project }) {
       const lineH = fs * (tl.lineHeight ?? 1.25);
       const xPos = tl.align === "center"
         ? tl.x * scale + tl.width * scale / 2
-        : tl.align === "right"
-        ? tl.x * scale + tl.width * scale
+        : tl.align === "right" ? tl.x * scale + tl.width * scale
         : tl.x * scale;
       lines.forEach((line, i) => {
         ctx.fillText(line, xPos, tl.y * scale + fs + i * lineH);
