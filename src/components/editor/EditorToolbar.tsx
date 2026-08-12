@@ -46,7 +46,7 @@ export function EditorToolbar() {
         letterSpacing: 0,
         rotation: 0,
         opacity: 1,
-      });
+      } as Omit<import("@/lib/types").TextLayer, "id">);
       setActiveTool("select");
     }
 
@@ -66,7 +66,7 @@ export function EditorToolbar() {
         cornerRadius: 24,
         rotation: 0,
         opacity: 1,
-      });
+      } as Omit<import("@/lib/types").ShapeLayer, "id">);
       setActiveTool("select");
     }
   };
@@ -75,7 +75,7 @@ export function EditorToolbar() {
     <div className="w-14 border-r border-border/60 bg-card/50 flex flex-col items-center py-3 gap-1 shrink-0">
       {TOOLS.slice(0, 4).map((tool) => (
         <Tooltip key={tool.id}>
-          <TooltipTrigger asChild>
+          <TooltipTrigger>
             <button
               id={`tool-${tool.id}`}
               onClick={() => handleTool(tool.id)}
@@ -102,7 +102,7 @@ export function EditorToolbar() {
 
       {TOOLS.slice(4).map((tool) => (
         <Tooltip key={tool.id}>
-          <TooltipTrigger asChild>
+          <TooltipTrigger>
             <button
               id={`tool-${tool.id}`}
               onClick={() => handleTool(tool.id)}

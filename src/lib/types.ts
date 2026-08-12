@@ -2,7 +2,7 @@
 
 export type StoreType = "ios" | "android";
 
-export type LayerType = "text" | "image" | "shape" | "mockup";
+export type LayerType = "text" | "image" | "screenshot" | "shape" | "flag" | "emoji" | "brand";
 
 export type ShapeType = "rectangle" | "circle" | "rounded-rectangle";
 
@@ -71,6 +71,41 @@ export interface ImageLayer {
   cornerRadius: number;
 }
 
+/**
+ * ScreenshotLayer — the core concept of SnapFrame.
+ * A reserved zone where the user's app screenshot is placed.
+ * Shows a placeholder when no image is uploaded.
+ * Can optionally have a device frame rendered on top.
+ */
+export interface ScreenshotLayer {
+  id: string;
+  type: "screenshot";
+  /** The uploaded app screenshot (data URL or blob URL) */
+  src?: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  opacity: number;
+  /** How the image fills the zone */
+  objectFit: "cover" | "contain" | "fill";
+  /** Corner radius for clipping */
+  cornerRadius: number;
+  /** Whether to show a device frame overlay */
+  showDeviceFrame: boolean;
+  /** Drop shadow */
+  shadow?: {
+    blur: number;
+    spread: number;
+    color: string;
+    offsetX: number;
+    offsetY: number;
+  };
+  /** Slot label shown in placeholder (e.g. "Screenshot 1") */
+  label?: string;
+}
+
 export interface ShapeLayer {
   id: string;
   type: "shape";
@@ -87,34 +122,33 @@ export interface ShapeLayer {
   cornerRadius?: number;
 }
 
-export type Layer = TextLayer | ImageLayer | ShapeLayer;
+export interface FlagLayer {
+  id: string;
+  type: "flag" | "emoji" | "brand";
+  content: string; // emoji or SVG URL
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  opacity: number;
+}
+
+export type Layer = TextLayer | ImageLayer | ScreenshotLayer | ShapeLayer | FlagLayer;
 
 // Device mockup definitions
-export type IosDevice =
-  | "iphone-13-pro"
-  | "iphone-15-pro"
-  | "iphone-16-pro"
-  | "iphone-16-pro-max"
-  | "ipad-pro";
-
-export type AndroidDevice =
-  | "pixel-8-pro"
-  | "pixel-9-pro"
-  | "samsung-s24"
-  | "samsung-s25"
-  | "generic-android";
-
-export type DeviceModel = IosDevice | AndroidDevice;
-
-export type DeviceColor = "black" | "white" | "gold" | "purple" | "silver";
+export type DeviceColor = string; // e.g. "black", "white", "titanium-natural", "obsidian" etc.
 
 export interface MockupSettings {
-  device: DeviceModel;
+  device: string;
   color: DeviceColor;
   showFrame: boolean;
   showReflection: boolean;
   showShadow: boolean;
-  screenshotUrl?: string; // URL of the uploaded app screenshot inside the mockup
+  /** Squircle (iOS-style rounded) corners for the card */
+  squircle?: boolean;
+  /** Show/hide screenshots (focus mode) */
+  showScreenshots?: boolean;
 }
 
 // Store-specific size presets
@@ -158,32 +192,11 @@ export const SIZE_PRESETS: SizePreset[] = [
   },
   // Google Play
   {
-    name: "Phone 9:16",
-    width: 1080,
-    height: 1920,
+    name: "Android 6.7\"",
+    width: 1290,
+    height: 2796,
     store: "android",
     description: "Google Play standard",
-  },
-  {
-    name: "Phone 20:9",
-    width: 1080,
-    height: 2400,
-    store: "android",
-    description: "Google Play modern",
-  },
-  {
-    name: '7" Tablet',
-    width: 1600,
-    height: 2560,
-    store: "android",
-    description: "Google Play tablet",
-  },
-  {
-    name: '10" Tablet',
-    width: 2048,
-    height: 2732,
-    store: "android",
-    description: "Google Play tablet",
   },
 ];
 
@@ -191,6 +204,8 @@ export const SIZE_PRESETS: SizePreset[] = [
 export interface Screen {
   id: string;
   name: string;
+  /** Short caption shown above the headline, e.g. "Track Your Mood" */
+  caption?: string;
   background: Background;
   layers: Layer[];
   mockup?: MockupSettings;
@@ -198,13 +213,18 @@ export interface Screen {
   height: number;
 }
 
-// A project contains multiple screens (one set per store)
+// A project contains multiple screen sets (one per store)
 export interface ScreenSet {
   id: string;
+  /** Display name for this set, e.g. "App Store (iOS)" */
+  name?: string;
   store: StoreType;
   preset: SizePreset;
   mockup: MockupSettings;
+  deviceId?: string;
   screens: Screen[];
+  /** App Store / Play Store URL for reference */
+  referenceUrl?: string;
 }
 
 export interface Project {
@@ -214,15 +234,25 @@ export interface Project {
   screenSets: ScreenSet[];
   createdAt: number;
   updatedAt: number;
-  thumbnail?: string; // base64 or URL
+  thumbnail?: string;
 }
 
 // Template definition
 export interface TemplateScreen {
   name: string;
   background: Background;
-  layers: Omit<Layer, "id">[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  layers: any[];
 }
+
+/** Visual layout style for template previews */
+export type TemplateLayout =
+  | "screenshot-top"      // screenshot top 65%, text bottom
+  | "screenshot-bottom"   // text top, screenshot bottom 55%
+  | "screenshot-float"    // screenshot floating center-right with shadow
+  | "screenshot-full"     // screenshot full-bleed, text overlay
+  | "screenshot-split"    // 2 screenshots side-by-side
+  | "text-only";          // no screenshot zone (pure text/graphic)
 
 export interface Template {
   id: string;
@@ -230,6 +260,8 @@ export interface Template {
   description: string;
   category: string;
   tags: string[];
-  previewColor: string; // for card background before image loads
+  previewColor: string;
+  previewGradient?: [string, string]; // [from, to]
+  layout: TemplateLayout;
   screens: TemplateScreen[];
 }

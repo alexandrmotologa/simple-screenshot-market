@@ -1,7 +1,7 @@
 "use client";
 
 import { useEditorStore } from "@/lib/store/editorStore";
-import { TextLayer, ImageLayer, ShapeLayer, Background, GradientStop } from "@/lib/types";
+import { TextLayer, ImageLayer, ShapeLayer, Background, GradientStop, GradientDirection } from "@/lib/types";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -127,7 +127,7 @@ export function PropertiesPanel() {
                   min={0}
                   max={100}
                   step={1}
-                  onValueChange={([v]) => handleLayerUpdate({ opacity: v / 100 })}
+                  onValueChange={(rawV) => { const n = Array.isArray(rawV) ? rawV[0] : rawV; handleLayerUpdate({ opacity: n / 100 }); }}
                   className="h-1.5"
                 />
               </div>
@@ -141,7 +141,7 @@ export function PropertiesPanel() {
                   min={-180}
                   max={180}
                   step={1}
-                  onValueChange={([v]) => handleLayerUpdate({ rotation: v })}
+                  onValueChange={(rawV) => { const n = Array.isArray(rawV) ? rawV[0] : rawV; handleLayerUpdate({ rotation: n }); }}
                   className="h-1.5"
                 />
               </div>
@@ -301,7 +301,7 @@ function TextProperties({
           min={8}
           max={30}
           step={1}
-          onValueChange={([v]) => onUpdate({ lineHeight: v / 10 })}
+          onValueChange={(rawV) => { const n = Array.isArray(rawV) ? rawV[0] : rawV; onUpdate({ lineHeight: n / 10 }); }}
           className="h-1.5"
         />
       </div>
@@ -346,7 +346,7 @@ function ShapeProperties({
             min={0}
             max={200}
             step={1}
-            onValueChange={([v]) => onUpdate({ cornerRadius: v })}
+            onValueChange={(rawV) => { const n = Array.isArray(rawV) ? rawV[0] : rawV; onUpdate({ cornerRadius: n }); }}
             className="h-1.5"
           />
         </div>
@@ -412,7 +412,7 @@ function BackgroundProperties({
               value={background.gradient.direction}
               onValueChange={(v) =>
                 onUpdate({
-                  gradient: { ...background.gradient!, direction: v as Background["gradient"]["direction"] },
+                  gradient: { ...background.gradient!, direction: v as GradientDirection },
                 })
               }
             >
@@ -449,11 +449,7 @@ function BackgroundProperties({
                   min={0}
                   max={100}
                   step={1}
-                  onValueChange={([v]) => {
-                    const stops = [...background.gradient!.stops];
-                    stops[i] = { ...stops[i], position: v };
-                    onUpdate({ gradient: { ...background.gradient!, stops } });
-                  }}
+                  onValueChange={(rawV) => { const n = Array.isArray(rawV) ? rawV[0] : rawV; const stops = [...background.gradient!.stops]; stops[i] = { ...stops[i], position: n }; onUpdate({ gradient: { ...background.gradient!, stops } }); }}
                   className="h-1.5 flex-1"
                 />
                 <span className="text-xs text-muted-foreground w-8 text-right shrink-0">

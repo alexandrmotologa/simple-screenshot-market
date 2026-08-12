@@ -1,0 +1,80 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import { useEditorStore } from "@/lib/store/editorStore";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
+import { FLAGS, POPULAR_FLAGS, FlagItem } from "@/lib/flags";
+
+export function FlagsPanel() {
+  const [query, setQuery] = useState("");
+  const { getActiveSet, getActiveScreen, addLayer } = useEditorStore();
+
+  const filtered = useMemo(() => {
+    if (!query.trim()) {
+      // Show popular first then rest
+      const popular = POPULAR_FLAGS.map((code) => FLAGS.find((f) => f.code === code)!).filter(Boolean);
+      const rest = FLAGS.filter((f) => !POPULAR_FLAGS.includes(f.code));
+      return [...popular, ...rest];
+    }
+    const q = query.toLowerCase();
+    return FLAGS.filter(
+      (f) => f.name.toLowerCase().includes(q) || f.code.toLowerCase().includes(q)
+    );
+  }, [query]);
+
+  const handleAdd = (flag: FlagItem) => {
+    const set = getActiveSet();
+    const screen = getActiveScreen();
+    if (!set || !screen) return;
+
+    addLayer(set.id, screen.id, {
+      type: "flag" as const,
+      content: flag.emoji,
+      x: Math.round(screen.width / 2 - 100),
+      y: Math.round(screen.height / 2 - 100),
+      width: 200,
+      height: 200,
+      rotation: 0,
+      opacity: 1,
+    } as Parameters<typeof addLayer>[2]);
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Search */}
+      <div className="p-3 border-b border-border/40">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <Input
+            id="flags-search"
+            placeholder="Search country or code..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="pl-9 h-8 text-xs"
+          />
+        </div>
+      </div>
+
+      {/* Grid */}
+      <ScrollArea className="flex-1">
+        <div className="p-3 grid grid-cols-4 gap-1.5">
+          {filtered.map((flag) => (
+            <button
+              key={flag.code}
+              onClick={() => handleAdd(flag)}
+              title={flag.name}
+              className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-secondary transition-all group"
+            >
+              <span className="text-2xl leading-none">{flag.emoji}</span>
+              <span className="text-[9px] text-muted-foreground group-hover:text-foreground font-mono">
+                {flag.code}
+              </span>
+            </button>
+          ))}
+        </div>
+      </ScrollArea>
+    </div>
+  );
+}

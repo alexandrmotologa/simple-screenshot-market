@@ -41,7 +41,7 @@ export const useProjectStore = create<ProjectStore>()(
           layers: (template?.screens[0]?.layers ?? []).map((l) => ({
             ...l,
             id: nanoid(),
-          })),
+          })) as Layer[],
         };
 
         const iosSet: ScreenSet = {
@@ -67,8 +67,8 @@ export const useProjectStore = create<ProjectStore>()(
         const defaultAndroidScreen: Screen = {
           id: nanoid(),
           name: "Screen 1",
-          width: 1080,
-          height: 1920,
+          width: 1290,
+          height: 2796,
           background: template?.screens[0]?.background ?? {
             type: "gradient",
             gradient: {
@@ -82,21 +82,22 @@ export const useProjectStore = create<ProjectStore>()(
           layers: (template?.screens[0]?.layers ?? []).map((l) => ({
             ...l,
             id: nanoid(),
-          })),
+          })) as Layer[],
         };
 
         const androidSet: ScreenSet = {
           id: nanoid(),
           store: "android",
+          deviceId: "pixel-9-pro-xl",
           preset: {
-            name: "Phone 9:16",
-            width: 1080,
-            height: 1920,
+            name: 'Android 6.7"',
+            width: 1290,
+            height: 2796,
             store: "android",
-            description: "Google Play standard",
+            description: "Google Play — standard portrait",
           },
           mockup: {
-            device: "pixel-9-pro",
+            device: "pixel-9-pro-xl",
             color: "black",
             showFrame: true,
             showReflection: false,
@@ -104,6 +105,7 @@ export const useProjectStore = create<ProjectStore>()(
           },
           screens: [defaultAndroidScreen],
         };
+
 
         const project: Project = {
           id: nanoid(),
