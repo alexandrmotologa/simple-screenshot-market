@@ -324,6 +324,53 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
   const activeLayer = screen.layers.find(l => l.id === activeLayerId);
   const isScreenshotActive = isActiveScreen && activeLayer?.type === "screenshot";
 
+  // ── Resize handle drag ─────────────────────────────────────────────────────
+  const resizeRef = useRef<{
+    handle: string; // "nw"|"n"|"ne"|"e"|"se"|"s"|"sw"|"w"
+    startX: number; startY: number;
+    origX: number; origY: number;
+    origW: number; origH: number;
+  } | null>(null);
+
+  const handleResizeStart = (e: React.MouseEvent, handle: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!activeLayer) return;
+    resizeRef.current = {
+      handle,
+      startX: e.clientX, startY: e.clientY,
+      origX: activeLayer.x, origY: activeLayer.y,
+      origW: activeLayer.width, origH: activeLayer.height,
+    };
+
+    const onMove = (ev: MouseEvent) => {
+      if (!resizeRef.current || !activeLayer) return;
+      const dx = (ev.clientX - resizeRef.current.startX) / scale;
+      const dy = (ev.clientY - resizeRef.current.startY) / scale;
+      const h = resizeRef.current.handle;
+      let { origX: nx, origY: ny, origW: nw, origH: nh } = resizeRef.current;
+
+      if (h.includes("e")) nw = Math.max(50, nw + dx);
+      if (h.includes("s")) nh = Math.max(50, nh + dy);
+      if (h.includes("w")) { nx = nx + dx; nw = Math.max(50, nw - dx); }
+      if (h.includes("n")) { ny = ny + dy; nh = Math.max(50, nh - dy); }
+
+      updateLayer(screenSet.id, screen.id, activeLayer.id, {
+        x: Math.round(nx), y: Math.round(ny),
+        width: Math.round(nw), height: Math.round(nh),
+      } as Parameters<typeof updateLayer>[3]);
+    };
+
+    const onUp = () => {
+      resizeRef.current = null;
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  };
+
   return (
     <div className="shrink-0 flex flex-col gap-1.5 group" style={{ width: CARD_DISPLAY_WIDTH }}>
       {/* Header: index + caption editable + delete */}
@@ -392,10 +439,73 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           onMouseLeave={handleMouseUp}
           className={dragRef.current || isScreenshotActive ? "cursor-move" : "cursor-pointer"}
         />
+
+        {/* Resize handles overlay — shown when layer is selected */}
+        {isActiveScreen && activeLayer && (
+          <ResizeOverlay
+            layer={activeLayer}
+            scale={scale}
+            onResizeStart={handleResizeStart}
+          />
+        )}
       </div>
 
       {/* Screen name */}
       <p className="text-[10px] text-center text-muted-foreground/50 truncate">{screen.name}</p>
+    </div>
+  );
+}
+
+// ── Resize handles overlay ─────────────────────────────────────────────────────
+function ResizeOverlay({
+  layer, scale, onResizeStart,
+}: {
+  layer: Layer;
+  scale: number;
+  onResizeStart: (e: React.MouseEvent, handle: string) => void;
+}) {
+  const x = layer.x * scale;
+  const y = layer.y * scale;
+  const w = layer.width * scale;
+  const h = layer.height * scale;
+  const hs = 8; // handle size px
+
+  const handles: { id: string; cx: number; cy: number; cursor: string }[] = [
+    { id: "nw", cx: x,       cy: y,       cursor: "nwse-resize" },
+    { id: "n",  cx: x + w/2, cy: y,       cursor: "ns-resize" },
+    { id: "ne", cx: x + w,   cy: y,       cursor: "nesw-resize" },
+    { id: "e",  cx: x + w,   cy: y + h/2, cursor: "ew-resize" },
+    { id: "se", cx: x + w,   cy: y + h,   cursor: "nwse-resize" },
+    { id: "s",  cx: x + w/2, cy: y + h,   cursor: "ns-resize" },
+    { id: "sw", cx: x,       cy: y + h,   cursor: "nesw-resize" },
+    { id: "w",  cx: x,       cy: y + h/2, cursor: "ew-resize" },
+  ];
+
+  return (
+    <div
+      className="absolute inset-0 pointer-events-none"
+      style={{ zIndex: 10 }}
+    >
+      {/* Selection box */}
+      <div
+        className="absolute border-2 border-primary/70"
+        style={{ left: x, top: y, width: w, height: h }}
+      />
+      {/* Handles */}
+      {handles.map(({ id, cx, cy, cursor }) => (
+        <div
+          key={id}
+          className="absolute pointer-events-auto bg-white border-2 border-primary rounded-sm shadow-sm hover:bg-primary/20 transition-colors"
+          style={{
+            left: cx - hs / 2,
+            top: cy - hs / 2,
+            width: hs,
+            height: hs,
+            cursor,
+          }}
+          onMouseDown={(e) => onResizeStart(e, id)}
+        />
+      ))}
     </div>
   );
 }
