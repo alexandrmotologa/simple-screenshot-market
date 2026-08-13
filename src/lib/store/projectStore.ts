@@ -6,7 +6,7 @@ import { DEFAULT_TEMPLATES } from "@/lib/templates";
 
 interface ProjectStore {
   projects: Project[];
-  createProject: (templateId: string | null, name: string) => Project;
+  createProject: (templateId: string | null, name: string, platforms?: { ios: boolean; android: boolean }) => Project;
   updateProject: (id: string, updates: Partial<Project>) => void;
   deleteProject: (id: string) => void;
   duplicateProject: (id: string) => Project;
@@ -19,100 +19,95 @@ export const useProjectStore = create<ProjectStore>()(
     (set, get) => ({
       projects: [],
 
-      createProject: (templateId, name) => {
+      createProject: (templateId, name, platforms = { ios: true, android: true }) => {
         const template = templateId
           ? DEFAULT_TEMPLATES.find((t) => t.id === templateId)
           : null;
 
-        const defaultIosScreen: Screen = {
-          id: nanoid(),
-          name: "Screen 1",
-          width: 1290,
-          height: 2796,
-          background: template?.screens[0]?.background ?? {
-            type: "gradient",
-            gradient: {
-              direction: "to-br",
-              stops: [
-                { color: "#6366f1", position: 0 },
-                { color: "#8b5cf6", position: 100 },
-              ],
-            },
-          },
-          layers: (template?.screens[0]?.layers ?? []).map((l) => ({
-            ...l,
-            id: nanoid(),
-          })) as Layer[],
-        };
+        const baseScreens = template?.screens && template.screens.length > 0
+          ? template.screens
+          : [
+              {
+                id: "default",
+                background: {
+                  type: "gradient",
+                  gradient: {
+                    direction: "to-br",
+                    stops: [
+                      { color: "#6366f1", position: 0 },
+                      { color: "#8b5cf6", position: 100 },
+                    ],
+                  },
+                },
+                layers: [],
+              } as any
+            ];
 
-        const iosSet: ScreenSet = {
-          id: nanoid(),
-          store: "ios",
-          preset: {
-            name: 'iPhone 6.7"',
+        const generateScreens = (prefix: string): Screen[] => {
+          return baseScreens.map((ts, index) => ({
+            id: nanoid(),
+            name: `Screen ${index + 1}`,
             width: 1290,
             height: 2796,
+            background: { ...ts.background },
+            layers: (ts.layers ?? []).map((l: any) => ({
+              ...l,
+              id: nanoid(),
+            })) as Layer[],
+          }));
+        };
+
+        const screenSets: ScreenSet[] = [];
+
+        if (platforms.ios) {
+          screenSets.push({
+            id: nanoid(),
             store: "ios",
-            description: "App Store",
-          },
-          mockup: {
-            device: "iphone-16-pro",
-            color: "black",
-            showFrame: true,
-            showReflection: false,
-            showShadow: true,
-          },
-          screens: [defaultIosScreen],
-        };
-
-        const defaultAndroidScreen: Screen = {
-          id: nanoid(),
-          name: "Screen 1",
-          width: 1290,
-          height: 2796,
-          background: template?.screens[0]?.background ?? {
-            type: "gradient",
-            gradient: {
-              direction: "to-br",
-              stops: [
-                { color: "#6366f1", position: 0 },
-                { color: "#8b5cf6", position: 100 },
-              ],
+            preset: {
+              name: 'iPhone 6.7"',
+              width: 1290,
+              height: 2796,
+              store: "ios",
+              description: "App Store",
             },
-          },
-          layers: (template?.screens[0]?.layers ?? []).map((l) => ({
-            ...l,
+            mockup: {
+              device: "iphone-16-pro",
+              color: "black",
+              showFrame: true,
+              showReflection: true,
+              showShadow: true,
+            },
+            screens: generateScreens("ios"),
+          });
+        }
+
+        if (platforms.android) {
+          screenSets.push({
             id: nanoid(),
-          })) as Layer[],
-        };
-
-        const androidSet: ScreenSet = {
-          id: nanoid(),
-          store: "android",
-          deviceId: "pixel-9-pro-xl",
-          preset: {
-            name: 'Android 6.7"',
-            width: 1290,
-            height: 2796,
             store: "android",
-            description: "Google Play — standard portrait",
-          },
-          mockup: {
-            device: "pixel-9-pro-xl",
-            color: "black",
-            showFrame: true,
-            showReflection: false,
-            showShadow: true,
-          },
-          screens: [defaultAndroidScreen],
-        };
-
+            preset: {
+              name: 'Android 6.7"',
+              width: 1290,
+              height: 2796,
+              store: "android",
+              description: "Google Play — standard portrait",
+            },
+            mockup: {
+              device: "pixel-9-pro-xl",
+              color: "black",
+              showFrame: true,
+              showReflection: true,
+              showShadow: true,
+            },
+            screens: generateScreens("android"),
+          });
+        }
 
         const project: Project = {
           id: nanoid(),
           name,
           templateId,
-          screenSets: [iosSet, androidSet],
+          screenSets,
           createdAt: Date.now(),
           updatedAt: Date.now(),
         };

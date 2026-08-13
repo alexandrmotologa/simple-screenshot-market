@@ -292,6 +292,16 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
       else if (layer.type === "screenshot") {
         const sl = layer as ScreenshotLayer;
         const { x, y, width: w, height: h, cornerRadius: r = 0 } = sl;
+        const mockup = screenSet.mockup;
+        const hasFrame = sl.showDeviceFrame && mockup?.showFrame !== false;
+        
+        // Frame dimensions
+        const bezel = hasFrame ? Math.min(w, h) * 0.035 : 0;
+        const innerX = x + bezel;
+        const innerY = y + bezel;
+        const innerW = w - bezel * 2;
+        const innerH = h - bezel * 2;
+        const innerR = Math.max(0, r - bezel);
 
         // When hideScreenshots is active, show a subtle dimmed placeholder instead
         if (hideScreenshots) {
@@ -310,33 +320,67 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         }
 
         // Drop shadow
-        if (sl.shadow) {
+        if (sl.shadow && mockup?.showShadow !== false) {
           ctx.shadowBlur = sl.shadow.blur;
           ctx.shadowColor = sl.shadow.color;
           ctx.shadowOffsetX = sl.shadow.offsetX;
           ctx.shadowOffsetY = sl.shadow.offsetY;
         }
 
-        // Clip to rounded rect
-        ctx.beginPath();
-        if (r > 0) {
-          ctx.roundRect(x, y, w, h, r);
-        } else {
-          ctx.rect(x, y, w, h);
+        // 1. Draw outer device frame
+        if (hasFrame) {
+          ctx.beginPath();
+          if (r > 0) ctx.roundRect(x, y, w, h, r);
+          else ctx.rect(x, y, w, h);
+          
+          if (mockup.borderStyle === "clay") {
+            ctx.fillStyle = mockup.color === "black" ? "#1c1c1e" : mockup.color === "white" ? "#f5f5f7" : mockup.color === "titanium" ? "#a19e95" : mockup.color;
+          } else if (mockup.borderStyle === "glass") {
+            const grad = ctx.createLinearGradient(x, y, x + w, y + h);
+            grad.addColorStop(0, "rgba(255,255,255,0.4)");
+            grad.addColorStop(1, "rgba(255,255,255,0.1)");
+            ctx.fillStyle = grad;
+            ctx.strokeStyle = "rgba(255,255,255,0.5)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          } else {
+            // solid/realistic
+            ctx.fillStyle = mockup.color === "black" ? "#000000" : mockup.color === "white" ? "#e5e5ea" : mockup.color === "titanium" ? "#8c8c88" : mockup.color;
+          }
+          ctx.fill();
+          
+          // Draw frame rim highlight (inner shadow effect)
+          if (mockup.borderStyle !== "clay") {
+            ctx.beginPath();
+            if (r > 0) ctx.roundRect(x + 2, y + 2, w - 4, h - 4, r - 2);
+            else ctx.rect(x + 2, y + 2, w - 4, h - 4);
+            ctx.strokeStyle = mockup.color === "white" ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.15)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
         }
-        ctx.clip();
 
-        // Reset shadow after clip path
+        // Reset shadow after drawing frame
         ctx.shadowBlur = 0;
         ctx.shadowColor = "transparent";
 
+        // Clip to inner screen rect
+        ctx.save();
+        ctx.beginPath();
+        if (innerR > 0) {
+          ctx.roundRect(innerX, innerY, innerW, innerH, innerR);
+        } else {
+          ctx.rect(innerX, innerY, innerW, innerH);
+        }
+        ctx.clip();
+
+        // 2. Draw Screenshot image
         if (sl.src) {
-          // Has image — draw it
           try {
             const img = await loadImage(sl.src);
             if (sl.objectFit === "cover") {
               const imgRatio = img.width / img.height;
-              const zoneRatio = w / h;
+              const zoneRatio = innerW / innerH;
               let sx = 0, sy = 0, sw = img.width, sh = img.height;
               if (imgRatio > zoneRatio) {
                 sw = img.height * zoneRatio;
@@ -345,17 +389,86 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
                 sh = img.width / zoneRatio;
                 sy = (img.height - sh) / 2;
               }
-              ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+              ctx.drawImage(img, sx, sy, sw, sh, innerX, innerY, innerW, innerH);
             } else {
-              ctx.drawImage(img, x, y, w, h);
+              ctx.drawImage(img, innerX, innerY, innerW, innerH);
             }
           } catch {
-            drawPlaceholder(ctx, x, y, w, h, sl.label);
+            drawPlaceholder(ctx, innerX, innerY, innerW, innerH, sl.label);
           }
         } else {
-          // No image yet — show premium placeholder
-          drawPlaceholder(ctx, x, y, w, h, sl.label);
+          drawPlaceholder(ctx, innerX, innerY, innerW, innerH, sl.label);
         }
+
+        // 3. Draw Notch / Dynamic Island
+        if (hasFrame) {
+          ctx.fillStyle = "#000000";
+          const showIsland = mockup.dynamicIsland ?? (mockup.device.includes("iphone-16") || mockup.device.includes("iphone-15"));
+          const showNotch = !showIsland && (mockup.notch !== false);
+          
+          if (showIsland) {
+            // Dynamic Island
+            const islandW = innerW * 0.32;
+            const islandH = islandW * 0.3;
+            const islandX = innerX + (innerW - islandW) / 2;
+            const islandY = innerY + bezel * 0.6;
+            ctx.beginPath();
+            ctx.roundRect(islandX, islandY, islandW, islandH, islandH / 2);
+            ctx.fill();
+            // camera lens
+            ctx.fillStyle = "#111";
+            ctx.beginPath();
+            ctx.arc(islandX + islandW - islandH * 0.6, islandY + islandH / 2, islandH * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#1a1a24";
+            ctx.beginPath();
+            ctx.arc(islandX + islandH * 0.8, islandY + islandH / 2, islandH * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+          } else if (showNotch) {
+            if (mockup.device.includes("pixel") || mockup.device.includes("s24")) {
+              // Hole Punch
+              const holeR = innerW * 0.025;
+              const holeX = innerX + innerW / 2;
+              const holeY = innerY + holeR * 2.5;
+              ctx.beginPath();
+              ctx.arc(holeX, holeY, holeR, 0, Math.PI * 2);
+              ctx.fill();
+            } else {
+              // Classic Notch
+              const notchW = innerW * 0.45;
+              const notchH = innerW * 0.08;
+              const notchX = innerX + (innerW - notchW) / 2;
+              ctx.beginPath();
+              ctx.moveTo(notchX - notchH, innerY);
+              ctx.quadraticCurveTo(notchX, innerY, notchX, innerY + notchH * 0.4);
+              ctx.lineTo(notchX, innerY + notchH - notchH * 0.5);
+              ctx.quadraticCurveTo(notchX, innerY + notchH, notchX + notchH, innerY + notchH);
+              ctx.lineTo(notchX + notchW - notchH, innerY + notchH);
+              ctx.quadraticCurveTo(notchX + notchW, innerY + notchH, notchX + notchW, innerY + notchH - notchH * 0.5);
+              ctx.lineTo(notchX + notchW, innerY + notchH * 0.4);
+              ctx.quadraticCurveTo(notchX + notchW, innerY, notchX + notchW + notchH, innerY);
+              ctx.fill();
+            }
+          }
+        }
+
+        // 4. Draw Reflection Overlay
+        if (hasFrame && mockup.reflection) {
+          const reflGrad = ctx.createLinearGradient(innerX, innerY, innerX + innerW, innerY + innerH);
+          reflGrad.addColorStop(0, "rgba(255,255,255,0.15)");
+          reflGrad.addColorStop(0.3, "rgba(255,255,255,0.05)");
+          reflGrad.addColorStop(0.5, "transparent");
+          reflGrad.addColorStop(1, "transparent");
+          ctx.fillStyle = reflGrad;
+          ctx.beginPath();
+          ctx.moveTo(innerX, innerY);
+          ctx.lineTo(innerX + innerW, innerY);
+          ctx.lineTo(innerX, innerY + innerH);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        ctx.restore(); // end clip inner
       }
 
       // ── SHAPE ─────────────────────────────────────────────────────────────

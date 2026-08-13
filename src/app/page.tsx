@@ -144,7 +144,9 @@ function ProjectCard({
       </div>
 
       {/* Hover actions */}
-      <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-1 group-hover:translate-y-0">
+      <div 
+        className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-1 group-hover:translate-y-0 z-20"
+      >
         <button
           type="button"
           onClick={(e) => onDuplicate(e, project.id)}
@@ -176,8 +178,8 @@ function ProjectCard({
       </div>
 
       {/* Open button on hover */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200">
-        <div className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-lg shadow-primary/40 translate-y-2 group-hover:translate-y-0 transition-transform duration-200">
+      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-10">
+        <div className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-lg shadow-primary/40 translate-y-2 group-hover:translate-y-0 transition-transform duration-200 pointer-events-auto">
           Open Editor
           <ArrowRight className="w-3.5 h-3.5" />
         </div>
@@ -196,12 +198,14 @@ export default function DashboardPage() {
   const [sortBy, setSortBy] = useState<"updated" | "created" | "name">("updated");
 
   const handleDelete = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
     e.stopPropagation();
     setDeletingId(id);
     setTimeout(() => { deleteProject(id); setDeletingId(null); }, 300);
   };
 
   const handleDuplicate = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
     e.stopPropagation();
     duplicateProject(id);
   };

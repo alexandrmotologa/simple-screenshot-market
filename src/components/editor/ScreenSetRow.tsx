@@ -175,9 +175,7 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
                   key={device.id}
                   className={cn("text-xs gap-2 cursor-pointer", screenSet.deviceId === device.id && "text-primary bg-primary/5")}
                   onClick={() => {
-                    updateDevice(screenSet.id, device.id, {
-                      width: device.width, height: device.height, name: device.name,
-                    });
+                    updateDevice(screenSet.id, device.id);
                     useEditorStore.getState().recordHistory();
                   }}
                 >

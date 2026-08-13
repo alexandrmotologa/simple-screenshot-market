@@ -121,6 +121,7 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
   const { createProject } = useProjectStore();
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [projectName, setProjectName] = useState("My App Screenshots");
+  const [platforms, setPlatforms] = useState<{ ios: boolean; android: boolean }>({ ios: true, android: true });
   const [creating, setCreating] = useState(false);
 
   // We filter out "blank" from the main list so we can append it at the bottom manually
@@ -129,10 +130,10 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
   }, []);
 
   const handleCreate = async () => {
-    if (!projectName.trim() || !selectedTemplate) return;
+    if (!projectName.trim() || !selectedTemplate || (!platforms.ios && !platforms.android)) return;
     setCreating(true);
     try {
-      const project = createProject(selectedTemplate, projectName.trim());
+      const project = createProject(selectedTemplate, projectName.trim(), platforms);
       onClose();
       onCreated(project.id);
     } finally {
@@ -247,6 +248,28 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
                 onKeyDown={(e) => { if (e.key === "Enter") handleCreate(); }}
               />
             </div>
+            
+            <div className="w-px h-10 bg-border/50 mx-2" />
+            
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Platforms</label>
+              <div className="flex gap-2">
+                <Button
+                  variant={platforms.ios ? "default" : "outline"}
+                  onClick={() => setPlatforms(prev => ({ ...prev, ios: !prev.ios }))}
+                  className="h-10 px-4 font-medium"
+                >
+                  iOS
+                </Button>
+                <Button
+                  variant={platforms.android ? "default" : "outline"}
+                  onClick={() => setPlatforms(prev => ({ ...prev, android: !prev.android }))}
+                  className="h-10 px-4 font-medium"
+                >
+                  Android
+                </Button>
+              </div>
+            </div>
           </div>
           
           <div className="flex items-center gap-3">
@@ -259,7 +282,7 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
             </Button>
             <Button
               onClick={handleCreate}
-              disabled={!projectName.trim() || !selectedTemplate || creating}
+              disabled={!projectName.trim() || !selectedTemplate || (!platforms.ios && !platforms.android) || creating}
               className="h-10 px-8 font-semibold gap-2 shadow-lg shadow-primary/20"
             >
               {creating ? (

@@ -170,8 +170,12 @@ export function PropertiesPanel() {
             )}
           </div>
         ) : (
-          /* ——— Background properties ——— */
-          <div className="p-4">
+          /* ——— Background properties & Checklist ——— */
+          <div className="p-4 space-y-6">
+            {screen && (
+              <ScreenshotChecklist screen={screen} />
+            )}
+            <Separator />
             {screen && (
               <BackgroundProperties
                 background={screen.background}
@@ -181,6 +185,64 @@ export function PropertiesPanel() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function ScreenshotChecklist({ screen }: { screen: import("@/lib/types").Screen }) {
+  const screenshotLayers = screen.layers.filter((l) => l.type === "screenshot") as import("@/lib/types").ScreenshotLayer[];
+  const hasScreenshotLayers = screenshotLayers.length > 0;
+  const allScreenshotsFilled = hasScreenshotLayers && screenshotLayers.every((l) => !!l.src);
+  
+  const hasText = screen.layers.some((l) => l.type === "text");
+  const hasBackground = screen.background.type !== "solid" || (screen.background.color?.toLowerCase() !== "#ffffff" && screen.background.color?.toLowerCase() !== "#fff");
+
+  return (
+    <div className="space-y-3">
+      <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Screenshot Checklist</p>
+      
+      <div className="space-y-2">
+        <ChecklistItem 
+          label="Add your app screenshots" 
+          checked={allScreenshotsFilled} 
+          disabled={!hasScreenshotLayers}
+        />
+        <ChecklistItem 
+          label="Create a background" 
+          checked={hasBackground} 
+        />
+        <ChecklistItem 
+          label="Write a value headline" 
+          checked={hasText} 
+        />
+        <ChecklistItem 
+          label="Build a full set" 
+          checked={true} // For now, assuming they have a set
+        />
+      </div>
+    </div>
+  );
+}
+
+function ChecklistItem({ label, checked, disabled }: { label: string; checked: boolean; disabled?: boolean }) {
+  return (
+    <div className={cn("flex items-center gap-2", disabled && "opacity-50")}>
+      <div className={cn(
+        "w-4 h-4 rounded-full flex items-center justify-center shrink-0 border",
+        checked 
+          ? "bg-primary border-primary text-primary-foreground" 
+          : "border-border/60 bg-secondary/50 text-transparent"
+      )}>
+        <svg viewBox="0 0 24 24" fill="none" className="w-2.5 h-2.5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <span className={cn(
+        "text-xs",
+        checked ? "text-muted-foreground line-through" : "text-foreground font-medium"
+      )}>
+        {label}
+      </span>
     </div>
   );
 }

@@ -17,6 +17,7 @@ import { ExportModal } from "@/components/editor/ExportModal";
 import { LanguageBar } from "@/components/editor/LanguageBar";
 import { AICaptionsModal } from "@/components/editor/AICaptionsModal";
 import { GifExportModal } from "@/components/editor/GifExportModal";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { ScreenshotLayer } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -188,12 +189,18 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
         <Separator orientation="vertical" className="h-4" />
 
         {/* Project name */}
-        <span
-          className="text-sm font-medium tracking-tight truncate max-w-40"
-          suppressHydrationWarning
-        >
-          {project?.name ?? "Untitled"}
-        </span>
+        <input
+          type="text"
+          value={project?.name ?? ""}
+          onChange={(e) => {
+            if (project) {
+              useProjectStore.getState().updateProject(project.id, { name: e.target.value });
+            }
+          }}
+          className="text-sm font-medium tracking-tight truncate max-w-48 bg-transparent border-none outline-none focus:ring-1 focus:ring-primary/50 px-1 py-0.5 rounded transition-all hover:bg-secondary/50"
+          placeholder="Untitled Project"
+          spellCheck={false}
+        />
 
         <div className="flex-1" />
 
@@ -262,6 +269,9 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
         <IconBtn title="Share (coming soon)">
           <Share2 className="w-3.5 h-3.5" />
         </IconBtn>
+
+        {/* Theme Toggle */}
+        <ThemeToggle />
 
         {/* GIF Export */}
         <button

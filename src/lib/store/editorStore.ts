@@ -71,7 +71,7 @@ interface EditorStore {
   // Actions: mockup
   updateMockup: (setId: string, updates: Partial<MockupSettings>) => void;
   // Actions: device
-  updateDevice: (setId: string, deviceId: string, preset: { width: number; height: number; name: string }) => void;
+  updateDevice: (setId: string, deviceId: string) => void;
 
   // Actions: UI
   setZoom: (zoom: number) => void;
@@ -562,17 +562,16 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     get().recordHistory();
   },
 
-  updateDevice: (setId, deviceId, preset) => {
+  updateDevice: (setId, deviceId) => {
     set((state) => ({
-      screenSets: state.screenSets.map((ss) =>
-        ss.id !== setId
-          ? ss
-          : {
-              ...ss,
-              deviceId,
-              preset: { ...ss.preset, width: preset.width, height: preset.height, name: preset.name },
-            }
-      ),
+      screenSets: state.screenSets.map((ss) => {
+        if (ss.id !== setId) return ss;
+        return {
+          ...ss,
+          deviceId,
+          mockup: { ...ss.mockup, device: deviceId },
+        };
+      }),
     }));
     get().recordHistory();
   },
