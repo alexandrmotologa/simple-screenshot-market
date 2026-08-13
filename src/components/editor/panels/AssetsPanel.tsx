@@ -66,6 +66,7 @@ export function AssetsPanel() {
     if (existing) {
       // Update existing zone
       updateLayer(set.id, screen.id, existing.id, { src: asset.dataUrl } as Partial<ScreenshotLayer>);
+      useEditorStore.getState().recordHistory();
     } else {
       // Add new screenshot layer centered
       const w = Math.round(screen.width * 0.84);
@@ -100,6 +101,7 @@ export function AssetsPanel() {
           }
         }
       }
+      useEditorStore.getState().recordHistory();
     } finally {
       setTimeout(() => setApplyingAll(false), 800);
     }

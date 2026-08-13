@@ -119,6 +119,7 @@ export function BackgroundPanel() {
                     onChange={(e) =>
                       applyBg({ type: "solid", color: e.target.value })
                     }
+                    onBlur={() => useEditorStore.getState().recordHistory()}
                     className="opacity-0 w-0 h-0"
                   />
                   <div
@@ -141,7 +142,10 @@ export function BackgroundPanel() {
                     {row.map((color) => (
                       <button
                         key={color}
-                        onClick={() => applyBg({ type: "solid", color })}
+                        onClick={() => {
+                          applyBg({ type: "solid", color });
+                          useEditorStore.getState().recordHistory();
+                        }}
                         className={cn(
                           "flex-1 h-7 rounded-lg ring-1 transition-all hover:scale-105",
                           bg?.type === "solid" && bg.color === color
@@ -180,7 +184,7 @@ export function BackgroundPanel() {
                 return (
                   <button
                     key={gp.name}
-                    onClick={() =>
+                    onClick={() => {
                       applyBg({
                         type: "gradient",
                         gradient: {
@@ -190,8 +194,9 @@ export function BackgroundPanel() {
                             { color: gp.to, position: 100 },
                           ],
                         },
-                      })
-                    }
+                      });
+                      useEditorStore.getState().recordHistory();
+                    }}
                     className={cn(
                       "rounded-xl h-16 flex items-end p-2 transition-all ring-1 hover:scale-[1.02]",
                       isActive ? "ring-primary ring-2" : "ring-border"
@@ -218,7 +223,7 @@ export function BackgroundPanel() {
                           const newStops = [...(bg.gradient?.stops ?? [])];
                           newStops[i] = { ...newStops[i], color: e.target.value };
                           applyBg({ type: "gradient", gradient: { ...bg.gradient!, stops: newStops } });
-                        }} />
+                        }} onBlur={() => useEditorStore.getState().recordHistory()} />
                         <div className="w-full h-full" style={{ background: stop.color }} />
                       </div>
                       <span className="text-[9px] text-muted-foreground">{i === 0 ? "Start" : "End"}</span>
@@ -238,7 +243,7 @@ export function BackgroundPanel() {
                 <button
                   key={mp.name}
                   type="button"
-                  onClick={() =>
+                  onClick={() => {
                     applyBg({
                       type: "mesh",
                       mesh: {
@@ -247,8 +252,9 @@ export function BackgroundPanel() {
                         bottomLeft: mp.bl,
                         bottomRight: mp.br,
                       },
-                    })
-                  }
+                    });
+                    useEditorStore.getState().recordHistory();
+                  }}
                   className={cn(
                     "rounded-xl h-14 ring-1 transition-all hover:scale-105 hover:ring-2 hover:ring-primary overflow-hidden",
                     bg?.type === "mesh" &&
@@ -289,6 +295,7 @@ export function BackgroundPanel() {
                               mesh: { ...bg.mesh!, [key]: e.target.value },
                             })
                           }
+                          onBlur={() => useEditorStore.getState().recordHistory()}
                         />
                         <div
                           className="w-full h-full"
@@ -321,6 +328,7 @@ export function BackgroundPanel() {
                   delete newBg.pattern;
                 }
                 applyBg(newBg as Parameters<typeof applyBg>[0]);
+                useEditorStore.getState().recordHistory();
               }}
             />
           </div>
@@ -335,6 +343,7 @@ export function BackgroundPanel() {
                       setPatternType(pt);
                       if (!bg) return;
                       applyBg({ ...bg, pattern: { type: pt, color: "#ffffff", opacity: patternOpacity } });
+                      useEditorStore.getState().recordHistory();
                     }}
                     className={cn(
                       "flex-1 py-1 rounded-lg text-[10px] font-medium transition-all capitalize",
@@ -358,6 +367,8 @@ export function BackgroundPanel() {
                     if (!bg) return;
                     applyBg({ ...bg, pattern: { type: patternType, color: "#ffffff", opacity: v } });
                   }}
+                  onMouseUp={() => useEditorStore.getState().recordHistory()}
+                  onTouchEnd={() => useEditorStore.getState().recordHistory()}
                   className="flex-1 accent-indigo-500"
                 />
                 <span className="text-[10px] font-mono text-muted-foreground w-8 shrink-0">

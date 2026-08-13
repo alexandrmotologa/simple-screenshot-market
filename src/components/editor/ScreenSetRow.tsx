@@ -19,6 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Switch } from "@/components/ui/switch";
 
 interface ScreenSetRowProps {
   screenSet: ScreenSet;
@@ -72,10 +73,30 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
     addScreen(screenSet.id);
   };
 
-  const toggleFrame      = () => updateMockup(screenSet.id, { showFrame: !isFrameOn });
-  const toggleShadow     = () => updateMockup(screenSet.id, { showShadow: !isShadowOn });
-  const toggleSquircle   = () => updateMockup(screenSet.id, { squircle: !isSquircle });
-  const toggleScreenshots = () => updateMockup(screenSet.id, { showScreenshots: !isShowingScreenshots });
+  const toggleFrame      = () => { updateMockup(screenSet.id, { showFrame: !isFrameOn }); useEditorStore.getState().recordHistory(); }
+  const toggleShadow     = () => { updateMockup(screenSet.id, { showShadow: !isShadowOn }); useEditorStore.getState().recordHistory(); }
+  const toggleSquircle   = () => { updateMockup(screenSet.id, { squircle: !isSquircle }); useEditorStore.getState().recordHistory(); }
+  const toggleScreenshots = () => { updateMockup(screenSet.id, { showScreenshots: !isShowingScreenshots }); useEditorStore.getState().recordHistory(); }
+
+  // Border style logic
+  // "Borderless" = !showFrame && !squircle
+  // "Minimal" = squircle && !showFrame
+  // "Realistic" = showFrame
+  const borderStyle = isFrameOn ? "Realistic" : isSquircle ? "Minimal" : "Borderless";
+  const setBorderStyle = (style: "Borderless" | "Minimal" | "Realistic") => {
+    if (style === "Borderless") updateMockup(screenSet.id, { showFrame: false, squircle: false });
+    else if (style === "Minimal") updateMockup(screenSet.id, { showFrame: false, squircle: true });
+    else if (style === "Realistic") updateMockup(screenSet.id, { showFrame: true, squircle: false });
+    useEditorStore.getState().recordHistory();
+  };
+
+  const isNotchOn = screenSet.mockup?.notch !== false;
+  const isIslandOn = screenSet.mockup?.dynamicIsland === true;
+  const isReflectionOn = screenSet.mockup?.reflection === true;
+
+  const toggleNotch = () => { updateMockup(screenSet.id, { notch: !isNotchOn }); useEditorStore.getState().recordHistory(); }
+  const toggleIsland = () => { updateMockup(screenSet.id, { dynamicIsland: !isIslandOn }); useEditorStore.getState().recordHistory(); }
+  const toggleReflection = () => { updateMockup(screenSet.id, { reflection: !isReflectionOn }); useEditorStore.getState().recordHistory(); }
 
   // Sync mockup settings to ALL sets
   const syncAll = () => {
@@ -100,6 +121,7 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
           updateLayer(screenSet.id, screen.id, zone.id, { src } as Partial<ScreenshotLayer>);
         }
       }
+      useEditorStore.getState().recordHistory();
     };
     reader.readAsDataURL(file);
   };
@@ -137,10 +159,10 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
 
         {/* Device model dropdown */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary/70 hover:bg-secondary text-xs text-muted-foreground hover:text-foreground transition-colors outline-none max-w-[140px]">
-            <Smartphone className="w-3 h-3 shrink-0" />
-            <span className="truncate">{currentDevice?.name ?? "Select device"}</span>
-            <ChevronDown className="w-3 h-3 shrink-0" />
+          <DropdownMenuTrigger className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/60 bg-card hover:bg-secondary text-[13px] text-foreground transition-colors outline-none max-w-[200px]">
+            <Smartphone className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+            <span className="truncate">{currentDevice?.name ?? "Select device"} &middot; {currentDevice?.width} × {currentDevice?.height}</span>
+            <ChevronDown className="w-3.5 h-3.5 shrink-0 text-muted-foreground ml-1" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-60 max-h-80 overflow-y-auto">
             <DropdownMenuGroup>
@@ -152,9 +174,12 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
                 <DropdownMenuItem
                   key={device.id}
                   className={cn("text-xs gap-2 cursor-pointer", screenSet.deviceId === device.id && "text-primary bg-primary/5")}
-                  onClick={() => updateDevice(screenSet.id, device.id, {
-                    width: device.width, height: device.height, name: device.name,
-                  })}
+                  onClick={() => {
+                    updateDevice(screenSet.id, device.id, {
+                      width: device.width, height: device.height, name: device.name,
+                    });
+                    useEditorStore.getState().recordHistory();
+                  }}
                 >
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{device.name}</p>
@@ -167,15 +192,40 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
           </DropdownMenuContent>
         </DropdownMenu>
 
+        {/* Border Style dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/60 bg-card hover:bg-secondary text-[13px] text-foreground transition-colors outline-none">
+            <Smartphone className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+            <span>{borderStyle}</span>
+            <ChevronDown className="w-3.5 h-3.5 shrink-0 text-muted-foreground ml-1" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-40">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="text-xs">Frame Style</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {(["Borderless", "Minimal", "Realistic"] as const).map((style) => (
+                <DropdownMenuItem
+                  key={style}
+                  className={cn("text-xs gap-2 cursor-pointer", borderStyle === style && "text-primary bg-primary/5")}
+                  onClick={() => setBorderStyle(style)}
+                >
+                  {style}
+                  {borderStyle === style && <span className="ml-auto text-primary">✓</span>}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         {/* Color picker dropdown */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-secondary/70 hover:bg-secondary text-xs text-muted-foreground hover:text-foreground transition-colors outline-none">
+          <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/60 bg-card hover:bg-secondary text-[13px] text-foreground transition-colors outline-none">
             <span
-              className="w-3.5 h-3.5 rounded-full border border-border/60 shrink-0"
+              className="w-4 h-4 rounded-full border border-border/60 shrink-0 shadow-inner"
               style={{ background: getHex(currentColorName) }}
             />
             <span className="max-w-16 truncate">{currentColorName}</span>
-            <ChevronDown className="w-3 h-3" />
+            <ChevronDown className="w-3.5 h-3.5 text-muted-foreground ml-1" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-44">
             <DropdownMenuGroup>
@@ -185,7 +235,10 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
                 <DropdownMenuItem
                   key={colorName}
                   className={cn("text-xs gap-2 cursor-pointer", currentColorName === colorName && "text-primary bg-primary/5")}
-                  onClick={() => updateMockup(screenSet.id, { color: colorName })}
+                  onClick={() => {
+                    updateMockup(screenSet.id, { color: colorName });
+                    useEditorStore.getState().recordHistory();
+                  }}
                 >
                   <span
                     className="w-4 h-4 rounded-full border border-border/60 shrink-0"
@@ -199,56 +252,45 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Divider */}
-        <div className="h-5 w-px bg-border/50 mx-0.5" />
+        {/* Toggles Group */}
+        <div className="flex items-center gap-4 ml-2">
+          {/* Notch toggle */}
+          <label className="flex items-center gap-2 cursor-pointer" title="Show Notch">
+            <div className="w-5 h-5 flex items-center justify-center text-muted-foreground">
+              {/* Custom SVG for notch */}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="4" y="2" width="16" height="20" rx="4" />
+                <path d="M8 2v1a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V2" />
+              </svg>
+            </div>
+            <Switch checked={isNotchOn} onCheckedChange={toggleNotch} />
+          </label>
 
-        {/* Frame toggle */}
-        <button
-          type="button"
-          title={isFrameOn ? "Hide device frame" : "Show device frame"}
-          onClick={toggleFrame}
-          className={cn(
-            "flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all",
-            isFrameOn
-              ? "bg-primary/12 text-primary ring-1 ring-primary/30"
-              : "bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary"
-          )}
-        >
-          <Square className="w-3 h-3" />
-          Frame
-        </button>
+          {/* Dynamic Island toggle */}
+          <label className="flex items-center gap-2 cursor-pointer" title="Show Dynamic Island">
+            <div className="w-5 h-5 flex items-center justify-center text-muted-foreground">
+              {/* Custom SVG for dynamic island */}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="4" y="2" width="16" height="20" rx="4" />
+                <rect x="9" y="5" width="6" height="2.5" rx="1.25" fill="currentColor" stroke="none" />
+              </svg>
+            </div>
+            <Switch checked={isIslandOn} onCheckedChange={toggleIsland} />
+          </label>
 
-        {/* Shadow toggle */}
-        <button
-          type="button"
-          title={isShadowOn ? "Remove shadow" : "Add shadow"}
-          onClick={toggleShadow}
-          className={cn(
-            "flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all",
-            isShadowOn
-              ? "bg-primary/12 text-primary ring-1 ring-primary/30"
-              : "bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary"
-          )}
-        >
-          {isShadowOn ? <Moon className="w-3 h-3" /> : <Sun className="w-3 h-3" />}
-          Shadow
-        </button>
-
-        {/* Squircle toggle */}
-        <button
-          type="button"
-          title={isSquircle ? "Square corners" : "Squircle corners"}
-          onClick={toggleSquircle}
-          className={cn(
-            "flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all",
-            isSquircle
-              ? "bg-primary/12 text-primary ring-1 ring-primary/30"
-              : "bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary"
-          )}
-        >
-          <Circle className="w-3 h-3" />
-          Squircle
-        </button>
+          {/* Reflection toggle */}
+          <label className="flex items-center gap-2 cursor-pointer" title="Show Screen Reflection">
+            <div className="w-5 h-5 flex items-center justify-center text-muted-foreground">
+              {/* Custom SVG for reflection */}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="4" y="2" width="16" height="20" rx="4" />
+                <path d="M6 10l8-8" opacity="0.5" />
+                <path d="M4 14l12-12" opacity="0.5" />
+              </svg>
+            </div>
+            <Switch checked={isReflectionOn} onCheckedChange={toggleReflection} />
+          </label>
+        </div>
 
         {/* Show/Hide Screenshots toggle */}
         <button

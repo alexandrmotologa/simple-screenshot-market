@@ -83,7 +83,7 @@ interface EditorStore {
   redo: () => void;
   canUndo: () => boolean;
   canRedo: () => boolean;
-  pushHistory: () => void;
+  recordHistory: () => void;
 
   // Actions: templates
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -190,7 +190,6 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   clearSelection: () => set({ selectedLayerIds: [], activeLayerId: null }),
 
   addScreen: (setId) => {
-    get().pushHistory();
     set((state) => {
       const sets = state.screenSets.map((ss) => {
         if (ss.id !== setId) return ss;
@@ -210,10 +209,10 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         activeScreenId: newScreen?.id ?? state.activeScreenId,
       };
     });
+    get().recordHistory();
   },
 
   deleteScreen: (setId, screenId) => {
-    get().pushHistory();
     set((state) => {
       const sets = state.screenSets.map((ss) => {
         if (ss.id !== setId) return ss;
@@ -232,6 +231,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
             : state.activeScreenId,
       };
     });
+    get().recordHistory();
   },
 
   updateScreen: (setId, screenId, updates) => {
@@ -259,20 +259,18 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         return { ...ss, screens: reordered };
       }),
     }));
+    get().recordHistory();
   },
 
   updateBackground: (setId, screenId, background) => {
-    get().pushHistory();
     get().updateScreen(setId, screenId, { background });
   },
 
   updateScreenBackground: (setId, screenId, background) => {
-    get().pushHistory();
     get().updateScreen(setId, screenId, { background });
   },
 
   updateAllScreensBackground: (setId, background) => {
-    get().pushHistory();
     set((state) => ({
       screenSets: state.screenSets.map((ss) =>
         ss.id !== setId
@@ -286,7 +284,6 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   addLayer: (setId, screenId, layer) => {
-    get().pushHistory();
     const newLayer = { ...layer, id: nanoid() } as Layer;
     set((state) => ({
       screenSets: state.screenSets.map((ss) =>
@@ -303,6 +300,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       ),
       activeLayerId: newLayer.id,
     }));
+    get().recordHistory();
   },
 
   updateLayer: (setId, screenId, layerId, updates) => {
@@ -329,7 +327,6 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   deleteLayer: (setId, screenId, layerId) => {
-    get().pushHistory();
     set((state) => ({
       screenSets: state.screenSets.map((ss) =>
         ss.id !== setId
@@ -346,6 +343,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       activeLayerId:
         state.activeLayerId === layerId ? null : state.activeLayerId,
     }));
+    get().recordHistory();
   },
 
   reorderLayers: (setId, screenId, layerIds) => {
@@ -365,10 +363,10 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
             }
       ),
     }));
+    get().recordHistory();
   },
 
   duplicateLayer: (setId, screenId, layerId) => {
-    get().pushHistory();
     set((state) => ({
       screenSets: state.screenSets.map((ss) => {
         if (ss.id !== setId) return ss;
@@ -387,12 +385,12 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         };
       }),
     }));
+    get().recordHistory();
   },
 
   deleteSelectedLayers: () => {
     const { activeSetId, activeScreenId, selectedLayerIds } = get();
     if (!activeSetId || !activeScreenId || selectedLayerIds.length === 0) return;
-    get().pushHistory();
     set((state) => ({
       screenSets: state.screenSets.map((ss) =>
         ss.id !== activeSetId ? ss : {
@@ -408,6 +406,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       activeLayerId: null,
       selectedLayerIds: [],
     }));
+    get().recordHistory();
   },
 
   lockLayer: (setId, screenId, layerId, locked) => {
@@ -427,6 +426,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         }
       ),
     }));
+    get().recordHistory();
   },
 
   bringForward: (setId, screenId, layerId) => {
@@ -445,6 +445,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         }
       ),
     }));
+    get().recordHistory();
   },
 
   sendBackward: (setId, screenId, layerId) => {
@@ -463,10 +464,10 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         }
       ),
     }));
+    get().recordHistory();
   },
 
   syncTextToScreens: (setId, srcScreenId, layerIndex) => {
-    get().pushHistory();
     set((state) => ({
       screenSets: state.screenSets.map((ss) => {
         if (ss.id !== setId) return ss;
@@ -490,6 +491,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         };
       }),
     }));
+    get().recordHistory();
   },
 
   updateLayerLocalization: (setId, screenId, layerId, langCode, content) => {
@@ -515,6 +517,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         }
       ),
     }));
+    get().recordHistory();
   },
 
   clearLayerLocalization: (setId, screenId, layerId, langCode) => {
@@ -535,10 +538,10 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         }
       ),
     }));
+    get().recordHistory();
   },
 
   updateMockup: (setId, updates) => {
-    get().pushHistory();
     const DEFAULT_MOCKUP: MockupSettings = {
       device: "iphone-16-pro",
       color: "black",
@@ -556,6 +559,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
             }
       ),
     }));
+    get().recordHistory();
   },
 
   updateDevice: (setId, deviceId, preset) => {
@@ -570,16 +574,25 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
             }
       ),
     }));
+    get().recordHistory();
   },
 
   setZoom: (zoom) => set({ zoom: Math.min(2, Math.max(0.1, zoom)) }),
   toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
   toggleGuides: () => set((state) => ({ showGuides: !state.showGuides })),
 
-  pushHistory: () => {
+  recordHistory: () => {
     const { screenSets, history, historyIndex } = get();
+    // Truncate future history if we are currently undone
     const newHistory = history.slice(0, historyIndex + 1);
-    newHistory.push({ screenSets: JSON.parse(JSON.stringify(screenSets)) });
+    
+    // Check if the current state is identical to the last state in history.
+    // If so, don't create a duplicate entry.
+    const currentStateStr = JSON.stringify(screenSets);
+    const lastHistoryStr = newHistory.length > 0 ? JSON.stringify(newHistory[newHistory.length - 1].screenSets) : null;
+    if (currentStateStr === lastHistoryStr) return;
+
+    newHistory.push({ screenSets: JSON.parse(currentStateStr) });
     if (newHistory.length > MAX_HISTORY) newHistory.shift();
     set({ history: newHistory, historyIndex: newHistory.length - 1 });
   },
@@ -602,8 +615,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   canRedo: () => get().historyIndex < get().history.length - 1,
 
   applyTemplate: (setId, template) => {
-    const { screenSets, pushHistory } = get();
-    pushHistory();
+    const { screenSets } = get();
     set({
       screenSets: screenSets.map((ss) => {
         if (ss.id !== setId) return ss;
@@ -630,11 +642,11 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         return { ...ss, screens: newScreens };
       }),
     });
+    get().recordHistory();
   },
 
   addScreenSet: (store) => {
-    const { screenSets, pushHistory } = get();
-    pushHistory();
+    const { screenSets } = get();
     const isIOS = store === "ios";
     const newId = nanoid();
     const screenId = nanoid();
@@ -675,12 +687,12 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       activeSetId: newId,
       activeScreenId: screenId,
     });
+    get().recordHistory();
   },
 
   removeScreenSet: (setId) => {
-    const { screenSets, activeSetId, pushHistory } = get();
+    const { screenSets, activeSetId } = get();
     if (screenSets.length <= 1) return; // keep at least one set
-    pushHistory();
     const newSets = screenSets.filter((ss) => ss.id !== setId);
     const newActiveSet = activeSetId === setId ? newSets[0] : newSets.find((ss) => ss.id === activeSetId);
     set({
@@ -688,5 +700,6 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       activeSetId: newActiveSet?.id ?? null,
       activeScreenId: newActiveSet?.screens[0]?.id ?? null,
     });
+    get().recordHistory();
   },
 }));

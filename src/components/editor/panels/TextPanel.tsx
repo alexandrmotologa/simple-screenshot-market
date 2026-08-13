@@ -176,7 +176,10 @@ function FontRow() {
           <button
             key={font}
             type="button"
-            onClick={() => updateLayer(set.id, screen.id, layer.id, { fontFamily: font } as Partial<import("@/lib/types").Layer>)}
+            onClick={() => {
+              updateLayer(set.id, screen.id, layer.id, { fontFamily: font } as Partial<import("@/lib/types").Layer>);
+              useEditorStore.getState().recordHistory();
+            }}
             className={cn(
               "text-left px-2.5 py-1.5 rounded-lg text-xs transition-all",
               tl.fontFamily === font

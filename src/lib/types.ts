@@ -230,6 +230,9 @@ export interface MockupSettings {
   squircle?: boolean;
   /** Show/hide screenshots (focus mode) */
   showScreenshots?: boolean;
+  notch?: boolean;
+  dynamicIsland?: boolean;
+  reflection?: boolean;
 }
 
 // Store-specific size presets

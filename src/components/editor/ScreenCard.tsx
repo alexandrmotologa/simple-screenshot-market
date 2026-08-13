@@ -65,6 +65,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
   const saveCaption = () => {
     setEditingCaption(false);
     updateScreen(screenSet.id, screen.id, { caption: captionDraft.trim() });
+    useEditorStore.getState().recordHistory();
   };
 
   const isActiveScreen = activeSetId === screenSet.id && activeScreenId === screen.id;
@@ -634,7 +635,12 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
     } as Parameters<typeof updateLayer>[3]);
   };
 
-  const handleMouseUp = () => { dragRef.current = null; };
+  const handleMouseUp = () => { 
+    if (dragRef.current) {
+      useEditorStore.getState().recordHistory();
+    }
+    dragRef.current = null; 
+  };
 
   // ── Double-click: inline text edit ─────────────────────────────────────────
   const handleDoubleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -699,6 +705,9 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
     };
 
     const onUp = () => {
+      if (resizeRef.current) {
+        useEditorStore.getState().recordHistory();
+      }
       resizeRef.current = null;
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
@@ -776,6 +785,33 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           onMouseLeave={handleMouseUp}
           onDoubleClick={handleDoubleClick}
           onContextMenu={handleContextMenu}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+              const file = e.dataTransfer.files[0];
+              if (!file.type.startsWith("image/")) return;
+              const reader = new FileReader();
+              reader.onload = (ev) => {
+                const src = ev.target?.result as string;
+                if (!src) return;
+                const { x, y } = getCanvasCoords(e as unknown as React.MouseEvent<HTMLCanvasElement>);
+                const hit = hitTest(x, y);
+                if (hit) {
+                  const layer = screen.layers.find((l) => l.id === hit);
+                  if (layer?.type === "screenshot") {
+                    updateLayer(screenSet.id, screen.id, hit, { src } as Partial<Layer>);
+                    useEditorStore.getState().recordHistory();
+                  }
+                }
+              };
+              reader.readAsDataURL(file);
+            }
+          }}
           className={dragRef.current || isScreenshotActive ? "cursor-move" : "cursor-pointer"}
         />
 
@@ -797,6 +833,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
               className="absolute inset-0"
               onClick={() => {
                 updateLayer(screenSet.id, screen.id, editingLayerId, { content: editText } as Partial<Layer>);
+                useEditorStore.getState().recordHistory();
                 setEditingLayerId(null);
               }}
             >
