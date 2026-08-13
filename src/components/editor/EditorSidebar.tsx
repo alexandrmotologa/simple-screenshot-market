@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import {
   Layers, Type, Image as ImageIcon, Square, Flag,
-  Cpu, Upload, Grid3X3, X, Layout, Smile
+  Cpu, Upload, Grid3X3, X, Layout, Smile, Globe, User
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LayersPanel } from "@/components/editor/panels/LayersPanel";
@@ -15,15 +15,19 @@ import { AssetsPanel } from "@/components/editor/panels/AssetsPanel";
 import { BlocksPanel } from "@/components/editor/panels/BlocksPanel";
 import { TemplatesPanel } from "@/components/editor/panels/TemplatesPanel";
 import { StickersPanel } from "@/components/editor/panels/StickersPanel";
+import { LocalizationPanel } from "@/components/editor/panels/LocalizationPanel";
+import { CharactersPanel } from "@/components/editor/panels/CharactersPanel";
 import { cn } from "@/lib/utils";
 
-type PanelId = "layers" | "text" | "background" | "flags" | "brands" | "assets" | "blocks" | "templates" | "stickers" | null;
+type PanelId = "layers" | "text" | "background" | "flags" | "brands" | "assets" | "blocks" | "templates" | "stickers" | "languages" | "characters" | null;
 
 const SIDEBAR_TOOLS: { id: PanelId; icon: React.ElementType; label: string }[] = [
   { id: "templates", icon: Layout, label: "Templates" },
   { id: "layers", icon: Layers, label: "Layers" },
   { id: "text", icon: Type, label: "Text" },
   { id: "background", icon: Grid3X3, label: "Background" },
+  { id: "languages", icon: Globe, label: "Languages" },
+  { id: "characters", icon: User, label: "Characters" },
   { id: "stickers", icon: Smile, label: "Stickers" },
   { id: "blocks", icon: Square, label: "Block Elements" },
   { id: "assets", icon: Upload, label: "My Screenshots" },
@@ -41,6 +45,8 @@ const PANEL_TITLES: Record<NonNullable<PanelId>, string> = {
   brands: "Brand icons",
   assets: "My Screenshots",
   blocks: "Block element",
+  languages: "Languages & i18n",
+  characters: "Characters",
 };
 
 function renderPanel(panel: NonNullable<PanelId>) {
@@ -54,6 +60,8 @@ function renderPanel(panel: NonNullable<PanelId>) {
     case "brands": return <BrandIconsPanel />;
     case "assets": return <AssetsPanel />;
     case "blocks": return <BlocksPanel />;
+    case "languages": return <LocalizationPanel />;
+    case "characters": return <CharactersPanel />;
   }
 }
 

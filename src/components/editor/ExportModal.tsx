@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { X, Download, Package, Loader2, CheckCircle2, Apple, Smartphone } from "lucide-react";
+import { X, Download, Package, Loader2, CheckCircle2, Apple, Smartphone, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { useProjectStore } from "@/lib/store/projectStore";
+import { useLanguageStore, getLang } from "@/lib/store/languageStore";
 import type { TextLayer, ShapeLayer, ImageLayer } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -15,11 +16,12 @@ interface ExportModalProps {
 }
 
 type ScaleOption = 1 | 2 | 3;
-type FormatOption = "png" | "jpg";
+type FormatOption = "png" | "jpg" | "webp";
 
 export function ExportModal({ projectId, onClose }: ExportModalProps) {
   const { screenSets } = useEditorStore();
   const { projects } = useProjectStore();
+  const { projectLanguages } = useLanguageStore();
   const project = projects.find((p) => p.id === projectId);
   const appName = project?.name ?? "SnapFrame";
 
@@ -28,21 +30,38 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
   const [selectedSets, setSelectedSets] = useState<Set<string>>(
     new Set(screenSets.map((ss) => ss.id))
   );
+  const [selectedLangs, setSelectedLangs] = useState<Set<string>>(
+    new Set(projectLanguages)
+  );
   const [progress, setProgress] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
   const [done, setDone] = useState(false);
   const [exportedCount, setExportedCount] = useState(0);
 
   const activeSets = screenSets.filter((ss) => selectedSets.has(ss.id));
-  const totalScreens = activeSets.reduce((acc, ss) => acc + ss.screens.length, 0);
+  const activeLangs = Array.from(selectedLangs);
+  const screensPerLang = activeSets.reduce((acc, ss) => acc + ss.screens.length, 0);
+  const totalScreens = screensPerLang * Math.max(activeLangs.length, 1);
 
   const toggleSet = (id: string) => {
     setSelectedSets((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
-        if (next.size > 1) next.delete(id); // keep at least 1 selected
+        if (next.size > 1) next.delete(id);
       } else {
         next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleLang = (code: string) => {
+    setSelectedLangs((prev) => {
+      const next = new Set(prev);
+      if (next.has(code)) {
+        if (next.size > 1) next.delete(code); // keep at least 1
+      } else {
+        next.add(code);
       }
       return next;
     });
@@ -188,6 +207,22 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
               });
               ctx.drawImage(img, il.x, il.y, il.width, il.height);
             } catch { /* skip */ }
+          } else if (layer.type === "character") {
+            const cl = layer as import("@/lib/types").CharacterLayer;
+            if (cl.svgContent) {
+              try {
+                const blob = new Blob([cl.svgContent], { type: "image/svg+xml" });
+                const blobUrl = URL.createObjectURL(blob);
+                const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+                  const i = new Image();
+                  i.onload = () => resolve(i);
+                  i.onerror = reject;
+                  i.src = blobUrl;
+                });
+                ctx.drawImage(img, cl.x, cl.y, cl.width, cl.height);
+                URL.revokeObjectURL(blobUrl);
+              } catch { /* skip */ }
+            }
           }
           ctx.restore();
         }
@@ -297,6 +332,38 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
             </div>
           </div>
 
+          {/* Language selection — shown only when project has multiple languages */}
+          {projectLanguages.length > 1 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-2.5">
+                <Globe className="w-3.5 h-3.5 text-muted-foreground" />
+                <p className="text-xs font-medium text-muted-foreground">Languages</p>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {projectLanguages.map((code) => {
+                  const lang = getLang(code);
+                  const isSelected = selectedLangs.has(code);
+                  return (
+                    <button
+                      key={code}
+                      type="button"
+                      onClick={() => toggleLang(code)}
+                      className={cn(
+                        "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all",
+                        isSelected
+                          ? "bg-indigo-500/15 border-indigo-500/40 text-indigo-300"
+                          : "bg-secondary/30 border-border/40 text-muted-foreground hover:bg-secondary/60"
+                      )}
+                    >
+                      <span>{lang?.flag ?? "🌐"}</span>
+                      <span className="uppercase">{code}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Scale + Format row */}
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -321,12 +388,12 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
             <div>
               <p className="text-xs font-medium text-muted-foreground mb-2">Format</p>
               <div className="flex gap-1.5">
-                {(["png", "jpg"] as FormatOption[]).map((f) => (
+                {(["png", "jpg", "webp"] as FormatOption[]).map((f) => (
                   <button
                     key={f}
                     onClick={() => setFormat(f)}
                     className={cn(
-                      "flex-1 py-2 rounded-lg text-sm font-medium uppercase transition-all",
+                      "flex-1 py-2 rounded-lg text-xs font-medium uppercase transition-all",
                       format === f
                         ? "bg-primary text-primary-foreground"
                         : "bg-secondary hover:bg-secondary/60 text-muted-foreground"
@@ -340,11 +407,20 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
           </div>
 
           {/* Export summary */}
-          <div className="px-4 py-3 rounded-xl bg-secondary/50 border border-border/40 text-sm flex items-center justify-between">
-            <span className="text-muted-foreground">{totalScreens} screenshots will be exported</span>
-            <span className="text-xs font-mono text-muted-foreground">
-              {screenSets[0]?.preset?.width ?? "—"} × {screenSets[0]?.preset?.height ?? "—"} px
-            </span>
+          <div className="px-4 py-3 rounded-xl bg-secondary/50 border border-border/40 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-foreground">{totalScreens}</span> screenshots to export
+              </span>
+              <span className="text-xs font-mono text-muted-foreground">
+                {screenSets[0]?.preset?.width ?? "—"} × {screenSets[0]?.preset?.height ?? "—"} px
+              </span>
+            </div>
+            {activeLangs.length > 1 && (
+              <p className="text-[11px] text-muted-foreground mt-1">
+                {screensPerLang} screens × {activeLangs.length} languages → organized in subfolders
+              </p>
+            )}
           </div>
 
           {/* Progress */}

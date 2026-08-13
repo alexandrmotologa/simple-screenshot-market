@@ -42,12 +42,27 @@ const GRADIENT_PRESETS: { name: string; from: string; to: string; dir: GradientD
   { name: "Lava",      from: "#7c2d12", to: "#f97316", dir: "to-tr" },
 ];
 
-type Tab = "color" | "gradient";
+type Tab = "color" | "gradient" | "mesh";
+
+const MESH_PRESETS: { name: string; tl: string; tr: string; bl: string; br: string }[] = [
+  { name: "Nebula",    tl: "#6d28d9", tr: "#1a56db", bl: "#ec4899", br: "#14b8a6" },
+  { name: "Sunrise",   tl: "#f97316", tr: "#fbbf24", bl: "#be185d", br: "#f97316" },
+  { name: "Midnight",  tl: "#1e1b4b", tr: "#0d0d0d", bl: "#134e4a", br: "#1e3a5f" },
+  { name: "Forest",    tl: "#064e3b", tr: "#065f46", bl: "#6366f1", br: "#14b8a6" },
+  { name: "Cotton",    tl: "#fce7f3", tr: "#ede9fe", bl: "#dbeafe", br: "#d1fae5" },
+  { name: "Aurora",    tl: "#134e4a", tr: "#8b5cf6", bl: "#10b981", br: "#3b82f6" },
+  { name: "Candy",     tl: "#ec4899", tr: "#f9a8d4", bl: "#a5b4fc", br: "#8b5cf6" },
+  { name: "Gold",      tl: "#92400e", tr: "#f59e0b", bl: "#dc2626", br: "#fbbf24" },
+  { name: "Ocean",     tl: "#1e3a5f", tr: "#1a56db", bl: "#134e4a", br: "#14b8a6" },
+];
 
 export function BackgroundPanel() {
   const { getActiveSet, getActiveScreen, updateScreenBackground, updateAllScreensBackground } = useEditorStore();
   const [tab, setTab] = useState<Tab>("color");
   const [applyAll, setApplyAll] = useState(false);
+  const [patternEnabled, setPatternEnabled] = useState(false);
+  const [patternType, setPatternType] = useState<"dots" | "lines" | "grid" | "noise">("dots");
+  const [patternOpacity, setPatternOpacity] = useState(0.15);
 
   const set = getActiveSet();
   const screen = getActiveScreen();
@@ -77,7 +92,7 @@ export function BackgroundPanel() {
 
         {/* Tab switcher */}
         <div className="flex rounded-xl bg-secondary p-1 gap-1">
-          {(["color", "gradient"] as Tab[]).map((t) => (
+          {(["color", "gradient", "mesh"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -86,7 +101,7 @@ export function BackgroundPanel() {
                 tab === t ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              {t}
+              {t === "mesh" ? "✦ Mesh" : t === "gradient" ? "Gradient" : "Solid"}
             </button>
           ))}
         </div>
@@ -214,6 +229,145 @@ export function BackgroundPanel() {
             )}
           </div>
         )}
+
+        {tab === "mesh" && (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">4-corner mesh gradient presets</p>
+            <div className="grid grid-cols-3 gap-2">
+              {MESH_PRESETS.map((mp) => (
+                <button
+                  key={mp.name}
+                  type="button"
+                  onClick={() =>
+                    applyBg({
+                      type: "mesh",
+                      mesh: {
+                        topLeft: mp.tl,
+                        topRight: mp.tr,
+                        bottomLeft: mp.bl,
+                        bottomRight: mp.br,
+                      },
+                    })
+                  }
+                  className={cn(
+                    "rounded-xl h-14 ring-1 transition-all hover:scale-105 hover:ring-2 hover:ring-primary overflow-hidden",
+                    bg?.type === "mesh" &&
+                    bg.mesh?.topLeft === mp.tl
+                      ? "ring-primary ring-2"
+                      : "ring-border"
+                  )}
+                  style={{
+                    background: `conic-gradient(from 135deg at 50% 50%, ${mp.tl}, ${mp.tr}, ${mp.br}, ${mp.bl}, ${mp.tl})`,
+                  }}
+                  title={mp.name}
+                >
+                  <span className="text-[9px] font-medium text-white/80 drop-shadow px-1">{mp.name}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Custom 4-corner pickers */}
+            {bg?.type === "mesh" && bg.mesh && (
+              <div className="mt-3 pt-3 border-t border-border/40 space-y-2">
+                <p className="text-xs text-muted-foreground">Custom corners</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    { key: "topLeft",     label: "↖ Top Left"     },
+                    { key: "topRight",    label: "↗ Top Right"    },
+                    { key: "bottomLeft",  label: "↙ Bottom Left"  },
+                    { key: "bottomRight", label: "↘ Bottom Right" },
+                  ] as const).map(({ key, label }) => (
+                    <label key={key} className="flex items-center gap-2 cursor-pointer">
+                      <div className="w-7 h-7 rounded-lg overflow-hidden ring-1 ring-border shrink-0">
+                        <input
+                          type="color"
+                          value={(bg.mesh! as unknown as Record<string, string>)[key] ?? "#000000"}
+                          className="opacity-0 w-0 h-0"
+                          onChange={(e) =>
+                            applyBg({
+                              type: "mesh",
+                              mesh: { ...bg.mesh!, [key]: e.target.value },
+                            })
+                          }
+                        />
+                        <div
+                          className="w-full h-full"
+                          style={{ background: (bg.mesh! as unknown as Record<string, string>)[key] ?? "#000" }}
+                        />
+                      </div>
+                      <span className="text-[10px] text-muted-foreground">{label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Pattern overlay (works on top of any bg) ── */}
+        <div className="pt-3 border-t border-border/30 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-medium text-muted-foreground">Pattern Overlay</p>
+            <Switch
+              id="pattern-toggle"
+              checked={patternEnabled}
+              onCheckedChange={(val) => {
+                setPatternEnabled(val);
+                if (!set || !screen) return;
+                const newBg = { ...bg };
+                if (val) {
+                  newBg.pattern = { type: patternType, color: "#ffffff", opacity: patternOpacity };
+                } else {
+                  delete newBg.pattern;
+                }
+                applyBg(newBg as Parameters<typeof applyBg>[0]);
+              }}
+            />
+          </div>
+          {patternEnabled && (
+            <div className="space-y-2">
+              <div className="flex gap-1">
+                {(["dots", "lines", "grid", "noise"] as const).map((pt) => (
+                  <button
+                    key={pt}
+                    type="button"
+                    onClick={() => {
+                      setPatternType(pt);
+                      if (!bg) return;
+                      applyBg({ ...bg, pattern: { type: pt, color: "#ffffff", opacity: patternOpacity } });
+                    }}
+                    className={cn(
+                      "flex-1 py-1 rounded-lg text-[10px] font-medium transition-all capitalize",
+                      patternType === pt
+                        ? "bg-indigo-500 text-white"
+                        : "bg-secondary/60 text-muted-foreground hover:bg-secondary"
+                    )}
+                  >
+                    {pt}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-muted-foreground shrink-0">Opacity</span>
+                <input
+                  type="range" min="0.05" max="0.5" step="0.05"
+                  value={patternOpacity}
+                  onChange={(e) => {
+                    const v = parseFloat(e.target.value);
+                    setPatternOpacity(v);
+                    if (!bg) return;
+                    applyBg({ ...bg, pattern: { type: patternType, color: "#ffffff", opacity: v } });
+                  }}
+                  className="flex-1 accent-indigo-500"
+                />
+                <span className="text-[10px] font-mono text-muted-foreground w-8 shrink-0">
+                  {Math.round(patternOpacity * 100)}%
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
       </div>
     </ScrollArea>
   );

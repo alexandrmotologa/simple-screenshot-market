@@ -64,6 +64,10 @@ interface EditorStore {
   sendBackward: (setId: string, screenId: string, layerId: string) => void;
   syncTextToScreens: (setId: string, srcScreenId: string, layerIndex: number) => void;
 
+  // Actions: i18n localizations
+  updateLayerLocalization: (setId: string, screenId: string, layerId: string, langCode: string, content: string) => void;
+  clearLayerLocalization: (setId: string, screenId: string, layerId: string, langCode: string) => void;
+
   // Actions: mockup
   updateMockup: (setId: string, updates: Partial<MockupSettings>) => void;
   // Actions: device
@@ -485,6 +489,51 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
           }),
         };
       }),
+    }));
+  },
+
+  updateLayerLocalization: (setId, screenId, layerId, langCode, content) => {
+    set((state) => ({
+      screenSets: state.screenSets.map((ss) =>
+        ss.id !== setId ? ss : {
+          ...ss,
+          screens: ss.screens.map((s) => {
+            if (s.id !== screenId) return s;
+            const existing = s.localizations ?? {};
+            const langMap = existing[langCode] ?? {};
+            return {
+              ...s,
+              localizations: {
+                ...existing,
+                [langCode]: {
+                  ...langMap,
+                  [layerId]: { ...(langMap[layerId] ?? {}), content },
+                },
+              },
+            };
+          }),
+        }
+      ),
+    }));
+  },
+
+  clearLayerLocalization: (setId, screenId, layerId, langCode) => {
+    set((state) => ({
+      screenSets: state.screenSets.map((ss) =>
+        ss.id !== setId ? ss : {
+          ...ss,
+          screens: ss.screens.map((s) => {
+            if (s.id !== screenId) return s;
+            const existing = s.localizations ?? {};
+            const langMap = { ...(existing[langCode] ?? {}) };
+            delete langMap[layerId];
+            return {
+              ...s,
+              localizations: { ...existing, [langCode]: langMap },
+            };
+          }),
+        }
+      ),
     }));
   },
 

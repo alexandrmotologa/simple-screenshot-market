@@ -1,8 +1,7 @@
-"use client";
-
 import { useCallback, useRef, useEffect, useState } from "react";
 import { Trash2, Copy, ArrowUp, ArrowDown, Lock, RefreshCw } from "lucide-react";
 import { useEditorStore } from "@/lib/store/editorStore";
+import { useLanguageStore } from "@/lib/store/languageStore";
 import {
   Screen, ScreenSet, TextLayer, ShapeLayer,
   ImageLayer, ScreenshotLayer, FlagLayer, Layer
@@ -61,6 +60,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
     deleteScreen, deleteLayer, duplicateLayer, updateLayer, updateScreen,
     lockLayer, bringForward, sendBackward, zoom,
   } = useEditorStore();
+  const { activeLang } = useLanguageStore();
 
   const saveCaption = () => {
     setEditingCaption(false);
@@ -109,9 +109,79 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
       }
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, H);
+    } else if (bg.type === "mesh" && bg.mesh) {
+      // 4-corner mesh gradient using 4 radial gradients blended together
+      const { topLeft: tl, topRight: tr, bottomLeft: bl, bottomRight: br } = bg.mesh;
+      // Layer: top-left radial
+      const g1 = ctx.createRadialGradient(0, 0, 0, 0, 0, Math.hypot(W, H));
+      g1.addColorStop(0, tl + "cc"); g1.addColorStop(1, tl + "00");
+      ctx.fillStyle = g1; ctx.fillRect(0, 0, W, H);
+      // top-right radial
+      const g2 = ctx.createRadialGradient(W, 0, 0, W, 0, Math.hypot(W, H));
+      g2.addColorStop(0, tr + "cc"); g2.addColorStop(1, tr + "00");
+      ctx.fillStyle = g2; ctx.fillRect(0, 0, W, H);
+      // bottom-left radial
+      const g3 = ctx.createRadialGradient(0, H, 0, 0, H, Math.hypot(W, H));
+      g3.addColorStop(0, bl + "cc"); g3.addColorStop(1, bl + "00");
+      ctx.fillStyle = g3; ctx.fillRect(0, 0, W, H);
+      // bottom-right radial
+      const g4 = ctx.createRadialGradient(W, H, 0, W, H, Math.hypot(W, H));
+      g4.addColorStop(0, br + "cc"); g4.addColorStop(1, br + "00");
+      ctx.fillStyle = g4; ctx.fillRect(0, 0, W, H);
     } else {
       ctx.fillStyle = "#1a1a2e";
       ctx.fillRect(0, 0, W, H);
+    }
+
+    // ── Pattern overlay ────────────────────────────────────────────────────────
+    if (bg.pattern) {
+      const { type: pType, color: pColor, opacity: pOpacity, size: pSize = 20, spacing: pSpacing = 30 } = bg.pattern;
+      ctx.globalAlpha = pOpacity;
+      ctx.fillStyle = pColor;
+      ctx.strokeStyle = pColor;
+
+      if (pType === "dots") {
+        const r = pSize / 2;
+        const gap = pSpacing;
+        for (let py = 0; py < H + gap; py += gap) {
+          for (let px = 0; px < W + gap; px += gap) {
+            ctx.beginPath();
+            ctx.arc(px, py, r, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      } else if (pType === "lines") {
+        ctx.lineWidth = pSize / 4;
+        const gap = pSpacing;
+        for (let py = -W; py < H + W; py += gap) {
+          ctx.beginPath();
+          ctx.moveTo(0, py);
+          ctx.lineTo(W, py + W);
+          ctx.stroke();
+        }
+      } else if (pType === "grid") {
+        ctx.lineWidth = 1;
+        const gap = pSpacing;
+        for (let py = 0; py < H; py += gap) {
+          ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(W, py); ctx.stroke();
+        }
+        for (let px = 0; px < W; px += gap) {
+          ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke();
+        }
+      } else if (pType === "noise") {
+        // Pseudo-noise using random dots
+        const seed = 42;
+        const pseudo = (n: number) => ((n * 1664525 + seed * 1013904223) & 0xffffffff) / 0xffffffff;
+        for (let i = 0; i < W * H * 0.03; i++) {
+          const px = pseudo(i * 3) * W;
+          const py = pseudo(i * 3 + 1) * H;
+          const pr = pseudo(i * 3 + 2) * 2 + 1;
+          ctx.beginPath();
+          ctx.arc(px, py, pr, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.globalAlpha = 1;
     }
 
     // ── Layers ────────────────────────────────────────────────────────────────
@@ -130,6 +200,20 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
       // ── TEXT ──────────────────────────────────────────────────────────────
       if (layer.type === "text") {
         const tl = layer as TextLayer;
+
+        // i18n: resolve localized content for active language
+        const rawContent =
+          activeLang !== "en" && screen.localizations?.[activeLang]?.[tl.id]?.content != null
+            ? screen.localizations[activeLang][tl.id].content!
+            : tl.content;
+
+        // Apply textCase
+        let displayContent = rawContent;
+        if (tl.textCase === "uppercase") displayContent = displayContent.toUpperCase();
+        else if (tl.textCase === "lowercase") displayContent = displayContent.toLowerCase();
+        else if (tl.textCase === "capitalize")
+          displayContent = displayContent.replace(/\b\w/g, (c) => c.toUpperCase());
+
         ctx.font = `${tl.fontWeight} ${tl.fontSize}px "${tl.fontFamily}", -apple-system, sans-serif`;
 
         // Gradient text support
@@ -148,15 +232,59 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
 
         ctx.textAlign = tl.align as CanvasTextAlign;
         if (tl.letterSpacing) ctx.letterSpacing = `${tl.letterSpacing}px`;
-        const lines = tl.content.split("\n");
+        const lines = displayContent.split("\n");
         const lineH = tl.fontSize * (tl.lineHeight ?? 1.25);
         const xPos =
           tl.align === "center" ? tl.x + tl.width / 2
           : tl.align === "right" ? tl.x + tl.width
           : tl.x;
+
+        // Highlight background
+        if (tl.highlight) {
+          const { color, paddingX, paddingY, cornerRadius } = tl.highlight;
+          const totalH = lines.length * lineH;
+          ctx.fillStyle = color;
+          const hx = tl.x - paddingX;
+          const hy = tl.y - paddingY;
+          const hw = tl.width + paddingX * 2;
+          const hh = totalH + paddingY * 2;
+          if (cornerRadius > 0) ctx.roundRect(hx, hy, hw, hh, cornerRadius);
+          else ctx.rect(hx, hy, hw, hh);
+          ctx.fill();
+          // Restore fill color
+          if (tl.gradientColor) {
+            const [c1, c2, dir] = tl.gradientColor;
+            let grad: CanvasGradient;
+            if (dir === "horizontal") grad = ctx.createLinearGradient(tl.x, 0, tl.x + tl.width, 0);
+            else grad = ctx.createLinearGradient(0, tl.y, 0, tl.y + tl.height);
+            grad.addColorStop(0, c1);
+            grad.addColorStop(1, c2);
+            ctx.fillStyle = grad;
+          } else {
+            ctx.fillStyle = tl.color;
+          }
+        }
+
         lines.forEach((line, i) => {
-          ctx.fillText(line, xPos, tl.y + tl.fontSize + i * lineH, tl.width);
+          const yPos = tl.y + tl.fontSize + i * lineH;
+          // Stroke (outline)
+          if (tl.stroke && tl.stroke.width > 0) {
+            ctx.strokeStyle = tl.stroke.color;
+            ctx.lineWidth = tl.stroke.width * 2;
+            ctx.lineJoin = "round";
+            ctx.strokeText(line, xPos, yPos, tl.width);
+          }
+          ctx.fillText(line, xPos, yPos, tl.width);
         });
+
+        // Indicator for missing translation
+        if (activeLang !== "en" && !screen.localizations?.[activeLang]?.[tl.id]?.content) {
+          ctx.strokeStyle = "rgba(251,191,36,0.6)";
+          ctx.lineWidth = 3;
+          ctx.setLineDash([6, 4]);
+          ctx.strokeRect(tl.x - 4, tl.y - 4, tl.width + 8, tl.fontSize * lines.length * (tl.lineHeight ?? 1.25) + 8);
+          ctx.setLineDash([]);
+        }
       }
 
       // ── SCREENSHOT ZONE ───────────────────────────────────────────────────
@@ -234,17 +362,144 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         const sl = layer as ShapeLayer;
         ctx.fillStyle = parseColorStr(ctx, sl.fill, sl.x, sl.y, sl.width, sl.height) as string;
         const r2 = sl.cornerRadius ?? 0;
+        const cx2 = sl.x + sl.width / 2;
+        const cy2 = sl.y + sl.height / 2;
+        const hw  = sl.width / 2;
+        const hh  = sl.height / 2;
+
+        const applyStroke = () => {
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          }
+        };
+
         if (sl.shape === "circle") {
           ctx.beginPath();
-          ctx.arc(sl.x + sl.width / 2, sl.y + sl.height / 2, Math.min(sl.width, sl.height) / 2, 0, Math.PI * 2);
-          ctx.fill();
-          if (sl.stroke && sl.strokeWidth) { ctx.strokeStyle = sl.stroke; ctx.lineWidth = sl.strokeWidth; ctx.stroke(); }
+          ctx.arc(cx2, cy2, Math.min(hw, hh), 0, Math.PI * 2);
+          ctx.fill(); applyStroke();
+
+        } else if (sl.shape === "triangle") {
+          ctx.beginPath();
+          ctx.moveTo(cx2, sl.y);
+          ctx.lineTo(sl.x + sl.width, sl.y + sl.height);
+          ctx.lineTo(sl.x, sl.y + sl.height);
+          ctx.closePath();
+          ctx.fill(); applyStroke();
+
+        } else if (sl.shape === "star") {
+          const pts = 5;
+          const outerR = Math.min(hw, hh);
+          const innerR = outerR * 0.42;
+          ctx.beginPath();
+          for (let i = 0; i < pts * 2; i++) {
+            const angle = (i * Math.PI) / pts - Math.PI / 2;
+            const r3 = i % 2 === 0 ? outerR : innerR;
+            const px = cx2 + Math.cos(angle) * r3;
+            const py = cy2 + Math.sin(angle) * r3;
+            i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.fill(); applyStroke();
+
+        } else if (sl.shape === "hexagon") {
+          const r4 = Math.min(hw, hh);
+          ctx.beginPath();
+          for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i - Math.PI / 6;
+            const px = cx2 + Math.cos(angle) * r4;
+            const py = cy2 + Math.sin(angle) * r4;
+            i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.fill(); applyStroke();
+
+        } else if (sl.shape === "diamond") {
+          ctx.beginPath();
+          ctx.moveTo(cx2, sl.y);
+          ctx.lineTo(sl.x + sl.width, cy2);
+          ctx.lineTo(cx2, sl.y + sl.height);
+          ctx.lineTo(sl.x, cy2);
+          ctx.closePath();
+          ctx.fill(); applyStroke();
+
+        } else if (sl.shape === "crescent") {
+          ctx.beginPath();
+          ctx.arc(cx2, cy2, Math.min(hw, hh), Math.PI * 0.2, Math.PI * 1.8);
+          ctx.arc(cx2 - hw * 0.3, cy2, Math.min(hw, hh) * 0.8, Math.PI * 1.8, Math.PI * 0.2, true);
+          ctx.closePath();
+          ctx.fill(); applyStroke();
+
+        } else if (sl.shape === "arrowRight") {
+          const aw = sl.width;
+          const ah = sl.height;
+          const arrowHead = aw * 0.4;
+          const stemH = ah * 0.35;
+          ctx.beginPath();
+          ctx.moveTo(sl.x, cy2 - stemH);
+          ctx.lineTo(sl.x + aw - arrowHead, cy2 - stemH);
+          ctx.lineTo(sl.x + aw - arrowHead, sl.y);
+          ctx.lineTo(sl.x + aw, cy2);
+          ctx.lineTo(sl.x + aw - arrowHead, sl.y + ah);
+          ctx.lineTo(sl.x + aw - arrowHead, cy2 + stemH);
+          ctx.lineTo(sl.x, cy2 + stemH);
+          ctx.closePath();
+          ctx.fill(); applyStroke();
+
         } else if (r2 > 0) {
-          ctx.beginPath(); ctx.roundRect(sl.x, sl.y, sl.width, sl.height, r2); ctx.fill();
-          if (sl.stroke && sl.strokeWidth) { ctx.strokeStyle = sl.stroke; ctx.lineWidth = sl.strokeWidth; ctx.stroke(); }
+          ctx.beginPath();
+          ctx.roundRect(sl.x, sl.y, sl.width, sl.height, r2);
+          ctx.fill(); applyStroke();
+
+        } else if (sl.shape === "appstore-badge" || sl.shape === "googleplay-badge") {
+          const isApple = sl.shape === "appstore-badge";
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const br = bh * 0.18;
+
+          // Background pill
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? "#000000";
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          }
+
+          // Icon area (left side)
+          const iconSize  = bh * 0.52;
+          const iconX     = bx + bh * 0.32;
+          const iconY     = by + (bh - iconSize) / 2;
+          ctx.fillStyle   = "#ffffff";
+          ctx.font        = `${iconSize}px serif`;
+          ctx.textAlign   = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(isApple ? "" : "▶", iconX, by + bh / 2);
+
+          // Labels
+          const labelX = bx + bw * 0.57;
+          const topLabel = isApple ? "Download on the" : "GET IT ON";
+          const botLabel = isApple ? "App Store" : "Google Play";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+
+          ctx.font = `400 ${bh * 0.22}px "Inter", sans-serif`;
+          ctx.fillStyle = "rgba(255,255,255,0.85)";
+          ctx.fillText(topLabel, labelX, by + bh * 0.33);
+
+          ctx.font = `700 ${bh * 0.35}px "Inter", sans-serif`;
+          ctx.fillStyle = "#ffffff";
+          ctx.fillText(botLabel, labelX, by + bh * 0.65);
+
         } else {
           ctx.fillRect(sl.x, sl.y, sl.width, sl.height);
-          if (sl.stroke && sl.strokeWidth) { ctx.strokeStyle = sl.stroke; ctx.lineWidth = sl.strokeWidth; ctx.strokeRect(sl.x, sl.y, sl.width, sl.height); }
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.strokeRect(sl.x, sl.y, sl.width, sl.height);
+          }
         }
       }
 
@@ -272,6 +527,35 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           } catch {
             ctx.fillStyle = "rgba(255,255,255,0.05)";
             ctx.fillRect(il.x, il.y, il.width, il.height);
+          }
+        }
+      }
+
+      // ── CHARACTER ─────────────────────────────────────────────────────────
+      else if (layer.type === "character") {
+        const cl = layer as import("@/lib/types").CharacterLayer;
+        if (cl.svgContent) {
+          try {
+            const blob = new Blob([cl.svgContent], { type: "image/svg+xml" });
+            const url = URL.createObjectURL(blob);
+            const img = await loadImage(url);
+            ctx.drawImage(img, cl.x, cl.y, cl.width, cl.height);
+            URL.revokeObjectURL(url);
+
+            // Tint color overlay
+            if (cl.tintColor) {
+              ctx.globalCompositeOperation = "multiply";
+              ctx.fillStyle = cl.tintColor;
+              ctx.fillRect(cl.x, cl.y, cl.width, cl.height);
+              ctx.globalCompositeOperation = "source-over";
+            }
+          } catch {
+            // Fallback placeholder
+            ctx.fillStyle = "rgba(99,102,241,0.1)";
+            ctx.fillRect(cl.x, cl.y, cl.width, cl.height);
+            ctx.strokeStyle = "rgba(99,102,241,0.4)";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(cl.x, cl.y, cl.width, cl.height);
           }
         }
       }

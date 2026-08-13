@@ -19,7 +19,7 @@ interface NewProjectModalProps {
 
 // ── Layout Preview SVG ──────────────────────────────────────────────────────────
 function LayoutPreview({ template }: { template: Template }) {
-  const [from, to] = template.previewGradient ?? [template.previewColor, template.previewColor];
+  const gradColors = template.previewGradient ?? [template.previewColor];
   const layout = template.layout;
   const id = `grad-${template.id}`;
 
@@ -34,8 +34,20 @@ function LayoutPreview({ template }: { template: Template }) {
     <svg viewBox="0 0 120 160" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="120" y2="160" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor={from} />
-          <stop offset="100%" stopColor={to} />
+          {gradColors.length === 1 ? (
+            <stop offset="0%" stopColor={gradColors[0]} />
+          ) : gradColors.length === 2 ? (
+            <>
+              <stop offset="0%" stopColor={gradColors[0]} />
+              <stop offset="100%" stopColor={gradColors[1]} />
+            </>
+          ) : (
+            <>
+              <stop offset="0%" stopColor={gradColors[0]} />
+              <stop offset="50%" stopColor={gradColors[1]} />
+              <stop offset="100%" stopColor={gradColors[2] ?? gradColors[1]} />
+            </>
+          )}
         </linearGradient>
         <clipPath id={`clip-${template.id}`}>
           <rect width="120" height="160" rx="10" />
@@ -44,7 +56,6 @@ function LayoutPreview({ template }: { template: Template }) {
 
       {/* Background */}
       <rect width="120" height="160" rx="10" fill={`url(#${id})`} />
-      <rect width="120" height="160" rx="10" clipPath={`url(#clip-${template.id})`} fill={`url(#${id})`} />
 
       {/* Layout-specific phone + text arrangement */}
       {layout === "screenshot-top" && (
@@ -162,7 +173,7 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-5xl h-[88vh] flex flex-col p-0 gap-0 overflow-hidden bg-background/95 backdrop-blur-xl">
+      <DialogContent className="max-w-6xl h-[88vh] flex flex-col p-0 gap-0 overflow-hidden bg-background/95 backdrop-blur-xl">
 
         {/* Header */}
         <DialogHeader className="px-7 py-5 border-b border-border/50 shrink-0 flex-row items-center justify-between">
@@ -225,8 +236,8 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
             </div>
 
             {/* Template grid */}
-            <ScrollArea className="flex-1">
-              <div className="p-5 grid grid-cols-3 gap-4">
+            <ScrollArea className="flex-1 min-h-0">
+              <div className="p-5 grid grid-cols-4 gap-4">
                 {filtered.map((tpl) => {
                   const isSelected = selectedTemplate === tpl.id;
                   return (
@@ -277,8 +288,8 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
           </div>
 
           {/* Right: Configuration */}
-          <div className="w-72 shrink-0 flex flex-col">
-            <ScrollArea className="flex-1">
+          <div className="w-96 shrink-0 flex flex-col overflow-hidden border-l border-border/40">
+            <ScrollArea className="flex-1 min-h-0">
               <div className="p-6 space-y-6">
 
                 {/* Selected template info */}

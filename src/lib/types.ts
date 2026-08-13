@@ -2,13 +2,30 @@
 
 export type StoreType = "ios" | "android";
 
-export type LayerType = "text" | "image" | "screenshot" | "shape" | "flag" | "emoji" | "brand";
+export type LayerType = "text" | "image" | "screenshot" | "shape" | "flag" | "emoji" | "brand" | "character";
 
-export type ShapeType = "rectangle" | "circle" | "rounded-rectangle";
+export type ShapeType =
+  | "rectangle"
+  | "circle"
+  | "rounded-rectangle"
+  | "star"
+  | "triangle"
+  | "hexagon"
+  | "diamond"
+  | "crescent"
+  | "arrowRight"
+  | "arrow-right"
+  | "arrow-left"
+  | "arrow-up"
+  | "arrow-down"
+  | "line"
+  | "wave"
+  | "appstore-badge"
+  | "googleplay-badge";
 
 export type TextAlign = "left" | "center" | "right";
 
-export type BackgroundType = "solid" | "gradient" | "image";
+export type BackgroundType = "solid" | "gradient" | "image" | "mesh" | "pattern";
 
 export type GradientDirection =
   | "to-b"
@@ -23,6 +40,24 @@ export interface GradientStop {
   position: number; // 0-100
 }
 
+export interface MeshGradient {
+  topLeft: string;
+  topRight: string;
+  bottomLeft: string;
+  bottomRight: string;
+}
+
+export type PatternType = "dots" | "lines" | "grid" | "noise";
+
+export interface BackgroundPattern {
+  type: PatternType;
+  color: string;
+  opacity: number; // 0-1
+  size?: number;   // dot size / line width / grid cell
+  spacing?: number;
+  angle?: number;  // for lines
+}
+
 export interface Background {
   type: BackgroundType;
   color?: string;
@@ -31,6 +66,10 @@ export interface Background {
     stops: GradientStop[];
   };
   imageUrl?: string;
+  /** Mesh gradient — 4-corner colors */
+  mesh?: MeshGradient;
+  /** Overlay pattern on top of any background */
+  pattern?: BackgroundPattern;
 }
 
 export interface TextLayer {
@@ -53,11 +92,28 @@ export interface TextLayer {
   rotation: number;
   opacity: number;
   locked?: boolean;
+  /** Canvas transform scale (applied on top of fontSize) */
+  scale?: number;
+  /** Text alignment alias for canvas rendering */
+  textAlign?: "left" | "center" | "right";
+  textCase?: "none" | "uppercase" | "lowercase" | "capitalize";
   shadow?: {
     color: string;
     blur: number;
     offsetX: number;
     offsetY: number;
+  };
+  /** Text outline/stroke */
+  stroke?: {
+    color: string;
+    width: number;
+  };
+  /** Highlight rectangle behind text */
+  highlight?: {
+    color: string;
+    paddingX: number;
+    paddingY: number;
+    cornerRadius: number;
   };
 }
 
@@ -141,7 +197,25 @@ export interface FlagLayer {
   locked?: boolean;
 }
 
-export type Layer = TextLayer | ImageLayer | ScreenshotLayer | ShapeLayer | FlagLayer;
+export interface CharacterLayer {
+  id: string;
+  type: "character";
+  characterId: string;
+  poseId: string;
+  /** SVG content or URL */
+  svgContent: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  opacity: number;
+  /** Optional tint color overlay */
+  tintColor?: string;
+  locked?: boolean;
+}
+
+export type Layer = TextLayer | ImageLayer | ScreenshotLayer | ShapeLayer | FlagLayer | CharacterLayer;
 
 // Device mockup definitions
 export type DeviceColor = string; // e.g. "black", "white", "titanium-natural", "obsidian" etc.
@@ -207,6 +281,19 @@ export const SIZE_PRESETS: SizePreset[] = [
   },
 ];
 
+// Per-layer localization overrides for a specific language
+export type LayerLocalization = {
+  content?: string;
+  fontSize?: number;
+};
+
+// Screen-level localizations: { [langCode]: { [layerId]: LayerLocalization } }
+export type ScreenLocalizations = {
+  [langCode: string]: {
+    [layerId: string]: LayerLocalization;
+  };
+};
+
 // A single screen in a project
 export interface Screen {
   id: string;
@@ -218,6 +305,8 @@ export interface Screen {
   mockup?: MockupSettings;
   width: number;
   height: number;
+  /** i18n: per-language text overrides for text layers */
+  localizations?: ScreenLocalizations;
 }
 
 // A project contains multiple screen sets (one per store)
@@ -242,6 +331,10 @@ export interface Project {
   createdAt: number;
   updatedAt: number;
   thumbnail?: string;
+  /** ISO language codes enabled for this project, e.g. ['en', 'ro', 'de'] */
+  languages?: string[];
+  /** Currently active language in editor (not persisted) */
+  activeLanguage?: string;
 }
 
 // Template definition
@@ -268,7 +361,7 @@ export interface Template {
   category: string;
   tags: string[];
   previewColor: string;
-  previewGradient?: [string, string]; // [from, to]
+  previewGradient?: string[]; // gradient colors [from, to, ...stops]
   layout: TemplateLayout;
   screens: TemplateScreen[];
 }

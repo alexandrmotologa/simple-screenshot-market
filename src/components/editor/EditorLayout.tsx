@@ -1,10 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   ArrowLeft, Undo2, Redo2, Download,
-  Share2, ZoomIn, ZoomOut, Upload
+  Share2, ZoomIn, ZoomOut, Upload, Sparkles, Film
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useEditorStore } from "@/lib/store/editorStore";
@@ -14,6 +14,9 @@ import { HorizontalCanvas } from "@/components/editor/HorizontalCanvas";
 import { FloatingToolbar } from "@/components/editor/FloatingToolbar";
 import { ScreenStrip } from "@/components/editor/ScreenStrip";
 import { ExportModal } from "@/components/editor/ExportModal";
+import { LanguageBar } from "@/components/editor/LanguageBar";
+import { AICaptionsModal } from "@/components/editor/AICaptionsModal";
+import { GifExportModal } from "@/components/editor/GifExportModal";
 import { ScreenshotLayer } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -59,8 +62,50 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
     activeLayerId, activeSetId, activeScreenId,
     setActiveLayer, deleteLayer, duplicateLayer, updateLayer, getActiveSet, getActiveScreen,
   } = useEditorStore();
+  const saveProjectThumbnail = useProjectStore((s) => s.saveProjectThumbnail);
+  const screenSets = useEditorStore((s) => s.screenSets);
   const [showExport, setShowExport] = useState(false);
+  const [showAI, setShowAI] = useState(false);
+  const [showGif, setShowGif] = useState(false);
   const replaceFileRef = useRef<HTMLInputElement>(null);
+  const thumbTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── Auto-save thumbnail (debounced, 3 s after last change) ────────────────
+  const generateThumbnail = useCallback(async () => {
+    const firstSet = screenSets[0];
+    if (!firstSet || firstSet.screens.length === 0) return;
+    const firstScreen = firstSet.screens[0];
+    const SCALE = 0.15;
+    const W = Math.round(firstScreen.width * SCALE);
+    const H = Math.round(firstScreen.height * SCALE);
+    const canvas = document.createElement("canvas");
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.scale(SCALE, SCALE);
+    // Draw solid / gradient background
+    const bg = firstScreen.background;
+    if (bg.type === "solid" && bg.color) {
+      ctx.fillStyle = bg.color;
+      ctx.fillRect(0, 0, firstScreen.width, firstScreen.height);
+    } else if (bg.type === "gradient" && bg.gradient) {
+      const grd = ctx.createLinearGradient(0, 0, 0, firstScreen.height);
+      for (const s of bg.gradient.stops) grd.addColorStop(s.position / 100, s.color);
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, firstScreen.width, firstScreen.height);
+    } else {
+      ctx.fillStyle = "#1a1a2e";
+      ctx.fillRect(0, 0, firstScreen.width, firstScreen.height);
+    }
+    saveProjectThumbnail(projectId, canvas.toDataURL("image/webp", 0.7));
+  }, [screenSets, projectId, saveProjectThumbnail]);
+
+  useEffect(() => {
+    if (thumbTimerRef.current) clearTimeout(thumbTimerRef.current);
+    thumbTimerRef.current = setTimeout(() => { generateThumbnail(); }, 3000);
+    return () => { if (thumbTimerRef.current) clearTimeout(thumbTimerRef.current); };
+  }, [screenSets, generateThumbnail]);
+
 
   // Detect if active layer is a screenshot zone
   const activeLayer = useEditorStore((s) => s.getActiveLayer());
@@ -200,10 +245,34 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
 
         <Separator orientation="vertical" className="h-4" />
 
+        {/* AI Captions */}
+        <button
+          type="button"
+          onClick={() => setShowAI(true)}
+          className="h-7 flex items-center gap-1.5 px-3 text-xs font-semibold rounded-lg bg-violet-500/15 text-violet-400 hover:bg-violet-500/25 ring-1 ring-violet-500/30 transition-all"
+          title="Generate captions with AI"
+        >
+          <Sparkles className="w-3 h-3" />
+          AI Captions
+        </button>
+
+        <Separator orientation="vertical" className="h-4" />
+
         {/* Share */}
         <IconBtn title="Share (coming soon)">
           <Share2 className="w-3.5 h-3.5" />
         </IconBtn>
+
+        {/* GIF Export */}
+        <button
+          type="button"
+          onClick={() => setShowGif(true)}
+          className="h-7 flex items-center gap-1.5 px-3 text-xs font-semibold rounded-lg bg-pink-500/15 text-pink-400 hover:bg-pink-500/25 ring-1 ring-pink-500/30 transition-all"
+          title="Export animated GIF"
+        >
+          <Film className="w-3 h-3" />
+          GIF
+        </button>
 
         {/* Export */}
         <button
@@ -227,6 +296,8 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
 
         {/* Main canvas area */}
         <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Language bar */}
+          <LanguageBar />
           <HorizontalCanvas />
           {/* Bottom strip: quick screen navigation */}
           <ScreenStrip />
@@ -236,6 +307,12 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
       {/* Export modal */}
       {showExport && (
         <ExportModal projectId={projectId} onClose={() => setShowExport(false)} />
+      )}
+      {showAI && (
+        <AICaptionsModal onClose={() => setShowAI(false)} />
+      )}
+      {showGif && (
+        <GifExportModal projectId={projectId} onClose={() => setShowGif(false)} />
       )}
     </div>
   );
