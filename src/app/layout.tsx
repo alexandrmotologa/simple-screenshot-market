@@ -139,6 +139,7 @@ const jsonLd = {
 
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { PostHogProvider } from "@/providers/posthog-provider";
 
 export default function RootLayout({
   children,
@@ -164,7 +165,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <TooltipProvider>{children}</TooltipProvider>
+          <PostHogProvider>
+            <TooltipProvider>{children}</TooltipProvider>
+          </PostHogProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -81,7 +81,7 @@ export default function EditorPage({ params }: EditorPageProps) {
   const getProject = useProjectStore((s) => s.getProject);
   const updateProject = useProjectStore((s) => s.updateProject);
   const saveProjectThumbnail = useProjectStore((s) => s.saveProjectThumbnail);
-  const { loadProject, screenSets } = useEditorStore();
+  const { loadProject, screenSets, themeId } = useEditorStore();
 
   useEffect(() => {
     const project = getProject(projectId);
@@ -89,15 +89,15 @@ export default function EditorPage({ params }: EditorPageProps) {
       router.replace("/");
       return;
     }
-    loadProject(projectId, project.screenSets);
+    loadProject(projectId, project.themeId, project.screenSets);
   }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-save screenSets back to project store whenever they change
   useEffect(() => {
     if (screenSets.length > 0) {
-      updateProject(projectId, { screenSets });
+      updateProject(projectId, { screenSets, themeId });
     }
-  }, [screenSets]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [screenSets, themeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-save thumbnail (debounced — fires 2s after last change)
   useEffect(() => {

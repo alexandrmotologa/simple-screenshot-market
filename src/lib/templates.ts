@@ -167,7 +167,7 @@ export const DEFAULT_TEMPLATES: Template[] = [
             Math.round(W * 0.08),
             Math.round(H * 0.42),
             Math.round(W * 0.84),
-            Math.round(H * 0.58),
+            2400,
             "Drop Screenshot"
           ),
         ],
@@ -208,17 +208,17 @@ export const DEFAULT_TEMPLATES: Template[] = [
             Math.round(W * 0.12),
             Math.round(H * 0.06),
             Math.round(W * 0.76),
-            Math.round(H * 0.6),
+            2400,
             "Drop Screenshot"
           ),
           textLayer(
             isFirst ? "Simply\nBeautiful." : `Clarity in\nEvery Step.`,
-            Math.round(W * 0.12), Math.round(H * 0.7), Math.round(W * 0.76), 300,
+            Math.round(W * 0.12), Math.round(H * 0.75), Math.round(W * 0.76), 300,
             { fontSize: 140, fontWeight: 800, color: "#0f172a", lineHeight: 1.0 }
           ),
           textLayer(
             isFirst ? "Your application, stripped down to its perfect essence." : "Focus on what matters without the unnecessary clutter.",
-            Math.round(W * 0.12), Math.round(H * 0.84), Math.round(W * 0.76), 160,
+            Math.round(W * 0.12), Math.round(H * 0.89), Math.round(W * 0.76), 160,
             { fontSize: 46, fontWeight: 500, color: "#64748b", lineHeight: 1.5 }
           ),
         ],
@@ -268,9 +268,9 @@ export const DEFAULT_TEMPLATES: Template[] = [
           
           screenshotWithFrame(
             Math.round(W * 0.15),
-            Math.round(H * 0.48),
+            Math.round(H * 0.52),
             Math.round(W * 0.7),
-            Math.round(H * 0.65),
+            2200,
             "Drop Screenshot"
           ),
         ],
@@ -311,24 +311,24 @@ export const DEFAULT_TEMPLATES: Template[] = [
             Math.round(W * 0.1),
             Math.round(H * 0.08),
             Math.round(W * 0.8),
-            Math.round(H * 0.55),
+            2400,
             "Drop Screenshot"
           ),
           
           // Clean data card behind text
-          shapeLayer("rectangle", Math.round(W * 0.05), Math.round(H * 0.68), Math.round(W * 0.9), Math.round(H * 0.3), "#ffffff", {
+          shapeLayer("rectangle", Math.round(W * 0.05), Math.round(H * 0.74), Math.round(W * 0.9), Math.round(H * 0.24), "#ffffff", {
             cornerRadius: 40,
             shadow: { blur: 40, color: "rgba(37,99,235,0.1)", spread: 0, offsetX: 0, offsetY: 20 }
           }),
           
           textLayer(
             isFirst ? "Secure.\nReliable.\Fast." : `Grow Your\nBusiness.`,
-            Math.round(W * 0.12), Math.round(H * 0.73), Math.round(W * 0.76), 250,
+            Math.round(W * 0.12), Math.round(H * 0.77), Math.round(W * 0.76), 250,
             { fontSize: 90, fontWeight: 800, color: "#1e3a8a", lineHeight: 1.1 }
           ),
           textLayer(
             isFirst ? "Enterprise-grade features for everyone." : "Advanced analytics and trusted security protocols.",
-            Math.round(W * 0.12), Math.round(H * 0.85), Math.round(W * 0.76), 160,
+            Math.round(W * 0.12), Math.round(H * 0.89), Math.round(W * 0.76), 160,
             { fontSize: 44, fontWeight: 500, color: "#64748b", lineHeight: 1.5 }
           ),
         ],
@@ -384,3 +384,33 @@ export const DEFAULT_TEMPLATES: Template[] = [
     }),
   },
 ];
+
+export const TEMPLATE_CATEGORIES = [
+  'All',
+  'Basic',
+  'Classic',
+  'Modern',
+  'Health',
+  'Finance',
+  'Social',
+  'Shopping',
+  'Entertainment',
+  'Education',
+  'Business',
+  'Technology',
+  'Utility',
+  'Media',
+  'Creative',
+  'Lifestyle',
+];
+
+// Layout display metadata for UI
+export const LAYOUT_META: Record<string, { icon: string; label: string; description: string }> = {
+  'screenshot-top':    { icon: '⬆️', label: 'App Top',     description: 'Screenshot top, text below' },
+  'screenshot-bottom': { icon: '⬇️', label: 'App Bottom',  description: 'Text top, screenshot below' },
+  'screenshot-float':  { icon: '✨', label: 'Float Right',  description: 'Screenshot floats beside text' },
+  'screenshot-full':   { icon: '🖼️', label: 'Full Screen', description: 'Screenshot fills the canvas' },
+  'screenshot-split':  { icon: '⬛', label: 'Split View',   description: 'Two screenshots side by side' },
+  'text-only':         { icon: '✍️', label: 'Text Only',   description: 'No screenshot zone' },
+};
+

@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { Layer, Screen, ScreenSet, Background, MockupSettings } from "@/lib/types";
+import { Layer, Screen, ScreenSet, Background, MockupSettings, ThemeId } from "@/lib/types";
+import { themeById } from "@/lib/themes";
 import { nanoid } from "@/lib/utils";
 
 interface HistoryEntry {
@@ -9,6 +10,7 @@ interface HistoryEntry {
 interface EditorStore {
   // Current project context
   projectId: string | null;
+  themeId: ThemeId;
   screenSets: ScreenSet[];
 
   // Active selection
@@ -28,7 +30,7 @@ interface EditorStore {
   historyIndex: number;
 
   // Actions: project loading
-  loadProject: (projectId: string, screenSets: ScreenSet[]) => void;
+  loadProject: (projectId: string, themeId: ThemeId | undefined, screenSets: ScreenSet[]) => void;
   getActiveSet: () => ScreenSet | undefined;
   getActiveScreen: () => Screen | undefined;
   getActiveLayer: () => Layer | undefined;
@@ -72,6 +74,8 @@ interface EditorStore {
   updateMockup: (setId: string, updates: Partial<MockupSettings>) => void;
   // Actions: device
   updateDevice: (setId: string, deviceId: string) => void;
+  setThemeId: (themeId: ThemeId) => void;
+  applyThemeToProject: (themeId: ThemeId) => void;
 
   // Actions: UI
   setZoom: (zoom: number) => void;
@@ -98,6 +102,7 @@ const MAX_HISTORY = 50;
 
 export const useEditorStore = create<EditorStore>((set, get) => ({
   projectId: null,
+  themeId: "clean-light",
   screenSets: [],
   activeSetId: null,
   activeScreenId: null,
@@ -109,7 +114,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   history: [],
   historyIndex: -1,
 
-  loadProject: (projectId, screenSets) => {
+  loadProject: (projectId, themeId, screenSets) => {
     // ── Auto-migrate old Android screens to standard 1290×2796 (same as iOS) ─
     const STD_W = 1290;
     const STD_H = 2796;
@@ -145,6 +150,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     const firstScreen = firstSet?.screens[0];
     set({
       projectId,
+      themeId: themeId || "clean-light",
       screenSets: migratedSets,
       activeSetId: firstSet?.id ?? null,
       activeScreenId: firstScreen?.id ?? null,
@@ -190,15 +196,17 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   clearSelection: () => set({ selectedLayerIds: [], activeLayerId: null }),
 
   addScreen: (setId) => {
+    get().recordHistory();
     set((state) => {
       const sets = state.screenSets.map((ss) => {
         if (ss.id !== setId) return ss;
+        const lastScreen = ss.screens[ss.screens.length - 1];
         const newScreen: Screen = {
           id: nanoid(),
           name: `Screen ${ss.screens.length + 1}`,
           width: ss.preset.width,
           height: ss.preset.height,
-          background: { type: "solid", color: "#6366f1" },
+          background: lastScreen ? JSON.parse(JSON.stringify(lastScreen.background)) : { type: "solid", color: "#6366f1" },
           layers: [],
         };
         return { ...ss, screens: [...ss.screens, newScreen] };
@@ -573,9 +581,38 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         };
       }),
     }));
+
     get().recordHistory();
   },
 
+  setThemeId: (themeId) => set({ themeId }),
+
+  applyThemeToProject: (themeId) => {
+    const theme = themeById(themeId);
+    set((state) => ({
+      themeId,
+      screenSets: state.screenSets.map(ss => ({
+        ...ss,
+        screens: ss.screens.map(s => ({
+          ...s,
+          background: {
+            ...s.background,
+            type: "solid",
+            color: theme.bg,
+          },
+          layers: s.layers.map(l => {
+            if (l.type === "text") {
+              return { ...l, color: theme.fg };
+            }
+            return l;
+          }),
+        }))
+      }))
+    }));
+    get().recordHistory();
+  },
+
+  // UI
   setZoom: (zoom) => set({ zoom: Math.min(2, Math.max(0.1, zoom)) }),
   toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
   toggleGuides: () => set((state) => ({ showGuides: !state.showGuides })),
@@ -663,7 +700,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       },
       mockup: {
         device: isIOS ? "iphone-16-pro-max" : "pixel-9-pro-xl",
-        color: "Black",
+        color: isIOS ? "Black" : "Obsidian",
         showFrame: true,
         showReflection: false,
         showShadow: true,

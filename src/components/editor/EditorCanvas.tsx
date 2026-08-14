@@ -231,7 +231,7 @@ export function EditorCanvas() {
   return (
     <div
       ref={containerRef}
-      className="flex-1 overflow-auto bg-[#0a0a0f] flex items-start justify-center p-10"
+      className="flex-1 overflow-auto bg-muted/30 flex items-start justify-center p-10"
       onClick={(e) => {
         if (e.target === containerRef.current) setActiveLayer(null);
       }}

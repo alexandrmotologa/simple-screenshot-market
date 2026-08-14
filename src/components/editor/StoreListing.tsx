@@ -2,8 +2,12 @@
 
 import { Sparkles, ChevronDown } from "lucide-react";
 import { useState } from "react";
+import { useEditorStore } from "@/lib/store/editorStore";
 
 export function StoreListing() {
+  const { screenSets } = useEditorStore();
+  const hasIOS = screenSets.some((s) => s.store === "ios");
+  const hasAndroid = screenSets.some((s) => s.store === "android");
   const [appStoreData, setAppStoreData] = useState({
     name: "",
     subtitle: "",
@@ -40,8 +44,9 @@ export function StoreListing() {
       </div>
 
       {/* Columns */}
-      <div className="grid grid-cols-2 gap-px bg-border">
+      <div className={`grid gap-px bg-border ${hasIOS && hasAndroid ? "grid-cols-2" : "grid-cols-1"}`}>
         {/* App Store Column */}
+        {hasIOS && (
         <div className="bg-card p-6 space-y-5">
           <div className="flex items-center gap-2 mb-2">
             <div className="bg-blue-500 p-1.5 rounded-md text-white">
@@ -90,8 +95,10 @@ export function StoreListing() {
             minHeight="80px"
           />
         </div>
+        )}
 
         {/* Google Play Column */}
+        {hasAndroid && (
         <div className="bg-card p-6 space-y-5">
           <div className="flex items-center gap-2 mb-2">
             <div className="bg-green-500 p-1.5 rounded-md text-white">
@@ -135,6 +142,7 @@ export function StoreListing() {
             minHeight="80px"
           />
         </div>
+        )}
       </div>
     </div>
   );

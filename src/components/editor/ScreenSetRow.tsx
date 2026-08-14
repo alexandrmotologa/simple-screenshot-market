@@ -8,7 +8,7 @@ import {
 import { useEditorStore } from "@/lib/store/editorStore";
 import { ScreenSet, ScreenshotLayer } from "@/lib/types";
 import { ScreenCard } from "@/components/editor/ScreenCard";
-import { IOS_DEVICES, ANDROID_DEVICES } from "@/lib/devices";
+import { IOS_DEVICES, ANDROID_DEVICES, COLOR_HEX_MAP } from "@/lib/devices";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -44,21 +44,6 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
   // Colors available for the selected device
   const availableColors = currentDevice?.colors ?? ["Black", "White"];
   // Hex approximations for swatch rendering
-  const COLOR_HEX_MAP: Record<string, string> = {
-    black: "#1a1a1a", obsidian: "#1a1a1a", "titanium black": "#2d2d2d",
-    white: "#f5f5f7", porcelain: "#f0ede8", silver: "#d1d5db",
-    natural: "#9a8f84", "natural titanium": "#9a8f84", snow: "#f8f8f8",
-    desert: "#d4a676", "desert titanium": "#d4a676", gold: "#c9a96e",
-    blue: "#2a5caf", bay: "#4a6ea8", cobalt: "#3a5a9e", "cobalt violet": "#6a4a9e",
-    hazel: "#6b6b4f", green: "#4a8c72", wintergreen: "#4a7c72",
-    pink: "#e8a0b0", rose: "#c8a0a0", "rose quartz": "#c8a0a0", peony: "#d080a0",
-    teal: "#4a9e9a", purple: "#8b5cf6", ultramarine: "#3a4a9e",
-    red: "#dc2626", yellow: "#facc15", mint: "#6ee7b7",
-    "flowy emerald": "#34a86c", "silky black": "#111111",
-    "titanium silver": "#b0b0b0", "titanium blue": "#4a6ea8",
-    "icyblue": "#8abbe8", navy: "#1e3a5f", "silver shadow": "#aab0b8",
-    "onyx black": "#111827", "marble gray": "#6b7280", "amber yellow": "#d97706",
-  };
   const getHex = (name: string) => COLOR_HEX_MAP[name.toLowerCase()] ?? "#888";
 
   const isFrameOn = screenSet.mockup?.showFrame !== false;
@@ -81,12 +66,17 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
   // Border style logic
   // "Borderless" = !showFrame && !squircle
   // "Minimal" = squircle && !showFrame
-  // "Realistic" = showFrame
-  const borderStyle = isFrameOn ? "Realistic" : isSquircle ? "Minimal" : "Borderless";
-  const setBorderStyle = (style: "Borderless" | "Minimal" | "Realistic") => {
+  // "Flat Frame" = showFrame && frameType !== "3d"
+  // "3D Realistic" = showFrame && frameType === "3d"
+  const borderStyle = isFrameOn 
+    ? (screenSet.mockup?.frameType === "3d" ? "3D Realistic" : "Flat Frame")
+    : isSquircle ? "Minimal" : "Borderless";
+    
+  const setBorderStyle = (style: "Borderless" | "Minimal" | "Flat Frame" | "3D Realistic") => {
     if (style === "Borderless") updateMockup(screenSet.id, { showFrame: false, squircle: false });
     else if (style === "Minimal") updateMockup(screenSet.id, { showFrame: false, squircle: true });
-    else if (style === "Realistic") updateMockup(screenSet.id, { showFrame: true, squircle: false });
+    else if (style === "Flat Frame") updateMockup(screenSet.id, { showFrame: true, squircle: false, frameType: "2d" });
+    else if (style === "3D Realistic") updateMockup(screenSet.id, { showFrame: true, squircle: false, frameType: "3d" });
     useEditorStore.getState().recordHistory();
   };
 
@@ -176,6 +166,10 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
                   className={cn("text-xs gap-2 cursor-pointer", screenSet.deviceId === device.id && "text-primary bg-primary/5")}
                   onClick={() => {
                     updateDevice(screenSet.id, device.id);
+                    // Also check if current color is valid for new device
+                    if (screenSet.mockup?.color && !device.colors.includes(screenSet.mockup.color)) {
+                      updateMockup(screenSet.id, { color: device.colors[0] });
+                    }
                     useEditorStore.getState().recordHistory();
                   }}
                 >
@@ -201,7 +195,7 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
             <DropdownMenuGroup>
               <DropdownMenuLabel className="text-xs">Frame Style</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {(["Borderless", "Minimal", "Realistic"] as const).map((style) => (
+              {(["Borderless", "Minimal", "Flat Frame", "3D Realistic"] as const).map((style) => (
                 <DropdownMenuItem
                   key={style}
                   className={cn("text-xs gap-2 cursor-pointer", borderStyle === style && "text-primary bg-primary/5")}
@@ -252,29 +246,31 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
 
         {/* Toggles Group */}
         <div className="flex items-center gap-4 ml-2">
-          {/* Notch toggle */}
-          <label className="flex items-center gap-2 cursor-pointer" title="Show Notch">
-            <div className="w-5 h-5 flex items-center justify-center text-muted-foreground">
-              {/* Custom SVG for notch */}
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="4" y="2" width="16" height="20" rx="4" />
-                <path d="M8 2v1a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V2" />
-              </svg>
-            </div>
-            <Switch checked={isNotchOn} onCheckedChange={toggleNotch} />
-          </label>
+          {screenSet.store === "ios" && (
+            <>
+              {/* Notch toggle */}
+              <label className="flex items-center gap-2 cursor-pointer" title="Show Notch">
+                <div className="w-5 h-5 flex items-center justify-center text-muted-foreground">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="4" y="2" width="16" height="20" rx="4" />
+                    <path d="M8 2v1a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V2" />
+                  </svg>
+                </div>
+                <Switch checked={isNotchOn} onCheckedChange={toggleNotch} />
+              </label>
 
-          {/* Dynamic Island toggle */}
-          <label className="flex items-center gap-2 cursor-pointer" title="Show Dynamic Island">
-            <div className="w-5 h-5 flex items-center justify-center text-muted-foreground">
-              {/* Custom SVG for dynamic island */}
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="4" y="2" width="16" height="20" rx="4" />
-                <rect x="9" y="5" width="6" height="2.5" rx="1.25" fill="currentColor" stroke="none" />
-              </svg>
-            </div>
-            <Switch checked={isIslandOn} onCheckedChange={toggleIsland} />
-          </label>
+              {/* Dynamic Island toggle */}
+              <label className="flex items-center gap-2 cursor-pointer" title="Show Dynamic Island">
+                <div className="w-5 h-5 flex items-center justify-center text-muted-foreground">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="4" y="2" width="16" height="20" rx="4" />
+                    <rect x="9" y="5" width="6" height="2.5" rx="1.25" fill="currentColor" stroke="none" />
+                  </svg>
+                </div>
+                <Switch checked={isIslandOn} onCheckedChange={toggleIsland} />
+              </label>
+            </>
+          )}
 
           {/* Reflection toggle */}
           <label className="flex items-center gap-2 cursor-pointer" title="Show Screen Reflection">

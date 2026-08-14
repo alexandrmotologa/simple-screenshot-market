@@ -94,6 +94,26 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
       for (const s of bg.gradient.stops) grd.addColorStop(s.position / 100, s.color);
       ctx.fillStyle = grd;
       ctx.fillRect(0, 0, firstScreen.width, firstScreen.height);
+    } else if (bg.type === "mesh" && bg.mesh) {
+      const { topLeft: tl, topRight: tr, bottomLeft: bl, bottomRight: br } = bg.mesh;
+      const hw = firstScreen.width;
+      const hh = firstScreen.height;
+      
+      const g1 = ctx.createRadialGradient(0, 0, 0, 0, 0, Math.hypot(hw, hh));
+      g1.addColorStop(0, tl + "cc"); g1.addColorStop(1, tl + "00");
+      ctx.fillStyle = g1; ctx.fillRect(0, 0, hw, hh);
+      
+      const g2 = ctx.createRadialGradient(hw, 0, 0, hw, 0, Math.hypot(hw, hh));
+      g2.addColorStop(0, tr + "cc"); g2.addColorStop(1, tr + "00");
+      ctx.fillStyle = g2; ctx.fillRect(0, 0, hw, hh);
+      
+      const g3 = ctx.createRadialGradient(0, hh, 0, 0, hh, Math.hypot(hw, hh));
+      g3.addColorStop(0, bl + "cc"); g3.addColorStop(1, bl + "00");
+      ctx.fillStyle = g3; ctx.fillRect(0, 0, hw, hh);
+      
+      const g4 = ctx.createRadialGradient(hw, hh, 0, hw, hh, Math.hypot(hw, hh));
+      g4.addColorStop(0, br + "cc"); g4.addColorStop(1, br + "00");
+      ctx.fillStyle = g4; ctx.fillRect(0, 0, hw, hh);
     } else {
       ctx.fillStyle = "#1a1a2e";
       ctx.fillRect(0, 0, firstScreen.width, firstScreen.height);

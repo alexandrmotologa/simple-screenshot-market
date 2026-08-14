@@ -9,6 +9,22 @@ export interface DeviceModel {
   cornerRadius: number;
 }
 
+export const COLOR_HEX_MAP: Record<string, string> = {
+  black: "#1a1a1a", obsidian: "#1a1a1a", "titanium black": "#2d2d2d",
+  white: "#f5f5f7", porcelain: "#f0ede8", silver: "#d1d5db", "titanium white": "#f5f5f7",
+  natural: "#9a8f84", "natural titanium": "#9a8f84", snow: "#f8f8f8",
+  desert: "#d4a676", "desert titanium": "#d4a676", gold: "#c9a96e",
+  blue: "#2a5caf", bay: "#4a6ea8", cobalt: "#3a5a9e", "cobalt violet": "#6a4a9e",
+  hazel: "#6b6b4f", green: "#4a8c72", wintergreen: "#4a7c72",
+  pink: "#e8a0b0", rose: "#c8a0a0", "rose quartz": "#c8a0a0", peony: "#d080a0",
+  teal: "#4a9e9a", purple: "#8b5cf6", ultramarine: "#3a4a9e",
+  red: "#dc2626", yellow: "#facc15", mint: "#6ee7b7",
+  "flowy emerald": "#34a86c", "silky black": "#111111",
+  "titanium silver": "#b0b0b0", "titanium blue": "#4a6ea8",
+  "icyblue": "#8abbe8", navy: "#1e3a5f", "silver shadow": "#aab0b8",
+  "onyx black": "#111827", "marble gray": "#6b7280", "amber yellow": "#d97706",
+};
+
 export const IOS_DEVICES: DeviceModel[] = [
   {
     id: "iphone-16-pro-max",

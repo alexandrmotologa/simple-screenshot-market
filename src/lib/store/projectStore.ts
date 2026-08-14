@@ -94,7 +94,7 @@ export const useProjectStore = create<ProjectStore>()(
             },
             mockup: {
               device: "pixel-9-pro-xl",
-              color: "black",
+              color: "Obsidian",
               showFrame: true,
               showReflection: true,
               showShadow: true,

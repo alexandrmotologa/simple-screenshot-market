@@ -4,6 +4,34 @@ export type StoreType = "ios" | "android";
 
 export type LayerType = "text" | "image" | "screenshot" | "shape" | "flag" | "emoji" | "brand" | "character";
 
+export type ThemeId =
+  | "clean-light"
+  | "dark-bold"
+  | "warm-editorial"
+  | "ocean-fresh"
+  | "bloom-roast";
+
+export interface Theme {
+  id: ThemeId;
+  name: string;
+  bg: string;
+  bgAlt: string;
+  fg: string;
+  fgAlt: string;
+  accent: string;
+  muted: string;
+}
+
+export type SlideLayout =
+  | "hero"
+  | "device-bottom"
+  | "device-top"
+  | "two-devices"
+  | "no-device"
+  | "split-landscape"
+  | "feature-graphic";
+
+
 export type ShapeType =
   | "rectangle"
   | "circle"
@@ -181,6 +209,13 @@ export interface ShapeLayer {
   rotation: number;
   opacity: number;
   cornerRadius?: number;
+  shadow?: {
+    blur: number;
+    spread: number;
+    color: string;
+    offsetX: number;
+    offsetY: number;
+  };
   locked?: boolean;
 }
 
@@ -224,6 +259,7 @@ export interface MockupSettings {
   device: string;
   color: DeviceColor;
   showFrame: boolean;
+  frameType?: "2d" | "3d";
   showReflection: boolean;
   showShadow: boolean;
   /** Squircle (iOS-style rounded) corners for the card */
@@ -308,6 +344,8 @@ export interface Screen {
   mockup?: MockupSettings;
   width: number;
   height: number;
+  /** Layout structure for dynamic positioning */
+  layout?: SlideLayout;
   /** i18n: per-language text overrides for text layers */
   localizations?: ScreenLocalizations;
 }
@@ -338,6 +376,8 @@ export interface Project {
   languages?: string[];
   /** Currently active language in editor (not persisted) */
   activeLanguage?: string;
+  /** Global theme for colors */
+  themeId?: ThemeId;
 }
 
 // Template definition

@@ -52,19 +52,16 @@ function Btn({
 }) {
   return (
     <Tooltip>
-      <TooltipTrigger>
-        <button
-          type="button"
-          onClick={onClick}
-          className={cn(
-            "w-7 h-7 rounded-lg flex items-center justify-center transition-colors",
-            active ? "bg-primary text-primary-foreground" : "",
-            danger ? "hover:bg-destructive/15 text-muted-foreground hover:text-destructive" : "hover:bg-secondary text-muted-foreground hover:text-foreground",
-            className,
-          )}
-        >
-          {children}
-        </button>
+      <TooltipTrigger
+        onClick={onClick}
+        className={cn(
+          "w-7 h-7 rounded-lg flex items-center justify-center transition-colors",
+          active ? "bg-primary text-primary-foreground" : "",
+          danger ? "hover:bg-destructive/15 text-muted-foreground hover:text-destructive" : "hover:bg-secondary text-muted-foreground hover:text-foreground",
+          className,
+        )}
+      >
+        {children}
       </TooltipTrigger>
       {title && <TooltipContent>{title}</TooltipContent>}
     </Tooltip>
@@ -312,8 +309,11 @@ export function FloatingToolbar() {
 
             {/* Color swatch */}
             <Tooltip>
-              <TooltipTrigger>
-                <label className="w-6 h-6 rounded-lg cursor-pointer ring-1 ring-border overflow-hidden shrink-0 block">
+              <TooltipTrigger
+                className="h-7 w-7 rounded hover:bg-secondary flex items-center justify-center transition-colors"
+                style={{ color: tl.color }}
+              >
+                <label className="w-5 h-5 rounded cursor-pointer ring-1 ring-border overflow-hidden shrink-0 block">
                   <input type="color" value={tl.color.startsWith("rgba") ? "#ffffff" : tl.color} onChange={(e) => update({ color: e.target.value } as Partial<TextLayer>)} className="opacity-0 w-0 h-0" />
                   <div className="w-full h-full" style={{ background: tl.gradientColor ? `linear-gradient(to right, ${tl.gradientColor[0]}, ${tl.gradientColor[1]})` : tl.color }} />
                 </label>
@@ -427,7 +427,9 @@ export function FloatingToolbar() {
         {isShape && sh && (
           <>
             <Tooltip>
-              <TooltipTrigger>
+              <TooltipTrigger
+                className="h-7 w-7 rounded hover:bg-secondary flex items-center justify-center transition-colors"
+              >
                 <label className="w-6 h-6 rounded-lg cursor-pointer ring-1 ring-border overflow-hidden shrink-0 block">
                   <input type="color" value={sh.fill} onChange={(e) => update({ fill: e.target.value } as Partial<ShapeLayer>)} className="opacity-0 w-0 h-0" />
                   <div className="w-full h-full" style={{ background: sh.fill }} />
@@ -448,15 +450,12 @@ export function FloatingToolbar() {
           if (!hasMultipleScreens || layerIndex === -1) return null;
           return (
             <Tooltip>
-              <TooltipTrigger>
-                <button
-                  type="button"
-                  onClick={() => syncTextToScreens(screenSet.id, screen.id, layerIndex)}
-                  className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 text-xs font-medium transition-colors shrink-0"
-                >
-                  <RefreshCw className="w-3 h-3" />
-                  Sync
-                </button>
+              <TooltipTrigger
+                onClick={() => syncTextToScreens(screenSet.id, screen.id, layerIndex)}
+                className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 text-xs font-medium transition-colors shrink-0"
+              >
+                <RefreshCw className="w-3 h-3" />
+                Sync
               </TooltipTrigger>
               <TooltipContent>Copy this text to all screens in set</TooltipContent>
             </Tooltip>

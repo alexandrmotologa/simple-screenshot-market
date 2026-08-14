@@ -3,7 +3,8 @@
 import { useState, useCallback } from "react";
 import {
   Layers, Type, Image as ImageIcon, Square, Flag,
-  Cpu, Upload, Grid3X3, X, Layout, Smile, Globe, User
+  Cpu, Upload, Grid3X3, X, Layout, Smile, Globe, User,
+  Smartphone
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LayersPanel } from "@/components/editor/panels/LayersPanel";
@@ -17,12 +18,16 @@ import { TemplatesPanel } from "@/components/editor/panels/TemplatesPanel";
 import { StickersPanel } from "@/components/editor/panels/StickersPanel";
 import { LocalizationPanel } from "@/components/editor/panels/LocalizationPanel";
 import { CharactersPanel } from "@/components/editor/panels/CharactersPanel";
+import { PlatformsPanel } from "@/components/editor/panels/PlatformsPanel";
+import { ThemesPanel } from "@/components/editor/panels/ThemesPanel";
 import { cn } from "@/lib/utils";
 
-type PanelId = "layers" | "text" | "background" | "flags" | "brands" | "assets" | "blocks" | "templates" | "stickers" | "languages" | "characters" | null;
+type PanelId = "themes" | "platforms" | "layers" | "text" | "background" | "flags" | "brands" | "assets" | "blocks" | "templates" | "stickers" | "languages" | "characters" | null;
 
 const SIDEBAR_TOOLS: { id: PanelId; icon: React.ElementType; label: string }[] = [
+  { id: "themes", icon: Layout, label: "Themes" },
   { id: "templates", icon: Layout, label: "Templates" },
+  { id: "platforms", icon: Smartphone, label: "Platforms" },
   { id: "layers", icon: Layers, label: "Layers" },
   { id: "text", icon: Type, label: "Text" },
   { id: "background", icon: Grid3X3, label: "Background" },
@@ -36,7 +41,9 @@ const SIDEBAR_TOOLS: { id: PanelId; icon: React.ElementType; label: string }[] =
 ];
 
 const PANEL_TITLES: Record<NonNullable<PanelId>, string> = {
+  themes: "Themes",
   templates: "Templates",
+  platforms: "Platforms",
   layers: "Layers",
   text: "Text",
   background: "Background",
@@ -51,7 +58,9 @@ const PANEL_TITLES: Record<NonNullable<PanelId>, string> = {
 
 function renderPanel(panel: NonNullable<PanelId>) {
   switch (panel) {
+    case "themes": return <ThemesPanel />;
     case "templates": return <TemplatesPanel />;
+    case "platforms": return <PlatformsPanel />;
     case "layers": return <LayersPanel />;
     case "text": return <TextPanel />;
     case "background": return <BackgroundPanel />;

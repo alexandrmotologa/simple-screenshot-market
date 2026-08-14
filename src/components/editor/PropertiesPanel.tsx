@@ -11,6 +11,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Trash2, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SlideLayout } from "@/lib/types";
+import { LAYOUT_LABEL, LAYOUT_HINT } from "@/lib/themes";
+import { applyLayoutToScreen } from "@/lib/layoutEngine";
 
 const FONT_FAMILIES = [
   "Geist Sans",
@@ -42,6 +45,7 @@ export function PropertiesPanel() {
     deleteLayer,
     duplicateLayer,
     updateBackground,
+    updateScreen,
   } = useEditorStore();
 
   const layer = getActiveLayer();
@@ -174,6 +178,17 @@ export function PropertiesPanel() {
           <div className="p-4 space-y-6">
             {screen && (
               <ScreenshotChecklist screen={screen} />
+            )}
+            {screen && (
+              <ScreenLayoutProperties 
+                screen={screen} 
+                onUpdate={(layout) => {
+                  if (!set) return;
+                  const newScreen = applyLayoutToScreen(screen, layout);
+                  updateScreen(set.id, screen.id, newScreen);
+                  useEditorStore.getState().recordHistory();
+                }} 
+              />
             )}
             <Separator />
             {screen && (
@@ -522,6 +537,32 @@ function BackgroundProperties({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function ScreenLayoutProperties({ screen, onUpdate }: { screen: import("@/lib/types").Screen, onUpdate: (layout: SlideLayout) => void }) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Screen Layout</h4>
+      </div>
+      <Select value={screen.layout ?? ""} onValueChange={(val) => onUpdate(val as SlideLayout)}>
+        <SelectTrigger className="h-8 text-xs bg-secondary border-0">
+          <SelectValue placeholder="Freeform (no layout)" />
+        </SelectTrigger>
+        <SelectContent>
+          {Object.entries(LAYOUT_LABEL).map(([val, label]) => (
+            <SelectItem key={val} value={val} className="text-xs flex flex-col items-start gap-1">
+              <span className="font-medium">{label}</span>
+              <span className="text-[10px] text-muted-foreground">{LAYOUT_HINT[val as SlideLayout]}</span>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <p className="text-[10px] text-muted-foreground leading-tight">
+        Selecting a layout automatically snaps your primary text and screenshot layers into predefined positions.
+      </p>
     </div>
   );
 }

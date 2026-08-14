@@ -6,6 +6,7 @@ import {
   Plus, Layers, Clock, Copy, Trash2, ArrowRight, Sparkles,
   Zap, Globe, Search, LayoutGrid, List, SortAsc,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { NewProjectModal } from "@/components/dashboard/NewProjectModal";
@@ -258,47 +259,64 @@ export default function DashboardPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-10">
-        {/* ── Empty state ── */}
+        {/* ── Empty state (Hallmark Premium Style) ── */}
         {projects.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-28 text-center">
-            <div className="relative mb-8">
-              <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-primary/20 to-violet-500/20 flex items-center justify-center ring-1 ring-primary/20">
-                <Zap className="w-12 h-12 text-primary" />
-              </div>
-              <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-primary/15 blur-lg" />
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="relative flex flex-col items-center justify-center py-32 text-center overflow-hidden rounded-3xl border border-border/50 bg-card/30 backdrop-blur-sm"
+          >
+            {/* Background Effects */}
+            <div className="absolute inset-0 z-0 pointer-events-none">
+              <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/20 opacity-50 blur-[100px] rounded-full"></div>
             </div>
 
-            <h1 className="text-5xl font-bold tracking-tight mb-4 bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-              Create stunning<br />app screenshots
-            </h1>
-            <p className="text-muted-foreground text-lg max-w-md mb-10 leading-relaxed">
-              Build beautiful App Store & Google Play screenshots with device mockups,
-              templates, and a powerful drag-and-drop editor.
-            </p>
-
-            <div className="flex flex-wrap gap-2 justify-center mb-12">
-              {[
-                "📱 iOS & Android", "🎨 Premium templates", "📐 Store-ready sizes",
-                "💾 Export PNG/ZIP", "🔄 Undo / Redo", "🖼️ Device mockups",
-                "✏️ Text presets", "😊 Stickers & emojis",
-              ].map((f) => (
-                <span key={f} className="px-3 py-1.5 rounded-full bg-secondary text-secondary-foreground text-sm font-medium">
-                  {f}
-                </span>
-              ))}
-            </div>
-
-            <Button
-              id="get-started-btn"
-              size="lg"
-              onClick={() => setShowNewProject(true)}
-              className="gap-2 text-base px-8 h-13 rounded-2xl shadow-lg shadow-primary/25"
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="relative z-10 flex flex-col items-center"
             >
-              <Sparkles className="w-5 h-5" />
-              Get Started — It&apos;s Free
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </div>
+              <div className="relative mb-10 group">
+                <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-primary to-violet-600 opacity-30 blur-lg group-hover:opacity-60 transition duration-500"></div>
+                <div className="relative w-24 h-24 rounded-3xl bg-card border border-border flex items-center justify-center shadow-2xl">
+                  <Sparkles className="w-10 h-10 text-primary animate-pulse" />
+                </div>
+              </div>
+
+              <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-6 bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent max-w-2xl">
+                Create stunning app screenshots in minutes
+              </h1>
+              <p className="text-muted-foreground text-lg sm:text-xl max-w-xl mb-12 leading-relaxed">
+                Build beautiful App Store & Google Play visuals with device mockups,
+                premium templates, and a powerful drag-and-drop editor.
+              </p>
+
+              <div className="flex flex-wrap gap-3 justify-center mb-14 max-w-2xl">
+                {[
+                  "📱 iOS & Android", "🎨 Premium templates", "📐 Store-ready sizes",
+                  "💾 Export PNG/ZIP", "🖼️ Device mockups",
+                ].map((f) => (
+                  <span key={f} className="px-4 py-2 rounded-full bg-secondary/50 border border-border/50 text-secondary-foreground text-sm font-medium backdrop-blur-md">
+                    {f}
+                  </span>
+                ))}
+              </div>
+
+              <Button
+                id="get-started-btn"
+                size="lg"
+                onClick={() => setShowNewProject(true)}
+                className="relative group gap-2 text-base px-8 h-14 rounded-full bg-foreground text-background hover:bg-foreground/90 shadow-xl shadow-primary/20 overflow-hidden transition-all hover:scale-105"
+              >
+                <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                Get Started — It&apos;s Free
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </motion.div>
+          </motion.div>
         ) : (
           <>
             {/* ── Projects header + search + sort ── */}

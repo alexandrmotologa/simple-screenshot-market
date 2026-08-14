@@ -6,6 +6,7 @@ import {
   Screen, ScreenSet, TextLayer, ShapeLayer,
   ImageLayer, ScreenshotLayer, FlagLayer, Layer
 } from "@/lib/types";
+import { ALL_DEVICES, COLOR_HEX_MAP } from "@/lib/devices";
 import { cn } from "@/lib/utils";
 
 interface ScreenCardProps {
@@ -233,17 +234,38 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
 
         ctx.textAlign = tl.align as CanvasTextAlign;
         if (tl.letterSpacing) ctx.letterSpacing = `${tl.letterSpacing}px`;
-        const lines = displayContent.split("\n");
+
+        const words = displayContent.split(/\s+/);
+        let currentLine = "";
+        const lines: string[] = [];
+
+        for (let i = 0; i < words.length; i++) {
+          const testLine = currentLine + words[i] + " ";
+          const metrics = ctx.measureText(testLine);
+          const testWidth = metrics.width;
+          if (testWidth > tl.width && i > 0) {
+            lines.push(currentLine.trim());
+            currentLine = words[i] + " ";
+          } else {
+            currentLine = testLine;
+          }
+        }
+        lines.push(currentLine.trim());
+
+        // Also split by explicit newlines if the user typed them
+        const finalLines = lines.flatMap(line => line.split("\n"));
+
         const lineH = tl.fontSize * (tl.lineHeight ?? 1.25);
         const xPos =
           tl.align === "center" ? tl.x + tl.width / 2
           : tl.align === "right" ? tl.x + tl.width
           : tl.x;
 
+
         // Highlight background
         if (tl.highlight) {
           const { color, paddingX, paddingY, cornerRadius } = tl.highlight;
-          const totalH = lines.length * lineH;
+          const totalH = finalLines.length * lineH;
           ctx.fillStyle = color;
           const hx = tl.x - paddingX;
           const hy = tl.y - paddingY;
@@ -266,7 +288,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           }
         }
 
-        lines.forEach((line, i) => {
+        finalLines.forEach((line, i) => {
           const yPos = tl.y + tl.fontSize + i * lineH;
           // Stroke (outline)
           if (tl.stroke && tl.stroke.width > 0) {
@@ -291,10 +313,14 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
       // ── SCREENSHOT ZONE ───────────────────────────────────────────────────
       else if (layer.type === "screenshot") {
         const sl = layer as ScreenshotLayer;
-        const { x, y, width: w, height: h, cornerRadius: r = 0 } = sl;
+        const { x, y, width: w, height: h } = sl;
         const mockup = screenSet.mockup;
         const hasFrame = sl.showDeviceFrame && mockup?.showFrame !== false;
         
+        // If mockup.squircle or hasFrame is true, use an internal default (e.g. 8% of width), else use the user-defined sl.cornerRadius.
+        const defaultDeviceR = Math.min(w, h) * 0.08;
+        const r = (mockup?.squircle || hasFrame) ? defaultDeviceR : (sl.cornerRadius || 0);
+
         // Frame dimensions
         const bezel = hasFrame ? Math.min(w, h) * 0.035 : 0;
         const innerX = x + bezel;
@@ -327,34 +353,78 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           ctx.shadowOffsetY = sl.shadow.offsetY;
         }
 
+        // Get actual hex code from the mockup's color name
+        const rawColorName = mockup?.color || "black";
+        let baseHex = COLOR_HEX_MAP[rawColorName.toLowerCase()] || "#1a1a1c";
+
         // 1. Draw outer device frame
         if (hasFrame) {
           ctx.beginPath();
           if (r > 0) ctx.roundRect(x, y, w, h, r);
           else ctx.rect(x, y, w, h);
           
-          if (mockup.borderStyle === "clay") {
-            ctx.fillStyle = mockup.color === "black" ? "#1c1c1e" : mockup.color === "white" ? "#f5f5f7" : mockup.color === "titanium" ? "#a19e95" : mockup.color;
-          } else if (mockup.borderStyle === "glass") {
-            const grad = ctx.createLinearGradient(x, y, x + w, y + h);
-            grad.addColorStop(0, "rgba(255,255,255,0.4)");
-            grad.addColorStop(1, "rgba(255,255,255,0.1)");
-            ctx.fillStyle = grad;
-            ctx.strokeStyle = "rgba(255,255,255,0.5)";
-            ctx.lineWidth = 2;
+          if (mockup.frameType === "3d") {
+            // -- 3D Realistic Frame --
+            // 1a. Base frame (darker bezel)
+            ctx.fillStyle = baseHex;
+            ctx.fill();
+
+            // 1b. Metallic Rim Gradient
+            const isDark = baseHex === "#1a1a1c" || baseHex === "#000000" || baseHex === "#111111" || baseHex === "#111827" || baseHex === "#2d2d2d";
+            const rimGrad = ctx.createLinearGradient(x, y, x + w, y + h);
+            if (isDark) {
+              rimGrad.addColorStop(0, "rgba(255, 255, 255, 0.35)");
+              rimGrad.addColorStop(0.2, "rgba(255, 255, 255, 0.05)");
+              rimGrad.addColorStop(0.5, "rgba(0, 0, 0, 0.8)");
+              rimGrad.addColorStop(0.8, "rgba(255, 255, 255, 0.05)");
+              rimGrad.addColorStop(1, "rgba(255, 255, 255, 0.2)");
+            } else {
+              rimGrad.addColorStop(0, "rgba(255, 255, 255, 1)");
+              rimGrad.addColorStop(0.2, "rgba(0, 0, 0, 0.05)");
+              rimGrad.addColorStop(0.5, "rgba(0, 0, 0, 0.15)");
+              rimGrad.addColorStop(0.8, "rgba(0, 0, 0, 0.05)");
+              rimGrad.addColorStop(1, "rgba(255, 255, 255, 0.8)");
+            }
+            
+            // Draw rim outer edge
+            ctx.lineWidth = bezel * 0.4;
+            ctx.strokeStyle = rimGrad;
             ctx.stroke();
+
+            // 1c. Inner screen depth shadow (glass edge)
+            ctx.beginPath();
+            if (r > 0) ctx.roundRect(innerX - 1, innerY - 1, innerW + 2, innerH + 2, innerR);
+            else ctx.rect(innerX - 1, innerY - 1, innerW + 2, innerH + 2);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "rgba(0,0,0,0.8)";
+            ctx.stroke();
+            
+            // 1d. Corner highlights (shiny metal reflection)
+            if (r > 0) {
+              ctx.beginPath();
+              ctx.arc(x + r, y + r, r, Math.PI, 1.5 * Math.PI); // Top-left
+              ctx.lineWidth = 2;
+              ctx.strokeStyle = "rgba(255,255,255,0.6)";
+              ctx.stroke();
+              
+              ctx.beginPath();
+              ctx.arc(x + w - r, y + h - r, r, 0, 0.5 * Math.PI); // Bottom-right
+              ctx.lineWidth = 1.5;
+              ctx.strokeStyle = "rgba(255,255,255,0.3)";
+              ctx.stroke();
+            }
           } else {
-            // solid/realistic
-            ctx.fillStyle = mockup.color === "black" ? "#000000" : mockup.color === "white" ? "#e5e5ea" : mockup.color === "titanium" ? "#8c8c88" : mockup.color;
-          }
-          ctx.fill();
-          
-          // Draw frame rim highlight (inner shadow effect)
-          if (mockup.borderStyle !== "clay") {
+            // -- 2D Flat Frame --
+            ctx.fillStyle = baseHex;
+            ctx.fill();
+            
+            // Simple rim
             ctx.beginPath();
             if (r > 0) ctx.roundRect(x + 2, y + 2, w - 4, h - 4, r - 2);
             else ctx.rect(x + 2, y + 2, w - 4, h - 4);
-            ctx.strokeStyle = mockup.color === "white" ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.15)";
+            
+            const isWhite = baseHex === "#f5f5f7" || baseHex === "#ffffff" || baseHex === "#f8f8f8";
+            ctx.strokeStyle = isWhite ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.15)";
             ctx.lineWidth = 2;
             ctx.stroke();
           }
@@ -403,10 +473,11 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         // 3. Draw Notch / Dynamic Island
         if (hasFrame) {
           ctx.fillStyle = "#000000";
+          const isIos = mockup.device.includes("iphone") || mockup.device.includes("ipad");
           const showIsland = mockup.dynamicIsland ?? (mockup.device.includes("iphone-16") || mockup.device.includes("iphone-15"));
           const showNotch = !showIsland && (mockup.notch !== false);
           
-          if (showIsland) {
+          if (isIos && showIsland) {
             // Dynamic Island
             const islandW = innerW * 0.32;
             const islandH = islandW * 0.3;
@@ -425,8 +496,8 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             ctx.arc(islandX + islandH * 0.8, islandY + islandH / 2, islandH * 0.25, 0, Math.PI * 2);
             ctx.fill();
           } else if (showNotch) {
-            if (mockup.device.includes("pixel") || mockup.device.includes("s24")) {
-              // Hole Punch
+            if (!isIos) {
+              // Android - Default to Center Hole Punch
               const holeR = innerW * 0.025;
               const holeX = innerX + innerW / 2;
               const holeY = innerY + holeR * 2.5;
@@ -434,7 +505,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
               ctx.arc(holeX, holeY, holeR, 0, Math.PI * 2);
               ctx.fill();
             } else {
-              // Classic Notch
+              // Classic Notch (Older iPhones)
               const notchW = innerW * 0.45;
               const notchH = innerW * 0.08;
               const notchX = innerX + (innerW - notchW) / 2;
@@ -693,7 +764,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
 
       ctx.restore();
     }
-  }, [screen, isActiveScreen, activeLayerId]);
+  }, [screen, isActiveScreen, activeLayerId, activeLang, hideScreenshots, screenSet.mockup]);
 
   useEffect(() => { draw(); }, [draw]);
 
@@ -925,7 +996,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
               reader.readAsDataURL(file);
             }
           }}
-          className={dragRef.current || isScreenshotActive ? "cursor-move" : "cursor-pointer"}
+          className={isScreenshotActive ? "cursor-move" : "cursor-pointer"}
         />
 
         {/* Resize handles overlay — shown when layer is selected */}
