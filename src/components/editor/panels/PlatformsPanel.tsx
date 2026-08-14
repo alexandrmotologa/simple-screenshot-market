@@ -49,7 +49,7 @@ export function PlatformsPanel() {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm font-medium">iOS (App Store)</span>
-                  <span className="text-[10px] text-muted-foreground">{iosSet?.device ? findModel(iosSet.device)?.name || "iPhone" : "iPhone 16 Pro Max"}</span>
+                  <span className="text-[10px] text-muted-foreground">{iosSet?.deviceId ? findModel(iosSet.deviceId)?.name || "iPhone" : "iPhone 16 Pro Max"}</span>
                 </div>
               </div>
               <Switch
@@ -65,7 +65,7 @@ export function PlatformsPanel() {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm font-medium">Android (Google Play)</span>
-                  <span className="text-[10px] text-muted-foreground">{androidSet?.device ? findModel(androidSet.device)?.name || "Pixel" : "Pixel 9 Pro XL"}</span>
+                  <span className="text-[10px] text-muted-foreground">{androidSet?.deviceId ? findModel(androidSet.deviceId)?.name || "Pixel" : "Pixel 9 Pro XL"}</span>
                 </div>
               </div>
               <Switch
