@@ -210,7 +210,7 @@ export const DEFAULT_TEMPLATES: Template[] = [
             Math.round(W * 0.12),
             Math.round(H * 0.06),
             Math.round(W * 0.76),
-            2400,
+            1800,
             "Drop Screenshot"
           ),
           textLayer(
