@@ -175,12 +175,17 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         }
       } else if (pType === "noise") {
         // Pseudo-noise using random dots
-        const seed = 42;
-        const pseudo = (n: number) => ((n * 1664525 + seed * 1013904223) & 0xffffffff) / 0xffffffff;
-        for (let i = 0; i < W * H * 0.03; i++) {
+        const seed = 42.123;
+        const pseudo = (n: number) => {
+          const x = Math.sin(n + seed) * 10000;
+          return x - Math.floor(x);
+        };
+        // Reduce the number of dots for better performance (0.01 instead of 0.03)
+        const dotCount = Math.floor(W * H * 0.015);
+        for (let i = 0; i < dotCount; i++) {
           const px = pseudo(i * 3) * W;
           const py = pseudo(i * 3 + 1) * H;
-          const pr = pseudo(i * 3 + 2) * 2 + 1;
+          const pr = pseudo(i * 3 + 2) * 1.5 + 0.5;
           ctx.beginPath();
           ctx.arc(px, py, pr, 0, Math.PI * 2);
           ctx.fill();
@@ -1397,20 +1402,22 @@ function drawPlaceholder(
 
   // Dashed border
   ctx.strokeStyle = "rgba(99,102,241,0.55)";
-  ctx.lineWidth = 6;
-  ctx.setLineDash([24, 12]);
-  ctx.strokeRect(x + 3, y + 3, w - 6, h - 6);
+  ctx.lineWidth = 10;
+  ctx.setLineDash([30, 20]);
+  ctx.strokeRect(x + 5, y + 5, w - 10, h - 10);
   ctx.setLineDash([]);
 
   // Phone icon (simple outline)
-  const iw = Math.min(w * 0.22, 130);
-  const ih = iw * 1.75;
+  const iw = w * 0.25;
+  const ih = iw * 1.8;
   const ix = x + (w - iw) / 2;
-  const iy = y + (h - ih) / 2 - (label ? 60 : 0);
-  const ir = iw * 0.12;
+  const iy = y + (h - ih) / 2 - (label ? h * 0.05 : 0);
+  const ir = iw * 0.15;
 
   ctx.strokeStyle = "rgba(99,102,241,0.8)";
-  ctx.lineWidth = 5;
+  ctx.lineWidth = Math.max(8, iw * 0.04);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
   ctx.setLineDash([]);
   ctx.beginPath();
   ctx.roundRect(ix, iy, iw, ih, ir);
@@ -1419,7 +1426,7 @@ function drawPlaceholder(
   // Small home indicator
   ctx.fillStyle = "rgba(99,102,241,0.8)";
   ctx.beginPath();
-  ctx.roundRect(ix + iw * 0.3, iy + ih - iw * 0.08, iw * 0.4, iw * 0.04, 2);
+  ctx.roundRect(ix + iw * 0.3, iy + ih - iw * 0.12, iw * 0.4, iw * 0.04, iw * 0.02);
   ctx.fill();
 
   // Upload icon (arrow up + line)
@@ -1427,31 +1434,32 @@ function drawPlaceholder(
   const arrowCy = iy + ih / 2;
   const arrowSize = iw * 0.35;
   ctx.strokeStyle = "rgba(99,102,241,0.7)";
-  ctx.lineWidth = 4;
+  ctx.lineWidth = Math.max(6, iw * 0.035);
   ctx.beginPath();
   ctx.moveTo(arrowCx, arrowCy - arrowSize * 0.6);
-  ctx.lineTo(arrowCx, arrowCy + arrowSize * 0.3);
+  ctx.lineTo(arrowCx, arrowCy + arrowSize * 0.4);
   ctx.stroke();
   ctx.beginPath();
-  ctx.moveTo(arrowCx - arrowSize * 0.4, arrowCy - arrowSize * 0.15);
+  ctx.moveTo(arrowCx - arrowSize * 0.4, arrowCy - arrowSize * 0.2);
   ctx.lineTo(arrowCx, arrowCy - arrowSize * 0.6);
-  ctx.lineTo(arrowCx + arrowSize * 0.4, arrowCy - arrowSize * 0.15);
+  ctx.lineTo(arrowCx + arrowSize * 0.4, arrowCy - arrowSize * 0.2);
   ctx.stroke();
 
   // Label text
   if (label) {
-    ctx.font = `500 ${Math.max(32, w * 0.04)}px -apple-system, sans-serif`;
-    ctx.fillStyle = "rgba(199,210,254,0.85)";
+    const fontSize = w * 0.08;
+    ctx.font = `600 ${fontSize}px -apple-system, sans-serif`;
+    ctx.fillStyle = "rgba(199,210,254,0.95)";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    ctx.fillText(label, x + w / 2, iy + ih + 30);
+    ctx.fillText(label, x + w / 2, iy + ih + h * 0.05);
   }
 
   // Tap instruction
-  const instrFontSize = Math.max(28, w * 0.034);
+  const instrFontSize = w * 0.05;
   ctx.font = `400 ${instrFontSize}px -apple-system, sans-serif`;
-  ctx.fillStyle = "rgba(148,163,184,0.65)";
+  ctx.fillStyle = "rgba(148,163,184,0.8)";
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
-  ctx.fillText("Tap to add screenshot", x + w / 2, y + h - instrFontSize * 2 - 30);
+  ctx.fillText("Click or drop image here", x + w / 2, iy + ih + h * 0.05 + w * 0.08 + h * 0.02);
 }
