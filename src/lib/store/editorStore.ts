@@ -207,9 +207,9 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         const lastScreen = ss.screens[ss.screens.length - 1];
         let newLayers: Layer[] = [];
         if (lastScreen) {
-          // Copy only screenshot layers to keep the phone positioning consistent
+          // Copy all layers to repeat texts, mockup positioning, icons etc.
           newLayers = JSON.parse(
-            JSON.stringify(lastScreen.layers.filter((l) => l.type === "screenshot"))
+            JSON.stringify(lastScreen.layers)
           ).map((l: Layer) => ({ ...l, id: nanoid() }));
         } else {
           // Default phone layer if no previous screen
