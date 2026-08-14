@@ -259,20 +259,20 @@ export const DEFAULT_TEMPLATES: Template[] = [
           
           textLayer(
             isFirst ? "Make It\nFun!" : `Enjoy Every\nMoment`,
-            Math.round(W * 0.08), Math.round(H * 0.2), Math.round(W * 0.84), 400,
-            { fontSize: 130, fontWeight: 900, color: "#ffffff", lineHeight: 1.05, textAlign: "center" }
+            Math.round(W * 0.08), Math.round(H * 0.15), Math.round(W * 0.45), 400,
+            { fontSize: 130, fontWeight: 900, color: "#ffffff", lineHeight: 1.05, align: "left" }
           ),
           textLayer(
             isFirst ? "The most vibrant app experience out there." : "Bring joy to your daily routines and tasks.",
-            Math.round(W * 0.08), Math.round(H * 0.38), Math.round(W * 0.84), 200,
-            { fontSize: 48, fontWeight: 600, color: "rgba(255,255,255,0.8)", lineHeight: 1.4, textAlign: "center" }
+            Math.round(W * 0.08), Math.round(H * 0.32), Math.round(W * 0.42), 200,
+            { fontSize: 48, fontWeight: 600, color: "rgba(255,255,255,0.8)", lineHeight: 1.4, align: "left" }
           ),
           
           screenshotWithFrame(
-            Math.round(W * 0.15),
-            Math.round(H * 0.52),
-            Math.round(W * 0.7),
-            2200,
+            Math.round(W * 0.45),
+            Math.round(H * 0.25),
+            Math.round(W * 0.8),
+            2400,
             "Drop Screenshot"
           ),
         ],
