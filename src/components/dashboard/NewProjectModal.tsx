@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { X, Search, Check, Sparkles, ArrowRight, Monitor } from "lucide-react";
+import { X, Search, Check, Sparkles, ArrowRight, Monitor, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -173,7 +173,7 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
 
         {/* Body (Scrollable List) */}
         <ScrollArea className="flex-1 min-h-0 bg-secondary/20">
-          <div className="p-8 space-y-12 max-w-4xl mx-auto">
+          <div className="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             
             {themes.map((tpl) => {
               const isSelected = selectedTemplate === tpl.id;
@@ -181,37 +181,33 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
                 <div 
                   key={tpl.id} 
                   className={cn(
-                    "flex flex-col gap-4 p-6 rounded-3xl transition-all border-2",
+                    "relative flex flex-col items-center gap-5 p-6 rounded-[2rem] transition-all cursor-pointer group",
                     isSelected 
-                      ? "border-primary bg-primary/5 shadow-xl shadow-primary/10" 
-                      : "border-transparent hover:bg-secondary hover:border-border"
+                      ? "bg-primary/5 shadow-2xl shadow-primary/10 ring-2 ring-primary" 
+                      : "bg-background shadow-md hover:shadow-xl hover:-translate-y-1 hover:ring-2 hover:ring-primary/30 border border-border/50"
                   )}
                   onClick={() => setSelectedTemplate(tpl.id)}
                 >
-                  <div className="flex items-center justify-between px-2 cursor-pointer">
-                    <div>
-                      <h3 className="text-xl font-bold text-foreground">{tpl.name}</h3>
-                      <p className="text-sm text-muted-foreground mt-0.5">{tpl.description}</p>
-                    </div>
-                    <div className={cn(
-                      "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
-                      isSelected ? "border-primary bg-primary" : "border-muted-foreground/30"
-                    )}>
-                      {isSelected && <Check className="w-3.5 h-3.5 text-primary-foreground" />}
-                    </div>
+                  {/* Selection indicator */}
+                  <div className={cn(
+                    "absolute top-5 right-5 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors z-10",
+                    isSelected ? "border-primary bg-primary" : "border-muted-foreground/30 group-hover:border-primary/50 bg-background/50 backdrop-blur"
+                  )}>
+                    {isSelected && <Check className="w-3.5 h-3.5 text-primary-foreground" />}
                   </div>
 
-                  {/* 5 Screen Previews Row */}
-                  <div className="flex items-center gap-4 overflow-x-auto pb-4 pt-2 px-2 snap-x">
-                    {[0, 1, 2, 3, 4].map((index) => (
-                      <div 
-                        key={index}
-                        className="w-[140px] shrink-0 rounded-2xl overflow-hidden shadow-md snap-start"
-                        style={{ aspectRatio: "3/4" }}
-                      >
-                        <LayoutPreview template={tpl} />
-                      </div>
-                    ))}
+                  {/* Single Screen Preview */}
+                  <div 
+                    className="w-[160px] shrink-0 rounded-[1.5rem] overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow mt-2 ring-1 ring-border/50"
+                    style={{ aspectRatio: "3/4" }}
+                  >
+                    <LayoutPreview template={tpl} />
+                  </div>
+
+                  {/* Text details */}
+                  <div className="text-center mt-1 w-full px-2">
+                    <h3 className="text-xl font-bold text-foreground">{tpl.name}</h3>
+                    <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">{tpl.description}</p>
                   </div>
                 </div>
               );
@@ -220,24 +216,27 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
             {/* Custom/Blank Project at the bottom */}
             <div 
               className={cn(
-                "flex flex-col gap-4 p-6 rounded-3xl transition-all border-2 mb-12",
+                "relative flex flex-col items-center justify-center gap-4 p-6 rounded-[2rem] transition-all cursor-pointer group h-full min-h-[320px]",
                 selectedTemplate === "blank"
-                  ? "border-primary bg-primary/5 shadow-xl shadow-primary/10" 
-                  : "border-transparent hover:bg-secondary hover:border-border"
+                  ? "bg-primary/5 shadow-2xl shadow-primary/10 ring-2 ring-primary" 
+                  : "bg-secondary/20 shadow-md border-2 border-dashed border-border hover:shadow-xl hover:-translate-y-1 hover:border-primary/50 hover:bg-secondary/40"
               )}
               onClick={() => setSelectedTemplate("blank")}
             >
-              <div className="flex items-center justify-between px-2 cursor-pointer">
-                <div>
-                  <h3 className="text-xl font-bold text-foreground">Create Custom Design</h3>
-                  <p className="text-sm text-muted-foreground mt-0.5">Start Blank Project</p>
-                </div>
-                <div className={cn(
-                  "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
-                  selectedTemplate === "blank" ? "border-primary bg-primary" : "border-muted-foreground/30"
-                )}>
-                  {selectedTemplate === "blank" && <Check className="w-3.5 h-3.5 text-primary-foreground" />}
-                </div>
+              <div className={cn(
+                "absolute top-5 right-5 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors z-10",
+                selectedTemplate === "blank" ? "border-primary bg-primary" : "border-muted-foreground/30 group-hover:border-primary/50"
+              )}>
+                {selectedTemplate === "blank" && <Check className="w-3.5 h-3.5 text-primary-foreground" />}
+              </div>
+
+              <div className="w-20 h-20 rounded-full bg-background shadow-sm border border-border/50 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                <Plus className="w-10 h-10 text-muted-foreground group-hover:text-primary transition-colors" />
+              </div>
+
+              <div className="text-center w-full px-2">
+                <h3 className="text-xl font-bold text-foreground">Custom Design</h3>
+                <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">Start with a blank canvas and create from scratch.</p>
               </div>
             </div>
 
