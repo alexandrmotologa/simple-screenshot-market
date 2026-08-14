@@ -115,7 +115,7 @@ export const DEFAULT_TEMPLATES: Template[] = [
     tags: ["dark", "premium", "modern", "glow"],
     previewColor: "#0f172a",
     previewGradient: ["#1e293b", "#020617"],
-    screens: Array.from({ length: 5 }).map((_, i) => {
+    screens: Array.from({ length: 1 }).map((_, i) => {
       const isFirst = i === 0;
       const glowColors = [
         "rgba(139,92,246,0.3)", // purple
@@ -187,7 +187,7 @@ export const DEFAULT_TEMPLATES: Template[] = [
     tags: ["light", "clean", "white", "minimal"],
     previewColor: "#f8fafc",
     previewGradient: ["#ffffff", "#e2e8f0"],
-    screens: Array.from({ length: 5 }).map((_, i) => {
+    screens: Array.from({ length: 1 }).map((_, i) => {
       const isFirst = i === 0;
       return {
         name: isFirst ? "Intro" : `Details ${i}`,
@@ -238,7 +238,7 @@ export const DEFAULT_TEMPLATES: Template[] = [
     tags: ["fun", "vibrant", "shapes", "colorful"],
     previewColor: "#fb923c",
     previewGradient: ["#f43f5e", "#f59e0b"],
-    screens: Array.from({ length: 5 }).map((_, i) => {
+    screens: Array.from({ length: 1 }).map((_, i) => {
       const isFirst = i === 0;
       const shapes: import("@/lib/types").ShapeType[] = ["star", "triangle", "diamond", "hexagon", "crescent"];
       return {
@@ -290,7 +290,7 @@ export const DEFAULT_TEMPLATES: Template[] = [
     tags: ["business", "finance", "blue", "trusted"],
     previewColor: "#1e3a8a",
     previewGradient: ["#2563eb", "#1e3a8a"],
-    screens: Array.from({ length: 5 }).map((_, i) => {
+    screens: Array.from({ length: 1 }).map((_, i) => {
       const isFirst = i === 0;
       return {
         name: isFirst ? "Overview" : `Detail ${i}`,
@@ -348,7 +348,7 @@ export const DEFAULT_TEMPLATES: Template[] = [
     tags: ["gaming", "cyber", "neon", "dark"],
     previewColor: "#000000",
     previewGradient: ["#020617", "#000000"],
-    screens: Array.from({ length: 5 }).map((_, i) => {
+    screens: Array.from({ length: 1 }).map((_, i) => {
       const isFirst = i === 0;
       return {
         name: isFirst ? "Enter" : `Level ${i}`,
@@ -402,7 +402,7 @@ export const DEFAULT_TEMPLATES: Template[] = [
     tags: ["creative", "flow", "dynamic", "asymmetric"],
     previewColor: "#8b5cf6",
     previewGradient: ["#8b5cf6", "#ec4899"],
-    screens: Array.from({ length: 5 }).map((_, i) => {
+    screens: Array.from({ length: 1 }).map((_, i) => {
       const isFirst = i === 0;
       const shapes: import("@/lib/types").ShapeType[] = ["hexagon", "diamond", "star", "circle", "triangle"];
       return {
