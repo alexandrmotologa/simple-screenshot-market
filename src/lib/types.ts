@@ -29,8 +29,7 @@ export type SlideLayout =
   | "two-devices"
   | "no-device"
   | "split-landscape"
-  | "feature-graphic"
-  | "screenshot-float-reverse";
+  | "feature-graphic";
 
 
 export type ShapeType =
@@ -400,6 +399,7 @@ export type TemplateLayout =
   | "screenshot-top"      // screenshot top 65%, text bottom
   | "screenshot-bottom"   // text top, screenshot bottom 55%
   | "screenshot-float"    // screenshot floating center-right with shadow
+  | "screenshot-float-reverse" // screenshot floating center-left
   | "screenshot-full"     // screenshot full-bleed, text overlay
   | "screenshot-split"    // 2 screenshots side-by-side
   | "text-only";          // no screenshot zone (pure text/graphic)
