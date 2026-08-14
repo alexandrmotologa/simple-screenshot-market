@@ -385,6 +385,57 @@ export const DEFAULT_TEMPLATES: Template[] = [
       } as TemplateScreen;
     }),
   },
+
+  // ── 7. Dynamic Flow ─────────────────────────────────────────────────────────
+  {
+    id: "dynamic-flow",
+    name: "Dynamic Flow",
+    description: "Creative split layout with text on the right and screenshot on the left",
+    category: "Creative",
+    layout: "screenshot-float-reverse",
+    tags: ["creative", "flow", "dynamic", "asymmetric"],
+    previewColor: "#8b5cf6",
+    previewGradient: ["#8b5cf6", "#ec4899"],
+    screens: Array.from({ length: 5 }).map((_, i) => {
+      const isFirst = i === 0;
+      const shapes: import("@/lib/types").ShapeType[] = ["hexagon", "diamond", "star", "circle", "triangle"];
+      return {
+        name: isFirst ? "Welcome" : `Feature ${i}`,
+        background: {
+          type: "mesh",
+          mesh: {
+            topLeft: i % 2 === 0 ? "#7c3aed" : "#9333ea",
+            topRight: "#db2777",
+            bottomLeft: "#4f46e5",
+            bottomRight: i % 2 !== 0 ? "#e11d48" : "#c026d3"
+          }
+        },
+        layers: [
+          shapeLayer(shapes[i % 5], W * 0.7, H * 0.05, 180, 180, "rgba(255,255,255,0.2)", { rotation: 15 * i }),
+          shapeLayer(shapes[(i+1) % 5], W * 0.1, H * 0.8, 220, 220, "rgba(255,255,255,0.15)", { rotation: -20 * i }),
+          
+          textLayer(
+            isFirst ? "Stand\nOut." : `Smooth\nJourney`,
+            Math.round(W * 0.5), Math.round(H * 0.15), Math.round(W * 0.42), 400,
+            { fontSize: 130, fontWeight: 900, color: "#ffffff", lineHeight: 1.05, align: "left" }
+          ),
+          textLayer(
+            isFirst ? "Unleash the full potential of your creativity today." : "An experience so smooth it feels like magic.",
+            Math.round(W * 0.5), Math.round(H * 0.32), Math.round(W * 0.42), 200,
+            { fontSize: 48, fontWeight: 600, color: "rgba(255,255,255,0.8)", lineHeight: 1.4, align: "left" }
+          ),
+          
+          screenshotWithFrame(
+            Math.round(W * -0.25),
+            Math.round(H * 0.25),
+            Math.round(W * 0.8),
+            2400,
+            "Drop Screenshot"
+          ),
+        ],
+      } as TemplateScreen;
+    }),
+  },
 ];
 
 export const TEMPLATE_CATEGORIES = [

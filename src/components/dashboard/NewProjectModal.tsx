@@ -83,6 +83,16 @@ function LayoutPreview({ template }: { template: Template }) {
           <rect x="63" y="16" width="56" height="106" rx="5" fill={phoneColor} />
         </>
       )}
+      {layout === "screenshot-float-reverse" && (
+        <>
+          <rect x="-7" y="8" width="72" height="120" rx="6" fill={phoneBg} stroke={phoneBorder} strokeWidth="1.5" strokeDasharray="5 3" />
+          <rect x="1" y="16" width="56" height="106" rx="5" fill={phoneColor} />
+          <rect x="67" y="20" width="45" height="8" rx="3" fill={textColor} />
+          <rect x="67" y="32" width="38" height="8" rx="3" fill={textColor} />
+          <rect x="67" y="50" width="48" height="4" rx="2" fill={textLight} />
+          <rect x="67" y="58" width="40" height="4" rx="2" fill={textLight} />
+        </>
+      )}
       {layout === "screenshot-full" && (
         <>
           <rect x="0" y="0" width="120" height="110" fill={phoneBg} />

@@ -29,7 +29,8 @@ export type SlideLayout =
   | "two-devices"
   | "no-device"
   | "split-landscape"
-  | "feature-graphic";
+  | "feature-graphic"
+  | "screenshot-float-reverse";
 
 
 export type ShapeType =
