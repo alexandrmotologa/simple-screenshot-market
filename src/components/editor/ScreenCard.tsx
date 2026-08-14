@@ -1446,20 +1446,43 @@ function drawPlaceholder(
   ctx.stroke();
 
   // Label text
+  let instrY = iy + ih + h * 0.05;
   if (label) {
-    const fontSize = w * 0.08;
+    const fontSize = Math.round(w * 0.07);
     ctx.font = `600 ${fontSize}px -apple-system, sans-serif`;
-    ctx.fillStyle = "rgba(199,210,254,0.95)";
+    ctx.fillStyle = "rgba(199,210,254,1)";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    ctx.fillText(label, x + w / 2, iy + ih + h * 0.05);
+
+    // Split text into lines if it's too wide
+    const words = label.split(" ");
+    let line = "";
+    const lines: string[] = [];
+    for (let i = 0; i < words.length; i++) {
+      const testLine = line + words[i] + " ";
+      if (ctx.measureText(testLine).width > w * 0.85 && i > 0) {
+        lines.push(line.trim());
+        line = words[i] + " ";
+      } else {
+        line = testLine;
+      }
+    }
+    lines.push(line.trim());
+
+    for (const l of lines) {
+      ctx.fillText(l, x + w / 2, instrY);
+      instrY += fontSize * 1.3;
+    }
+    instrY += h * 0.015;
+  } else {
+    instrY += w * 0.08 + h * 0.02;
   }
 
   // Tap instruction
-  const instrFontSize = w * 0.05;
-  ctx.font = `400 ${instrFontSize}px -apple-system, sans-serif`;
-  ctx.fillStyle = "rgba(148,163,184,0.8)";
+  const instrFontSize = Math.round(w * 0.045);
+  ctx.font = `500 ${instrFontSize}px -apple-system, sans-serif`;
+  ctx.fillStyle = "rgba(226,232,240,0.95)";
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
-  ctx.fillText("Click or drop image here", x + w / 2, iy + ih + h * 0.05 + w * 0.08 + h * 0.02);
+  ctx.fillText("Click or drop image here", x + w / 2, instrY);
 }

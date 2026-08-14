@@ -4,6 +4,7 @@ import { useEditorStore } from "@/lib/store/editorStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Apple, Smartphone } from "lucide-react";
+import { findModel } from "@/lib/deviceModels";
 
 export function PlatformsPanel() {
   const { screenSets, addScreenSet, removeScreenSet } = useEditorStore();
@@ -48,7 +49,7 @@ export function PlatformsPanel() {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm font-medium">iOS (App Store)</span>
-                  <span className="text-[10px] text-muted-foreground">iPhone 16 Pro Max, 6.7"</span>
+                  <span className="text-[10px] text-muted-foreground">{iosSet?.device ? findModel(iosSet.device)?.name || "iPhone" : "iPhone 16 Pro Max"}</span>
                 </div>
               </div>
               <Switch
@@ -64,7 +65,7 @@ export function PlatformsPanel() {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm font-medium">Android (Google Play)</span>
-                  <span className="text-[10px] text-muted-foreground">Pixel 9 Pro XL, 6.7"</span>
+                  <span className="text-[10px] text-muted-foreground">{androidSet?.device ? findModel(androidSet.device)?.name || "Pixel" : "Pixel 9 Pro XL"}</span>
                 </div>
               </div>
               <Switch

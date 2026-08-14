@@ -363,10 +363,14 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
           </button>
         )}
 
-        {/* Screen count */}
-        <span className="ml-auto text-xs text-muted-foreground tabular-nums">
-          {screenSet.screens.length} / 8 screens
-        </span>
+        {/* Delete platform button */}
+        <button 
+          className="p-1 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded transition-colors ml-4"
+          onClick={() => removeScreenSet(screenSet.id)}
+          title={`Remove ${isIOS ? 'App Store' : 'Google Play'}`}
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
       {/* ── Cards Row ──────────────────────────────────────────────────────── */}
