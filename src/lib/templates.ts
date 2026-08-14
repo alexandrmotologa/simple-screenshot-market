@@ -369,7 +369,13 @@ export const DEFAULT_TEMPLATES: Template[] = [
           shapeLayer("rectangle", W * 0.8, H * 0.1, 40, 40, "transparent", { stroke: "#06b6d4", strokeWidth: 4, cornerRadius: 8 }),
           shapeLayer("circle", W * 0.1, H * 0.85, 20, 20, "#06b6d4", { shadow: { blur: 20, color: "#06b6d4", spread: 5, offsetX:0, offsetY:0 } }),
           
-          screenshotZone(0, 0, W, Math.round(H * 0.64), "Drop Screenshot", 0),
+          screenshotWithFrame(
+            Math.round(W * 0.12),
+            Math.round(H * 0.08),
+            Math.round(W * 0.76),
+            2400,
+            "Drop Screenshot"
+          ),
           
           textLayer(
             isFirst ? "INITIATE\nSEQUENCE" : `OVERRIDE\nSYSTEM`,

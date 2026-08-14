@@ -391,16 +391,20 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
 
               {/* Add screen button */}
               {screenSet.screens.length < 8 && (
-                <button
-                  id={`add-screen-${screenSet.id}`}
-                  onClick={handleAddScreen}
-                  type="button"
-                  className="shrink-0 flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border/50 hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all"
-                  style={{ width: cardW, height: cardH }}
-                >
-                  <Plus className="w-5 h-5" />
-                  <span className="text-xs font-medium">Add</span>
-                </button>
+                <div className="shrink-0 flex flex-col gap-1.5">
+                  {/* Spacer to match ScreenCard header height (h-5) */}
+                  <div className="h-5 pointer-events-none" />
+                  <button
+                    id={`add-screen-${screenSet.id}`}
+                    onClick={handleAddScreen}
+                    type="button"
+                    className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border/50 hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all"
+                    style={{ width: cardW, height: cardH }}
+                  >
+                    <Plus className="w-5 h-5" />
+                    <span className="text-xs font-medium">Add</span>
+                  </button>
+                </div>
               )}
             </div>
           )}
