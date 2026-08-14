@@ -5,6 +5,7 @@ import { nanoid } from "@/lib/utils";
 
 interface HistoryEntry {
   screenSets: ScreenSet[];
+  hiddenScreenSets?: ScreenSet[];
 }
 
 interface EditorStore {

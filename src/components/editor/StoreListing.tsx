@@ -84,10 +84,8 @@ export function StoreListing() {
       <div className="flex items-center justify-between p-4 border-b border-border bg-muted/20">
         <div className="flex items-center gap-3">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1.5 text-sm font-medium px-2 py-1 hover:bg-secondary rounded cursor-pointer uppercase transition-colors outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
-                {activeLang} <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
-              </button>
+            <DropdownMenuTrigger className="flex items-center gap-1.5 text-sm font-medium px-2 py-1 hover:bg-secondary rounded cursor-pointer uppercase transition-colors outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+              {activeLang} <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-40">
               {projectLanguages.map((code) => {
