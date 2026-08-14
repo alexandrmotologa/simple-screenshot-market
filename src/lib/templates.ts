@@ -422,12 +422,12 @@ export const DEFAULT_TEMPLATES: Template[] = [
           
           textLayer(
             isFirst ? "Stand\nOut." : `Smooth\nJourney`,
-            Math.round(W * 0.5), Math.round(H * 0.15), Math.round(W * 0.42), 400,
+            Math.round(W * 0.55), Math.round(H * 0.15), Math.round(W * 0.40), 400,
             { fontSize: 130, fontWeight: 900, color: "#ffffff", lineHeight: 1.05, align: "left" }
           ),
           textLayer(
             isFirst ? "Unleash the full potential of your creativity today." : "An experience so smooth it feels like magic.",
-            Math.round(W * 0.5), Math.round(H * 0.32), Math.round(W * 0.42), 200,
+            Math.round(W * 0.55), Math.round(H * 0.32), Math.round(W * 0.40), 200,
             { fontSize: 48, fontWeight: 600, color: "rgba(255,255,255,0.8)", lineHeight: 1.4, align: "left" }
           ),
           
