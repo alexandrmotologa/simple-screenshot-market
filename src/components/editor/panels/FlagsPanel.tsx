@@ -42,7 +42,7 @@ export function FlagsPanel() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Search */}
       <div className="p-3 border-b border-border/40">
         <div className="relative">
@@ -68,8 +68,8 @@ export function FlagsPanel() {
               className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-secondary transition-all group"
             >
               <span className="text-2xl leading-none">{flag.emoji}</span>
-              <span className="text-[9px] text-muted-foreground group-hover:text-foreground font-mono">
-                {flag.code}
+              <span className="text-[10px] text-muted-foreground group-hover:text-foreground font-medium truncate w-full text-center">
+                {flag.name}
               </span>
             </button>
           ))}

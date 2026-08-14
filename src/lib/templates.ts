@@ -99,7 +99,9 @@ export const DEFAULT_TEMPLATES: Template[] = [
         type: "gradient",
         gradient: { direction: "to-br", stops: [{ color: "#6366f1", position: 0 }, { color: "#8b5cf6", position: 100 }] },
       },
-      layers: [],
+      layers: [
+        { ...screenshotWithFrame(129, 699, 1032, 1957) } as any
+      ],
     })),
   },
 

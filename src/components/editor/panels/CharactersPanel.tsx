@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { useEditorStore } from "@/lib/store/editorStore";
@@ -52,7 +52,7 @@ export function CharactersPanel() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Category filter */}
       <div className="px-3 pt-3 pb-2 shrink-0 border-b border-border/30">
         <div className="flex flex-wrap gap-1">
@@ -75,7 +75,7 @@ export function CharactersPanel() {
       </div>
 
       {/* Character grid */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 min-h-0">
         <div className="p-3 grid grid-cols-2 gap-2">
           {filtered.map((char) => {
             const pose = char.poses[0];

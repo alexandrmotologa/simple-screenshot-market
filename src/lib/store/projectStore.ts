@@ -39,7 +39,22 @@ export const useProjectStore = create<ProjectStore>()(
                     ],
                   },
                 },
-                layers: [],
+                layers: [
+                  {
+                    id: "default-screenshot",
+                    type: "screenshot",
+                    x: 129,
+                    y: 699,
+                    width: 1032,
+                    height: 1957,
+                    rotation: 0,
+                    opacity: 1,
+                    objectFit: "cover",
+                    cornerRadius: 55,
+                    showDeviceFrame: true,
+                    label: "Drop your screenshot here",
+                  }
+                ],
               } as any
             ];
 
@@ -71,11 +86,12 @@ export const useProjectStore = create<ProjectStore>()(
               description: "App Store",
             },
             mockup: {
-              device: "iphone-16-pro",
+              device: "iphone-17-pro-max",
               color: "black",
               showFrame: true,
               showReflection: true,
               showShadow: true,
+              frameType: "3d",
             },
             screens: generateScreens("ios"),
           });
@@ -93,11 +109,12 @@ export const useProjectStore = create<ProjectStore>()(
               description: "Google Play — standard portrait",
             },
             mockup: {
-              device: "pixel-9-pro-xl",
+              device: "pixel-10-pro-xl",
               color: "Obsidian",
               showFrame: true,
               showReflection: true,
               showShadow: true,
+              frameType: "3d",
             },
             screens: generateScreens("android"),
           });

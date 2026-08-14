@@ -283,26 +283,10 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
           AI Captions
         </button>
 
-        <Separator orientation="vertical" className="h-4" />
 
-        {/* Share */}
-        <IconBtn title="Share (coming soon)">
-          <Share2 className="w-3.5 h-3.5" />
-        </IconBtn>
 
         {/* Theme Toggle */}
         <ThemeToggle />
-
-        {/* GIF Export */}
-        <button
-          type="button"
-          onClick={() => setShowGif(true)}
-          className="h-7 flex items-center gap-1.5 px-3 text-xs font-semibold rounded-lg bg-pink-500/15 text-pink-400 hover:bg-pink-500/25 ring-1 ring-pink-500/30 transition-all"
-          title="Export animated GIF"
-        >
-          <Film className="w-3 h-3" />
-          GIF
-        </button>
 
         {/* Export */}
         <button

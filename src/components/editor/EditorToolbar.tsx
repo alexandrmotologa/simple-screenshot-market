@@ -69,6 +69,27 @@ export function EditorToolbar() {
       } as Omit<import("@/lib/types").ShapeLayer, "id">);
       setActiveTool("select");
     }
+
+    if (tool === "mockup") {
+      const set = getActiveSet();
+      const screen = getActiveScreen();
+      if (!set || !screen) return;
+
+      addLayer(set.id, screen.id, {
+        type: "screenshot",
+        x: screen.width / 2 - 500,
+        y: screen.height / 2 - 900,
+        width: 1000,
+        height: 1800,
+        rotation: 0,
+        opacity: 1,
+        objectFit: "cover",
+        cornerRadius: 55,
+        showDeviceFrame: true,
+        label: "Drop your screenshot here",
+      } as Omit<import("@/lib/types").ScreenshotLayer, "id">);
+      setActiveTool("select");
+    }
   };
 
   return (

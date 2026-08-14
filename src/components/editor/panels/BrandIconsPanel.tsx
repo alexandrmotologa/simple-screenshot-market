@@ -112,7 +112,7 @@ export function BrandIconsPanel() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Search */}
       <div className="p-3 border-b border-border/40">
         <div className="relative">
@@ -139,7 +139,7 @@ export function BrandIconsPanel() {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`${SIMPLE_ICONS_CDN}/${brand.slug}/ffffff`}
+                src={`${SIMPLE_ICONS_CDN}/${brand.slug}/${brand.color.replace("#", "")}`}
                 alt={brand.name}
                 className="w-7 h-7 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
                 onError={(e) => {

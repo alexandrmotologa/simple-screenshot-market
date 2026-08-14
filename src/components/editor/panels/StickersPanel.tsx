@@ -94,7 +94,7 @@ export function StickersPanel() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Search */}
       <div className="p-3 border-b border-border/40 shrink-0">
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-secondary/70 border border-border/30">

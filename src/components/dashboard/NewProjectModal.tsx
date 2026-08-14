@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { X, Search, Check, Sparkles, ArrowRight, Monitor } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -123,6 +123,15 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
   const [projectName, setProjectName] = useState("My App Screenshots");
   const [platforms, setPlatforms] = useState<{ ios: boolean; android: boolean }>({ ios: true, android: true });
   const [creating, setCreating] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setSelectedTemplate(null);
+      setProjectName("My App Screenshots");
+      setPlatforms({ ios: true, android: true });
+      setCreating(false);
+    }
+  }, [open]);
 
   // We filter out "blank" from the main list so we can append it at the bottom manually
   const themes = useMemo(() => {

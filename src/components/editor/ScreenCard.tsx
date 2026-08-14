@@ -8,6 +8,7 @@ import {
 } from "@/lib/types";
 import { ALL_DEVICES, COLOR_HEX_MAP } from "@/lib/devices";
 import { cn } from "@/lib/utils";
+import { Draggable } from "@hello-pangea/dnd";
 
 interface ScreenCardProps {
   screen: Screen;
@@ -54,6 +55,8 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
   const [editText, setEditText] = useState("");
   // Right-click context menu
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; layerId: string } | null>(null);
+  // Drag over state for images
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   const {
     activeSetId, activeScreenId, activeLayerId, selectedLayerIds,
@@ -313,20 +316,39 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
       // ── SCREENSHOT ZONE ───────────────────────────────────────────────────
       else if (layer.type === "screenshot") {
         const sl = layer as ScreenshotLayer;
-        const { x, y, width: w, height: h } = sl;
         const mockup = screenSet.mockup;
         const hasFrame = sl.showDeviceFrame && mockup?.showFrame !== false;
         
-        // If mockup.squircle or hasFrame is true, use an internal default (e.g. 8% of width), else use the user-defined sl.cornerRadius.
-        const defaultDeviceR = Math.min(w, h) * 0.08;
+        // Find the active device model, fallback to first iOS device if not found
+        const device = ALL_DEVICES.find((d) => d.id === mockup?.device) || ALL_DEVICES[0];
+
+        // 1. Calculate aspect-ratio perfect physical bounds
+        const physicalW = device.width;
+        const physicalH = device.height;
+        // Assume device body is proportionally wider/taller than screen if it has a frame
+        const bezelRatio = hasFrame ? (device.bezelRatio ?? 0.0373) : 0;
+        const rawBezel = physicalW * bezelRatio;
+        
+        const frameW = physicalW + rawBezel * 2;
+        const frameH = physicalH + rawBezel * 2;
+        
+        // Scale to fit exactly inside sl bounds
+        const scale = Math.min(sl.width / frameW, sl.height / frameH);
+        const w = frameW * scale;
+        const h = frameH * scale;
+        
+        // Center inside sl bounds
+        const x = sl.x + (sl.width - w) / 2;
+        const y = sl.y + (sl.height - h) / 2;
+
+        const defaultDeviceR = device.cornerRadius * scale + rawBezel * scale;
         const r = (mockup?.squircle || hasFrame) ? defaultDeviceR : (sl.cornerRadius || 0);
 
-        // Frame dimensions
-        const bezel = hasFrame ? Math.min(w, h) * 0.035 : 0;
+        const bezel = rawBezel * scale;
         const innerX = x + bezel;
         const innerY = y + bezel;
-        const innerW = w - bezel * 2;
-        const innerH = h - bezel * 2;
+        const innerW = physicalW * scale;
+        const innerH = physicalH * scale;
         const innerR = Math.max(0, r - bezel);
 
         // When hideScreenshots is active, show a subtle dimmed placeholder instead
@@ -341,7 +363,6 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           ctx.setLineDash([8, 6]);
           ctx.stroke();
           ctx.setLineDash([]);
-          ctx.restore();
           continue;
         }
 
@@ -353,19 +374,62 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           ctx.shadowOffsetY = sl.shadow.offsetY;
         }
 
-        // Get actual hex code from the mockup's color name
         const rawColorName = mockup?.color || "black";
-        let baseHex = COLOR_HEX_MAP[rawColorName.toLowerCase()] || "#1a1a1c";
+        const baseHex = COLOR_HEX_MAP[rawColorName.toLowerCase()] || "#1a1a1c";
 
         // 1. Draw outer device frame
         if (hasFrame) {
-          ctx.beginPath();
-          if (r > 0) ctx.roundRect(x, y, w, h, r);
-          else ctx.rect(x, y, w, h);
           
-          if (mockup.frameType === "3d") {
+          if (mockup.frameType === "3d" || mockup.frameType === undefined) {
+            // Draw Hardware Buttons First (underneath the rim)
+            if (device.buttons) {
+               ctx.fillStyle = baseHex;
+               device.buttons.forEach((btn) => {
+                  const btnY = y + h * btn.yOffset;
+                  const btnH = h * btn.height;
+                  const btnW = (btn.thickness || 1) * (Math.min(w, h) * 0.008);
+                  let btnX = 0;
+                  const btnRadius = btnW / 2;
+                  
+                  if (btn.side === "left") {
+                     btnX = x - btnW + 1; // +1 to overlap and hide gap
+                     ctx.beginPath();
+                     ctx.roundRect(btnX, btnY, btnW, btnH, [btnRadius, 0, 0, btnRadius]);
+                     ctx.fill();
+                     // Button highlight
+                     ctx.fillStyle = "rgba(255,255,255,0.15)";
+                     ctx.beginPath();
+                     ctx.roundRect(btnX, btnY, btnW, btnH, [btnRadius, 0, 0, btnRadius]);
+                     ctx.fill();
+                  } else if (btn.side === "right") {
+                     btnX = x + w - 1;
+                     ctx.beginPath();
+                     ctx.roundRect(btnX, btnY, btnW, btnH, [0, btnRadius, btnRadius, 0]);
+                     ctx.fill();
+                     ctx.fillStyle = "rgba(255,255,255,0.15)";
+                     ctx.beginPath();
+                     ctx.roundRect(btnX, btnY, btnW, btnH, [0, btnRadius, btnRadius, 0]);
+                     ctx.fill();
+                  } else if (btn.side === "top") {
+                     const tBtnW = h * btn.height; 
+                     const tBtnX = x + w * btn.yOffset;
+                     const tBtnY = y - btnW + 1;
+                     ctx.beginPath();
+                     ctx.roundRect(tBtnX, tBtnY, tBtnW, btnW, [btnRadius, btnRadius, 0, 0]);
+                     ctx.fill();
+                     ctx.fillStyle = "rgba(255,255,255,0.15)";
+                     ctx.beginPath();
+                     ctx.roundRect(tBtnX, tBtnY, tBtnW, btnW, [btnRadius, btnRadius, 0, 0]);
+                     ctx.fill();
+                  }
+               });
+            }
+
+            ctx.beginPath();
+            if (r > 0) ctx.roundRect(x, y, w, h, r);
+            else ctx.rect(x, y, w, h);
+            
             // -- 3D Realistic Frame --
-            // 1a. Base frame (darker bezel)
             ctx.fillStyle = baseHex;
             ctx.fill();
 
@@ -415,6 +479,10 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             }
           } else {
             // -- 2D Flat Frame --
+            ctx.beginPath();
+            if (r > 0) ctx.roundRect(x, y, w, h, r);
+            else ctx.rect(x, y, w, h);
+
             ctx.fillStyle = baseHex;
             ctx.fill();
             
@@ -453,11 +521,13 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
               const zoneRatio = innerW / innerH;
               let sx = 0, sy = 0, sw = img.width, sh = img.height;
               if (imgRatio > zoneRatio) {
-                sw = img.height * zoneRatio;
-                sx = (img.width - sw) / 2;
+                 // Image is wider than device screen, crop sides
+                 sw = img.height * zoneRatio;
+                 sx = (img.width - sw) / 2;
               } else {
-                sh = img.width / zoneRatio;
-                sy = (img.height - sh) / 2;
+                 // Image is taller than device screen, crop top/bottom
+                 sh = img.width / zoneRatio;
+                 sy = (img.height - sh) / 2;
               }
               ctx.drawImage(img, sx, sy, sw, sh, innerX, innerY, innerW, innerH);
             } else {
@@ -471,55 +541,62 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         }
 
         // 3. Draw Notch / Dynamic Island
-        if (hasFrame) {
+        if (hasFrame && device.notchType !== "none") {
           ctx.fillStyle = "#000000";
-          const isIos = mockup.device.includes("iphone") || mockup.device.includes("ipad");
-          const showIsland = mockup.dynamicIsland ?? (mockup.device.includes("iphone-16") || mockup.device.includes("iphone-15"));
-          const showNotch = !showIsland && (mockup.notch !== false);
           
-          if (isIos && showIsland) {
-            // Dynamic Island
-            const islandW = innerW * 0.32;
-            const islandH = islandW * 0.3;
+          if (device.notchType === "island" && mockup.dynamicIsland !== false) {
+            const islandW = innerW * 0.285;
+            const islandH = innerW * 0.0887;
             const islandX = innerX + (innerW - islandW) / 2;
-            const islandY = innerY + bezel * 0.6;
+            const islandY = innerY + innerW * 0.025; // floating a bit lower
+            
+            // Top Speaker Grill
+            ctx.fillStyle = "#151515";
+            ctx.beginPath();
+            ctx.roundRect(innerX + (innerW - innerW * 0.16) / 2, innerY - bezel * 0.4, innerW * 0.16, bezel * 0.4, 2);
+            ctx.fill();
+
+            // The main black pill
+            ctx.fillStyle = "#000000";
             ctx.beginPath();
             ctx.roundRect(islandX, islandY, islandW, islandH, islandH / 2);
             ctx.fill();
-            // camera lens
-            ctx.fillStyle = "#111";
+            // TrueDepth Camera (left)
+            ctx.fillStyle = "#1e1e20";
             ctx.beginPath();
-            ctx.arc(islandX + islandW - islandH * 0.6, islandY + islandH / 2, islandH * 0.25, 0, Math.PI * 2);
+            ctx.arc(islandX + islandH * 0.8, islandY + islandH / 2, islandH * 0.22, 0, Math.PI * 2);
             ctx.fill();
-            ctx.fillStyle = "#1a1a24";
+            // Front Camera (right, slightly blueish reflection)
+            ctx.fillStyle = "#293246";
             ctx.beginPath();
-            ctx.arc(islandX + islandH * 0.8, islandY + islandH / 2, islandH * 0.25, 0, Math.PI * 2);
+            ctx.arc(islandX + islandW - islandH * 0.7, islandY + islandH / 2, islandH * 0.22, 0, Math.PI * 2);
             ctx.fill();
-          } else if (showNotch) {
-            if (!isIos) {
-              // Android - Default to Center Hole Punch
-              const holeR = innerW * 0.025;
-              const holeX = innerX + innerW / 2;
-              const holeY = innerY + holeR * 2.5;
-              ctx.beginPath();
-              ctx.arc(holeX, holeY, holeR, 0, Math.PI * 2);
-              ctx.fill();
-            } else {
-              // Classic Notch (Older iPhones)
-              const notchW = innerW * 0.45;
-              const notchH = innerW * 0.08;
-              const notchX = innerX + (innerW - notchW) / 2;
-              ctx.beginPath();
-              ctx.moveTo(notchX - notchH, innerY);
-              ctx.quadraticCurveTo(notchX, innerY, notchX, innerY + notchH * 0.4);
-              ctx.lineTo(notchX, innerY + notchH - notchH * 0.5);
-              ctx.quadraticCurveTo(notchX, innerY + notchH, notchX + notchH, innerY + notchH);
-              ctx.lineTo(notchX + notchW - notchH, innerY + notchH);
-              ctx.quadraticCurveTo(notchX + notchW, innerY + notchH, notchX + notchW, innerY + notchH - notchH * 0.5);
-              ctx.lineTo(notchX + notchW, innerY + notchH * 0.4);
-              ctx.quadraticCurveTo(notchX + notchW, innerY, notchX + notchW + notchH, innerY);
-              ctx.fill();
-            }
+            // Tiny reflection in front camera
+            ctx.fillStyle = "rgba(255,255,255,0.25)";
+            ctx.beginPath();
+            ctx.arc(islandX + islandW - islandH * 0.7, islandY + islandH / 2.3, islandH * 0.08, 0, Math.PI * 2);
+            ctx.fill();
+          } else if (device.notchType === "hole" && mockup.notch !== false) {
+            const holeR = innerW * 0.025;
+            const holeX = innerX + innerW / 2;
+            const holeY = innerY + holeR * 2.5;
+            ctx.beginPath();
+            ctx.arc(holeX, holeY, holeR, 0, Math.PI * 2);
+            ctx.fill();
+          } else if (device.notchType === "notch" && mockup.notch !== false) {
+            const notchW = innerW * 0.45;
+            const notchH = innerW * 0.08;
+            const notchX = innerX + (innerW - notchW) / 2;
+            ctx.beginPath();
+            ctx.moveTo(notchX - notchH, innerY);
+            ctx.quadraticCurveTo(notchX, innerY, notchX, innerY + notchH * 0.4);
+            ctx.lineTo(notchX, innerY + notchH - notchH * 0.5);
+            ctx.quadraticCurveTo(notchX, innerY + notchH, notchX + notchH, innerY + notchH);
+            ctx.lineTo(notchX + notchW - notchH, innerY + notchH);
+            ctx.quadraticCurveTo(notchX + notchW, innerY + notchH, notchX + notchW, innerY + notchH - notchH * 0.5);
+            ctx.lineTo(notchX + notchW, innerY + notchH * 0.4);
+            ctx.quadraticCurveTo(notchX + notchW, innerY, notchX + notchW + notchH, innerY);
+            ctx.fill();
           }
         }
 
@@ -772,7 +849,18 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
   const hitTest = (cx: number, cy: number): string | null => {
     for (let i = screen.layers.length - 1; i >= 0; i--) {
       const l = screen.layers[i];
-      if (cx >= l.x && cx <= l.x + l.width && cy >= l.y && cy <= l.y + l.height) return l.id;
+      let testX = cx;
+      let testY = cy;
+      if (l.rotation) {
+        const rad = (l.rotation * Math.PI) / 180;
+        const centerX = l.x + l.width / 2;
+        const centerY = l.y + l.height / 2;
+        const dx = cx - centerX;
+        const dy = cy - centerY;
+        testX = centerX + dx * Math.cos(-rad) - dy * Math.sin(-rad);
+        testY = centerY + dx * Math.sin(-rad) + dy * Math.cos(-rad);
+      }
+      if (testX >= l.x && testX <= l.x + l.width && testY >= l.y && testY <= l.y + l.height) return l.id;
     }
     return null;
   };
@@ -851,12 +939,14 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
   const activeLayer = screen.layers.find(l => l.id === activeLayerId);
   const isScreenshotActive = isActiveScreen && activeLayer?.type === "screenshot";
 
-  // ── Resize handle drag ─────────────────────────────────────────────────────
+  // ── Resize / Rotate handle drag ────────────────────────────────────────────
   const resizeRef = useRef<{
-    handle: string; // "nw"|"n"|"ne"|"e"|"se"|"s"|"sw"|"w"
+    handle: string; // "nw"|"n"|"ne"|"e"|"se"|"s"|"sw"|"w"|"rotate"
     startX: number; startY: number;
     origX: number; origY: number;
     origW: number; origH: number;
+    origRot: number;
+    centerX: number; centerY: number;
   } | null>(null);
 
   const handleResizeStart = (e: React.MouseEvent, handle: string) => {
@@ -868,15 +958,44 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
       startX: e.clientX, startY: e.clientY,
       origX: activeLayer.x, origY: activeLayer.y,
       origW: activeLayer.width, origH: activeLayer.height,
+      origRot: activeLayer.rotation || 0,
+      centerX: activeLayer.x + activeLayer.width / 2,
+      centerY: activeLayer.y + activeLayer.height / 2,
     };
 
     const onMove = (ev: MouseEvent) => {
       if (!resizeRef.current || !activeLayer) return;
+      const h = resizeRef.current.handle;
+      
+      if (h === "rotate") {
+        // Calculate new rotation based on mouse position relative to center
+        const rect = canvasRef.current!.getBoundingClientRect();
+        // Mouse coordinate in canvas space
+        const mx = ((ev.clientX - rect.left) / rect.width) * screen.width;
+        const my = ((ev.clientY - rect.top) / rect.height) * screen.height;
+        
+        const dx = mx - resizeRef.current.centerX;
+        const dy = my - resizeRef.current.centerY;
+        // Angle in radians (add PI/2 so 12 o'clock is 0)
+        let angle = Math.atan2(dy, dx) + Math.PI / 2;
+        let deg = Math.round((angle * 180) / Math.PI);
+        // Snap to 45 degree increments if shift is held
+        if (ev.shiftKey) {
+          deg = Math.round(deg / 45) * 45;
+        }
+        
+        updateLayer(screenSet.id, screen.id, activeLayer.id, {
+          rotation: deg,
+        } as Parameters<typeof updateLayer>[3]);
+        return;
+      }
+
       const dx = (ev.clientX - resizeRef.current.startX) / scale;
       const dy = (ev.clientY - resizeRef.current.startY) / scale;
-      const h = resizeRef.current.handle;
       let { origX: nx, origY: ny, origW: nw, origH: nh } = resizeRef.current;
 
+      // Note: This simple resize logic does not perfectly handle resizing rotated elements.
+      // For a basic implementation, we just resize the bounding box.
       if (h.includes("e")) nw = Math.max(50, nw + dx);
       if (h.includes("s")) nh = Math.max(50, nh + dy);
       if (h.includes("w")) { nx = nx + dx; nw = Math.max(50, nw - dx); }
@@ -902,8 +1021,19 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
   };
 
   return (
-    <div className="shrink-0 flex flex-col gap-1.5 group" style={{ width: CARD_DISPLAY_WIDTH }}>
-      {/* Header: index + caption editable + delete */}
+    <Draggable draggableId={screen.id} index={index}>
+      {(provided) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          className="shrink-0 flex flex-col gap-1.5 group"
+          style={{
+            width: CARD_DISPLAY_WIDTH,
+            ...provided.draggableProps.style,
+          }}
+        >
+          {/* Header: index + caption editable + delete */}
       <div className="flex items-center gap-1.5">
         <span className="text-[10px] text-muted-foreground font-mono w-4 shrink-0">{index + 1}</span>
 
@@ -972,10 +1102,13 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           onDragOver={(e) => {
             e.preventDefault();
             e.stopPropagation();
+            if (!isDraggingOver) setIsDraggingOver(true);
           }}
+          onDragLeave={() => setIsDraggingOver(false)}
           onDrop={(e) => {
             e.preventDefault();
             e.stopPropagation();
+            setIsDraggingOver(false);
             if (e.dataTransfer.files && e.dataTransfer.files[0]) {
               const file = e.dataTransfer.files[0];
               if (!file.type.startsWith("image/")) return;
@@ -990,13 +1123,31 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
                   if (layer?.type === "screenshot") {
                     updateLayer(screenSet.id, screen.id, hit, { src } as Partial<Layer>);
                     useEditorStore.getState().recordHistory();
+                  } else if (layer?.type === "image") {
+                    updateLayer(screenSet.id, screen.id, hit, { src } as Partial<Layer>);
+                    useEditorStore.getState().recordHistory();
                   }
+                } else {
+                  // If dropped on empty canvas, add as new image layer
+                  const layer = {
+                    type: "image",
+                    x: x - 250,
+                    y: y - 250,
+                    width: 500,
+                    height: 500,
+                    src,
+                    rotation: 0,
+                    opacity: 1,
+                    cornerRadius: 0,
+                  } as Omit<import("@/lib/types").ImageLayer, "id">;
+                  useEditorStore.getState().addLayer(screenSet.id, screen.id, layer);
+                  useEditorStore.getState().recordHistory();
                 }
               };
               reader.readAsDataURL(file);
             }
           }}
-          className={isScreenshotActive ? "cursor-move" : "cursor-pointer"}
+          className={cn(isScreenshotActive ? "cursor-move" : "cursor-pointer", isDraggingOver ? "opacity-75" : "")}
         />
 
         {/* Resize handles overlay — shown when layer is selected */}
@@ -1142,7 +1293,9 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
 
       {/* Screen name */}
       <p className="text-[10px] text-center text-muted-foreground/50 truncate">{screen.name}</p>
-    </div>
+        </div>
+      )}
+    </Draggable>
   );
 }
 
@@ -1159,6 +1312,7 @@ function ResizeOverlay({
   const w = layer.width * scale;
   const h = layer.height * scale;
   const hs = 8; // handle size px
+  const rot = layer.rotation || 0;
 
   const handles: { id: string; cx: number; cy: number; cursor: string }[] = [
     { id: "nw", cx: x,       cy: y,       cursor: "nwse-resize" },
@@ -1176,26 +1330,57 @@ function ResizeOverlay({
       className="absolute inset-0 pointer-events-none"
       style={{ zIndex: 10 }}
     >
-      {/* Selection box */}
-      <div
-        className="absolute border-2 border-primary/70"
-        style={{ left: x, top: y, width: w, height: h }}
-      />
-      {/* Handles */}
-      {handles.map(({ id, cx, cy, cursor }) => (
+      <div 
+        className="absolute inset-0"
+        style={{
+          transformOrigin: `${x + w/2}px ${y + h/2}px`,
+          transform: rot ? `rotate(${rot}deg)` : "none"
+        }}
+      >
+        {/* Selection box */}
         <div
-          key={id}
-          className="absolute pointer-events-auto bg-white border-2 border-primary rounded-sm shadow-sm hover:bg-primary/20 transition-colors"
+          className="absolute border-2 border-primary/70"
+          style={{ left: x, top: y, width: w, height: h }}
+        />
+        {/* Handles */}
+        {handles.map(({ id, cx, cy, cursor }) => (
+          <div
+            key={id}
+            className="absolute pointer-events-auto bg-white border-2 border-primary rounded-sm shadow-sm hover:bg-primary/20 transition-colors"
+            style={{
+              left: cx - hs / 2,
+              top: cy - hs / 2,
+              width: hs,
+              height: hs,
+              cursor,
+            }}
+            onMouseDown={(e) => onResizeStart(e, id)}
+          />
+        ))}
+        {/* Rotation handle */}
+        <div
+          className="absolute pointer-events-auto bg-white border-2 border-primary shadow-sm hover:bg-primary/20 transition-colors"
           style={{
-            left: cx - hs / 2,
-            top: cy - hs / 2,
+            left: x + w/2 - hs/2,
+            top: y - hs * 3,
             width: hs,
             height: hs,
-            cursor,
+            borderRadius: '50%',
+            cursor: 'crosshair',
           }}
-          onMouseDown={(e) => onResizeStart(e, id)}
+          onMouseDown={(e) => onResizeStart(e, "rotate")}
         />
-      ))}
+        {/* Line connecting rotation handle to box */}
+        <div
+          className="absolute bg-primary/70 pointer-events-none"
+          style={{
+            left: x + w/2 - 1,
+            top: y - hs * 3 + hs,
+            width: 2,
+            height: hs * 2,
+          }}
+        />
+      </div>
     </div>
   );
 }

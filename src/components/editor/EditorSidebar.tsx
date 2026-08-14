@@ -75,7 +75,7 @@ function renderPanel(panel: NonNullable<PanelId>) {
 }
 
 export function EditorSidebar() {
-  const [activePanel, setActivePanel] = useState<PanelId>(null);
+  const [activePanel, setActivePanel] = useState<PanelId>("platforms");
 
   const togglePanel = useCallback(
     (id: PanelId) => setActivePanel((prev) => (prev === id ? null : id)),

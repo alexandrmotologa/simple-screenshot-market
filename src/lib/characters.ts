@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Open Peeps character library — inline SVG definitions
  * License: CC0 (Public Domain) — openpeeps.com by Pablo Stanley
  * 
@@ -219,6 +219,86 @@ const THINKING = `
   <ellipse cx="228" cy="480" rx="28" ry="14" fill="#0F172A"/>
 </g>`;
 
+const UNDRAW_STYLE = `
+<g>
+  <!-- Accent shape -->
+  <circle cx="200" cy="250" r="140" fill="#6C63FF" opacity="0.1"/>
+  <!-- Body -->
+  <path d="M 150 280 L 150 420 Q 200 440 250 420 L 250 280 Z" fill="#2F2E41"/>
+  <path d="M 170 420 L 170 480 L 190 480 L 190 420 Z" fill="#2F2E41"/>
+  <path d="M 210 420 L 210 480 L 230 480 L 230 420 Z" fill="#2F2E41"/>
+  <!-- Head -->
+  <circle cx="200" cy="150" r="35" fill="#FFB6A2"/>
+  <!-- Hair -->
+  <path d="M 160 140 Q 200 90 240 140 Q 220 180 200 130 Q 180 180 160 140 Z" fill="#2F2E41"/>
+  <!-- Desk/Laptop -->
+  <rect x="90" y="260" width="120" height="70" fill="#3F3D56" rx="8" transform="rotate(-10 150 295)"/>
+  <rect x="100" y="270" width="100" height="50" fill="#E6E6E6" rx="4" transform="rotate(-10 150 295)"/>
+  <!-- Arm -->
+  <path d="M 230 200 C 260 250 220 300 150 300" stroke="#FFB6A2" stroke-width="14" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</g>`;
+
+const HUMAAANS_STYLE = `
+<g>
+  <!-- Humaaans style is usually sketchy, flat, exaggerated proportions -->
+  <!-- Legs long -->
+  <path d="M 210 300 C 240 380 220 450 250 480" stroke="#2F2E41" stroke-width="18" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 190 300 C 160 380 180 450 150 480" stroke="#2F2E41" stroke-width="18" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Body wide -->
+  <path d="M 140 170 C 180 130 220 130 260 170 C 270 250 250 310 200 310 C 150 310 130 250 140 170 Z" fill="#F08A5D"/>
+  <!-- Head small -->
+  <circle cx="200" cy="100" r="28" fill="#F3E5AB"/>
+  <!-- Hair abstract -->
+  <path d="M 175 90 C 175 60 225 60 225 90 C 235 105 225 115 200 95 C 175 115 165 105 175 90 Z" fill="#333333"/>
+  <!-- Arms -->
+  <path d="M 150 190 C 100 220 100 280 130 310" stroke="#F3E5AB" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <path d="M 250 190 C 300 220 300 280 270 310" stroke="#F3E5AB" stroke-width="14" fill="none" stroke-linecap="round"/>
+</g>`;
+
+const SALY_3D_STYLE = `
+<g>
+  <!-- Simulating 3D with heavy gradients -->
+  <defs>
+    <radialGradient id="salyHead" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#FFD6A5"/>
+      <stop offset="100%" stop-color="#E29578"/>
+    </radialGradient>
+    <linearGradient id="salyBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8338EC"/>
+      <stop offset="100%" stop-color="#3A0CA3"/>
+    </linearGradient>
+    <radialGradient id="salyHair" cx="20%" cy="20%" r="80%">
+      <stop offset="0%" stop-color="#FF006E"/>
+      <stop offset="100%" stop-color="#9D0208"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- Shadow -->
+  <ellipse cx="200" cy="480" rx="90" ry="15" fill="#000000" opacity="0.1"/>
+  
+  <!-- Body/Torso (cylinder-like) -->
+  <rect x="140" y="210" width="120" height="170" rx="50" fill="url(#salyBody)"/>
+  
+  <!-- Head (sphere) -->
+  <circle cx="200" cy="140" r="55" fill="url(#salyHead)"/>
+  
+  <!-- 3D Hair -->
+  <circle cx="170" cy="90" r="35" fill="url(#salyHair)"/>
+  <circle cx="220" cy="80" r="45" fill="url(#salyHair)"/>
+  <circle cx="240" cy="130" r="25" fill="url(#salyHair)"/>
+  
+  <!-- Arms (tubes) -->
+  <path d="M 150 240 C 90 270 100 350 140 360" stroke="url(#salyHead)" stroke-width="22" fill="none" stroke-linecap="round"/>
+  <path d="M 250 240 C 310 270 300 350 260 360" stroke="url(#salyHead)" stroke-width="22" fill="none" stroke-linecap="round"/>
+  
+  <!-- Legs (tubes) -->
+  <path d="M 175 360 L 175 460" stroke="#3A0CA3" stroke-width="26" fill="none" stroke-linecap="round"/>
+  <path d="M 225 360 L 225 460" stroke="#3A0CA3" stroke-width="26" fill="none" stroke-linecap="round"/>
+  
+  <!-- Highlights -->
+  <path d="M 145 230 Q 145 280 155 350" stroke="#FFFFFF" stroke-width="4" opacity="0.3" fill="none" stroke-linecap="round"/>
+</g>`;
+
 // ─── Character Library ─────────────────────────────────────────────────────────
 
 export const CHARACTERS: Character[] = [
@@ -288,6 +368,48 @@ export const CHARACTERS: Character[] = [
         id: "thinking",
         name: "Thinking",
         svg: THINKING,
+        viewBox: "0 0 400 500",
+      },
+    ],
+  },
+  {
+    id: "undraw-tech",
+    name: "Modern Tech",
+    category: "working",
+    description: "Flat unDraw style illustration",
+    poses: [
+      {
+        id: "working",
+        name: "Working",
+        svg: UNDRAW_STYLE,
+        viewBox: "0 0 400 500",
+      },
+    ],
+  },
+  {
+    id: "humaaan-casual",
+    name: "Casual",
+    category: "standing",
+    description: "Humaaans style illustration",
+    poses: [
+      {
+        id: "standing",
+        name: "Standing",
+        svg: HUMAAANS_STYLE,
+        viewBox: "0 0 400 500",
+      },
+    ],
+  },
+  {
+    id: "saly-3d",
+    name: "3D Avatar",
+    category: "standing",
+    description: "Saly 3D style avatar",
+    poses: [
+      {
+        id: "standing",
+        name: "Standing",
+        svg: SALY_3D_STYLE,
         viewBox: "0 0 400 500",
       },
     ],

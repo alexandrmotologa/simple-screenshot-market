@@ -3,6 +3,7 @@
 import { useEffect, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useProjectStore } from "@/lib/store/projectStore";
+import { useLanguageStore } from "@/lib/store/languageStore";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { EditorLayout } from "@/components/editor/EditorLayout";
 import { backgroundToCSS } from "@/lib/utils";
@@ -81,7 +82,8 @@ export default function EditorPage({ params }: EditorPageProps) {
   const getProject = useProjectStore((s) => s.getProject);
   const updateProject = useProjectStore((s) => s.updateProject);
   const saveProjectThumbnail = useProjectStore((s) => s.saveProjectThumbnail);
-  const { loadProject, screenSets, themeId } = useEditorStore();
+  const { loadProject, screenSets, hiddenScreenSets, themeId, projectId: editorProjectId } = useEditorStore();
+  const { projectLanguages, setProjectLanguages } = useLanguageStore();
 
   useEffect(() => {
     const project = getProject(projectId);
@@ -89,15 +91,25 @@ export default function EditorPage({ params }: EditorPageProps) {
       router.replace("/");
       return;
     }
-    loadProject(projectId, project.themeId, project.screenSets);
+    loadProject(projectId, project.themeId, project.screenSets, project.hiddenScreenSets);
+    if (project.languages && project.languages.length > 0) {
+      setProjectLanguages(project.languages);
+    }
   }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-save projectLanguages back to project store
+  useEffect(() => {
+    if (editorProjectId === projectId) {
+      updateProject(projectId, { languages: projectLanguages });
+    }
+  }, [projectLanguages, projectId, editorProjectId, updateProject]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-save screenSets back to project store whenever they change
   useEffect(() => {
-    if (screenSets.length > 0) {
-      updateProject(projectId, { screenSets, themeId });
+    if (screenSets.length > 0 && editorProjectId === projectId) {
+      updateProject(projectId, { screenSets, hiddenScreenSets, themeId });
     }
-  }, [screenSets, themeId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [screenSets, hiddenScreenSets, themeId, projectId, editorProjectId, updateProject]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-save thumbnail (debounced — fires 2s after last change)
   useEffect(() => {

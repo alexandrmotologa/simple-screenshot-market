@@ -130,6 +130,7 @@ export function FloatingToolbar() {
   const set = getActiveSet();
 
   const [fontOpen, setFontOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!layer || !screen || !set) return null;
 
@@ -153,7 +154,6 @@ export function FloatingToolbar() {
   const centerV     = () => update({ y: Math.round((screen.height - layer.height) / 2) });
 
   // File input for screenshot
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const handleScreenshotUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;

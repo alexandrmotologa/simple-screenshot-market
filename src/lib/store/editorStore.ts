@@ -12,6 +12,7 @@ interface EditorStore {
   projectId: string | null;
   themeId: ThemeId;
   screenSets: ScreenSet[];
+  hiddenScreenSets: ScreenSet[];
 
   // Active selection
   activeSetId: string | null;
@@ -30,7 +31,7 @@ interface EditorStore {
   historyIndex: number;
 
   // Actions: project loading
-  loadProject: (projectId: string, themeId: ThemeId | undefined, screenSets: ScreenSet[]) => void;
+  loadProject: (projectId: string, themeId: ThemeId | undefined, screenSets: ScreenSet[], hiddenScreenSets?: ScreenSet[]) => void;
   getActiveSet: () => ScreenSet | undefined;
   getActiveScreen: () => Screen | undefined;
   getActiveLayer: () => Layer | undefined;
@@ -104,6 +105,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   projectId: null,
   themeId: "clean-light",
   screenSets: [],
+  hiddenScreenSets: [],
   activeSetId: null,
   activeScreenId: null,
   activeLayerId: null,
@@ -114,7 +116,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   history: [],
   historyIndex: -1,
 
-  loadProject: (projectId, themeId, screenSets) => {
+  loadProject: (projectId, themeId, screenSets, hiddenScreenSets = []) => {
     // ── Auto-migrate old Android screens to standard 1290×2796 (same as iOS) ─
     const STD_W = 1290;
     const STD_H = 2796;
@@ -152,10 +154,11 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       projectId,
       themeId: themeId || "clean-light",
       screenSets: migratedSets,
+      hiddenScreenSets: hiddenScreenSets || [],
       activeSetId: firstSet?.id ?? null,
       activeScreenId: firstScreen?.id ?? null,
       activeLayerId: null,
-      history: [{ screenSets: migratedSets }],
+      history: [{ screenSets: migratedSets, hiddenScreenSets: hiddenScreenSets || [] }],
       historyIndex: 0,
     });
   },
@@ -201,13 +204,33 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       const sets = state.screenSets.map((ss) => {
         if (ss.id !== setId) return ss;
         const lastScreen = ss.screens[ss.screens.length - 1];
+        let newLayers: Layer[] = [];
+        if (lastScreen) {
+          // Copy only screenshot layers to keep the phone positioning consistent
+          newLayers = JSON.parse(
+            JSON.stringify(lastScreen.layers.filter((l) => l.type === "screenshot"))
+          ).map((l: Layer) => ({ ...l, id: nanoid() }));
+        } else {
+          // Default phone layer if no previous screen
+          newLayers = [{
+            id: nanoid(),
+            type: "screenshot",
+            x: 129, y: 699,
+            width: 1032, height: 1957,
+            rotation: 0, opacity: 1,
+            objectFit: "cover", cornerRadius: 55,
+            showDeviceFrame: true,
+            label: "Drop your screenshot here",
+          } as any];
+        }
+
         const newScreen: Screen = {
           id: nanoid(),
           name: `Screen ${ss.screens.length + 1}`,
           width: ss.preset.width,
           height: ss.preset.height,
           background: lastScreen ? JSON.parse(JSON.stringify(lastScreen.background)) : { type: "solid", color: "#6366f1" },
-          layers: [],
+          layers: newLayers,
         };
         return { ...ss, screens: [...ss.screens, newScreen] };
       });
@@ -556,6 +579,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       showFrame: true,
       showReflection: false,
       showShadow: true,
+      frameType: "3d",
     };
     set((state) => ({
       screenSets: state.screenSets.map((ss) =>
@@ -618,17 +642,17 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   toggleGuides: () => set((state) => ({ showGuides: !state.showGuides })),
 
   recordHistory: () => {
-    const { screenSets, history, historyIndex } = get();
+    const { screenSets, hiddenScreenSets, history, historyIndex } = get();
     // Truncate future history if we are currently undone
     const newHistory = history.slice(0, historyIndex + 1);
     
     // Check if the current state is identical to the last state in history.
     // If so, don't create a duplicate entry.
-    const currentStateStr = JSON.stringify(screenSets);
-    const lastHistoryStr = newHistory.length > 0 ? JSON.stringify(newHistory[newHistory.length - 1].screenSets) : null;
+    const currentStateStr = JSON.stringify({ screenSets, hiddenScreenSets });
+    const lastHistoryStr = newHistory.length > 0 ? JSON.stringify({ screenSets: newHistory[newHistory.length - 1].screenSets, hiddenScreenSets: newHistory[newHistory.length - 1].hiddenScreenSets }) : null;
     if (currentStateStr === lastHistoryStr) return;
 
-    newHistory.push({ screenSets: JSON.parse(currentStateStr) });
+    newHistory.push({ screenSets: JSON.parse(JSON.stringify(screenSets)), hiddenScreenSets: JSON.parse(JSON.stringify(hiddenScreenSets)) });
     if (newHistory.length > MAX_HISTORY) newHistory.shift();
     set({ history: newHistory, historyIndex: newHistory.length - 1 });
   },
@@ -637,14 +661,14 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     const { history, historyIndex } = get();
     if (historyIndex <= 0) return;
     const newIndex = historyIndex - 1;
-    set({ screenSets: history[newIndex].screenSets, historyIndex: newIndex });
+    set({ screenSets: history[newIndex].screenSets, hiddenScreenSets: history[newIndex].hiddenScreenSets, historyIndex: newIndex });
   },
 
   redo: () => {
     const { history, historyIndex } = get();
     if (historyIndex >= history.length - 1) return;
     const newIndex = historyIndex + 1;
-    set({ screenSets: history[newIndex].screenSets, historyIndex: newIndex });
+    set({ screenSets: history[newIndex].screenSets, hiddenScreenSets: history[newIndex].hiddenScreenSets, historyIndex: newIndex });
   },
 
   canUndo: () => get().historyIndex > 0,
@@ -682,7 +706,21 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   addScreenSet: (store) => {
-    const { screenSets } = get();
+    const { screenSets, hiddenScreenSets } = get();
+    const existingHidden = hiddenScreenSets.find((s) => s.store === store);
+
+    if (existingHidden) {
+      const newHidden = hiddenScreenSets.filter((s) => s.id !== existingHidden.id);
+      set({
+        screenSets: [...screenSets, existingHidden],
+        hiddenScreenSets: newHidden,
+        activeSetId: existingHidden.id,
+        activeScreenId: existingHidden.screens[0]?.id ?? null,
+      });
+      get().recordHistory();
+      return;
+    }
+
     const isIOS = store === "ios";
     const newId = nanoid();
     const screenId = nanoid();
@@ -690,21 +728,21 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       id: newId,
       name: isIOS ? "App Store (iOS)" : "Google Play (Android)",
       store,
-      deviceId: isIOS ? "iphone-16-pro-max" : "pixel-9-pro-xl",
+      deviceId: isIOS ? "iphone-17-pro-max" : "pixel-10-pro-xl",
       preset: {
         name: isIOS ? 'iPhone 6.9"' : 'Android 6.7"',
         width: 1290,
         height: 2796,
-        store,
-        description: isIOS ? "App Store" : "Google Play",
+        store: isIOS ? "ios" : "android",
+        description: isIOS ? "App Store" : "Google Play — standard portrait",
       },
       mockup: {
-        device: isIOS ? "iphone-16-pro-max" : "pixel-9-pro-xl",
-        color: isIOS ? "Black" : "Obsidian",
+        device: isIOS ? "iphone-17-pro-max" : "pixel-10-pro-xl",
+        color: "black",
         showFrame: true,
-        showReflection: false,
+        showReflection: true,
         showShadow: true,
-        squircle: false,
+        frameType: "3d",
       },
       screens: [
         {
@@ -714,7 +752,23 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
           height: 2796,
           caption: "",
           background: { type: "gradient", gradient: { direction: "to-br", stops: [{ color: "#6366f1", position: 0 }, { color: "#8b5cf6", position: 100 }] } },
-          layers: [],
+          layers: [
+            {
+              id: nanoid(),
+              type: "screenshot",
+              x: 129,
+              y: 699,
+              width: 1032,
+              height: 1957,
+              rotation: 0,
+              opacity: 1,
+              objectFit: "cover",
+              cornerRadius: 55,
+              showDeviceFrame: true,
+              shadow: { blur: 80, spread: 0, color: "rgba(0,0,0,0.35)", offsetX: 0, offsetY: 20 },
+              label: "Drop your screenshot here",
+            } as any
+          ],
         },
       ],
     };
@@ -727,12 +781,16 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   removeScreenSet: (setId) => {
-    const { screenSets, activeSetId } = get();
+    const { screenSets, hiddenScreenSets, activeSetId } = get();
     if (screenSets.length <= 1) return; // keep at least one set
+    const setToHide = screenSets.find((s) => s.id === setId);
+    if (!setToHide) return;
     const newSets = screenSets.filter((ss) => ss.id !== setId);
+    const newHidden = [...hiddenScreenSets.filter((s) => s.store !== setToHide.store), setToHide];
     const newActiveSet = activeSetId === setId ? newSets[0] : newSets.find((ss) => ss.id === activeSetId);
     set({
       screenSets: newSets,
+      hiddenScreenSets: newHidden,
       activeSetId: newActiveSet?.id ?? null,
       activeScreenId: newActiveSet?.screens[0]?.id ?? null,
     });

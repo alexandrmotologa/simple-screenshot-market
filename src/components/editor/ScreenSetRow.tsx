@@ -10,6 +10,7 @@ import { ScreenSet, ScreenshotLayer } from "@/lib/types";
 import { ScreenCard } from "@/components/editor/ScreenCard";
 import { IOS_DEVICES, ANDROID_DEVICES, COLOR_HEX_MAP } from "@/lib/devices";
 import { cn } from "@/lib/utils";
+import { DragDropContext, Droppable, DropResult } from "@hello-pangea/dnd";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +29,7 @@ interface ScreenSetRowProps {
 export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
   const {
     activeSetId, setActiveSet, setActiveScreen, addScreen, zoom,
-    updateDevice, updateMockup, screenSets, updateLayer,
+    updateDevice, updateMockup, screenSets, updateLayer, reorderScreens,
   } = useEditorStore();
 
   const isActive = activeSetId === screenSet.id;
@@ -81,7 +82,7 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
   };
 
   const isNotchOn = screenSet.mockup?.notch !== false;
-  const isIslandOn = screenSet.mockup?.dynamicIsland === true;
+  const isIslandOn = screenSet.mockup?.dynamicIsland !== false;
   const isReflectionOn = screenSet.mockup?.reflection === true;
 
   const toggleNotch = () => { updateMockup(screenSet.id, { notch: !isNotchOn }); useEditorStore.getState().recordHistory(); }
@@ -98,6 +99,17 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
         color: currentColorName,
       });
     }
+  };
+
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+    if (result.source.index === result.destination.index) return;
+
+    const newScreens = Array.from(screenSet.screens);
+    const [moved] = newScreens.splice(result.source.index, 1);
+    newScreens.splice(result.destination.index, 0, moved);
+
+    reorderScreens(screenSet.id, newScreens.map(s => s.id));
   };
 
   // Replace screenshot in ALL screens of this set
@@ -149,7 +161,7 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
 
         {/* Device model dropdown */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/60 bg-card hover:bg-secondary text-[13px] text-foreground transition-colors outline-none max-w-[200px]">
+          <DropdownMenuTrigger className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/60 bg-card hover:bg-secondary text-[13px] text-foreground transition-colors outline-none max-w-[280px]">
             <Smartphone className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
             <span className="truncate">{currentDevice?.name ?? "Select device"} &middot; {currentDevice?.width} × {currentDevice?.height}</span>
             <ChevronDown className="w-3.5 h-3.5 shrink-0 text-muted-foreground ml-1" />
@@ -157,7 +169,7 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
           <DropdownMenuContent align="start" className="w-60 max-h-80 overflow-y-auto">
             <DropdownMenuGroup>
               <DropdownMenuLabel className="text-xs">
-                {screenSet.store === "ios" ? "iPhone & iPad Models" : "Android Devices"}
+                {screenSet.store === "ios" ? "iPhone Models" : "Android Devices"}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {devices.map((device) => (
@@ -249,27 +261,43 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
           {screenSet.store === "ios" && (
             <>
               {/* Notch toggle */}
-              <label className="flex items-center gap-2 cursor-pointer" title="Show Notch">
-                <div className="w-5 h-5 flex items-center justify-center text-muted-foreground">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="4" y="2" width="16" height="20" rx="4" />
-                    <path d="M8 2v1a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V2" />
-                  </svg>
-                </div>
-                <Switch checked={isNotchOn} onCheckedChange={toggleNotch} />
-              </label>
+              {currentDevice?.notchType === "notch" && (
+                <label className="flex items-center gap-2 cursor-pointer" title="Show Notch">
+                  <div className="w-5 h-5 flex items-center justify-center text-muted-foreground">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="4" y="2" width="16" height="20" rx="4" />
+                      <path d="M8 2v1a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V2" />
+                    </svg>
+                  </div>
+                  <Switch checked={isNotchOn} onCheckedChange={toggleNotch} />
+                </label>
+              )}
 
               {/* Dynamic Island toggle */}
-              <label className="flex items-center gap-2 cursor-pointer" title="Show Dynamic Island">
-                <div className="w-5 h-5 flex items-center justify-center text-muted-foreground">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="4" y="2" width="16" height="20" rx="4" />
-                    <rect x="9" y="5" width="6" height="2.5" rx="1.25" fill="currentColor" stroke="none" />
-                  </svg>
-                </div>
-                <Switch checked={isIslandOn} onCheckedChange={toggleIsland} />
-              </label>
+              {currentDevice?.notchType === "island" && (
+                <label className="flex items-center gap-2 cursor-pointer" title="Show Dynamic Island">
+                  <div className="w-5 h-5 flex items-center justify-center text-muted-foreground">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="4" y="2" width="16" height="20" rx="4" />
+                      <rect x="9" y="5" width="6" height="2.5" rx="1.25" fill="currentColor" stroke="none" />
+                    </svg>
+                  </div>
+                  <Switch checked={isIslandOn} onCheckedChange={toggleIsland} />
+                </label>
+              )}
             </>
+          )}
+
+          {screenSet.store === "android" && (
+            <label className="flex items-center gap-2 cursor-pointer" title="Show Camera Hole">
+              <div className="w-5 h-5 flex items-center justify-center text-muted-foreground">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="4" y="2" width="16" height="20" rx="4" />
+                  <circle cx="12" cy="6" r="1.5" fill="currentColor" stroke="none" />
+                </svg>
+              </div>
+              <Switch checked={isNotchOn} onCheckedChange={toggleNotch} />
+            </label>
           )}
 
           {/* Reflection toggle */}
@@ -342,31 +370,42 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
       </div>
 
       {/* ── Cards Row ──────────────────────────────────────────────────────── */}
-      <div className="flex gap-4 items-start overflow-x-auto pb-2">
-        {screenSet.screens.map((screen, idx) => (
-          <ScreenCard
-            key={screen.id}
-            screen={screen}
-            screenSet={screenSet}
-            index={idx}
-            hideScreenshots={!isShowingScreenshots}
-          />
-        ))}
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId={screenSet.id} direction="horizontal">
+          {(provided) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className="flex gap-4 items-start overflow-x-auto pb-2 pl-1 pt-1"
+            >
+              {screenSet.screens.map((screen, idx) => (
+                <ScreenCard
+                  key={screen.id}
+                  screen={screen}
+                  screenSet={screenSet}
+                  index={idx}
+                  hideScreenshots={!isShowingScreenshots}
+                />
+              ))}
+              {provided.placeholder}
 
-        {/* Add screen button */}
-        {screenSet.screens.length < 8 && (
-          <button
-            id={`add-screen-${screenSet.id}`}
-            onClick={handleAddScreen}
-            type="button"
-            className="shrink-0 flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border/50 hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all"
-            style={{ width: cardW, height: cardH }}
-          >
-            <Plus className="w-5 h-5" />
-            <span className="text-xs font-medium">Add</span>
-          </button>
-        )}
-      </div>
+              {/* Add screen button */}
+              {screenSet.screens.length < 8 && (
+                <button
+                  id={`add-screen-${screenSet.id}`}
+                  onClick={handleAddScreen}
+                  type="button"
+                  className="shrink-0 flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border/50 hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all"
+                  style={{ width: cardW, height: cardH }}
+                >
+                  <Plus className="w-5 h-5" />
+                  <span className="text-xs font-medium">Add</span>
+                </button>
+              )}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
     </div>
   );
 }

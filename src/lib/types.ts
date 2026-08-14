@@ -369,6 +369,7 @@ export interface Project {
   name: string;
   templateId: string | null;
   screenSets: ScreenSet[];
+  hiddenScreenSets?: ScreenSet[];
   createdAt: number;
   updatedAt: number;
   thumbnail?: string;
@@ -378,6 +379,11 @@ export interface Project {
   activeLanguage?: string;
   /** Global theme for colors */
   themeId?: ThemeId;
+  /** Store listing text metadata mapped by langCode (e.g. 'en', 'fr') */
+  storeListing?: Record<string, {
+    ios?: { name: string; subtitle: string; description: string; promotionalText: string; whatsNew: string };
+    android?: { title: string; shortDescription: string; fullDescription: string; whatsNew: string };
+  }>;
 }
 
 // Template definition
