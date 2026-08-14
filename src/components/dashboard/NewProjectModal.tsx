@@ -162,23 +162,19 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-5xl h-[88vh] flex flex-col p-0 gap-0 overflow-hidden bg-background/95 backdrop-blur-xl">
+      <DialogContent showCloseButton={false} className="max-w-5xl h-[88vh] flex flex-col p-0 gap-0 overflow-hidden bg-background/95 backdrop-blur-xl">
 
         {/* Header */}
-        <DialogHeader className="px-7 py-5 border-b border-border/50 shrink-0 flex-row items-center justify-between">
+        <DialogHeader className="px-7 py-5 border-b border-border/50 shrink-0 flex-row items-start justify-between">
           <div>
             <DialogTitle className="text-2xl font-bold">Select a Theme</DialogTitle>
             <p className="text-sm text-muted-foreground mt-1">
               Choose a pre-designed theme for your screenshots
             </p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-          >
+          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full -mr-2 -mt-2">
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </DialogHeader>
 
         {/* Body (Scrollable List) */}
@@ -254,8 +250,8 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
         </ScrollArea>
 
         {/* Footer */}
-        <div className="px-7 py-5 border-t border-border/50 shrink-0 bg-card flex items-center justify-between">
-          <div className="flex items-center gap-4 flex-1">
+        <div className="px-7 py-5 border-t border-border/50 shrink-0 bg-card flex items-end justify-between">
+          <div className="flex items-end gap-4 flex-1">
             <div className="flex flex-col gap-1 w-full max-w-sm">
               <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Project Name</label>
               <Input
@@ -290,7 +286,7 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-end gap-3 h-10">
             <Button
               variant="outline"
               onClick={onClose}

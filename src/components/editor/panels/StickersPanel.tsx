@@ -138,7 +138,7 @@ export function StickersPanel() {
 
       {/* Sticker grid */}
       {activeSet && activeScreen && (
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 min-h-0">
           <div className="p-3 grid grid-cols-5 gap-1.5">
             {filtered.map((s, i) => (
               <button

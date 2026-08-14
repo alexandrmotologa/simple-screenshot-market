@@ -264,6 +264,21 @@ export function FloatingToolbar() {
             >
               <Smartphone className="w-3.5 h-3.5" />
             </Btn>
+            {/* Shadow toggle */}
+            <Btn
+              active={!!sl.shadow}
+              onClick={() => {
+                if (sl.shadow) {
+                  update({ shadow: undefined } as Partial<ScreenshotLayer>);
+                } else {
+                  update({ shadow: { blur: 20, spread: 0, color: "rgba(0,0,0,0.3)", offsetX: 0, offsetY: 10 } } as Partial<ScreenshotLayer>);
+                }
+              }}
+              title="Toggle Drop Shadow"
+            >
+              <div className="w-3.5 h-3.5 border-2 border-current rounded-sm drop-shadow-md" />
+            </Btn>
+
             <Separator orientation="vertical" className="h-5 mx-0.5 shrink-0" />
           </>
         )}
@@ -437,6 +452,28 @@ export function FloatingToolbar() {
               </TooltipTrigger>
               <TooltipContent>Fill color</TooltipContent>
             </Tooltip>
+
+            {/* Shape Outline (Stroke) */}
+            <Tooltip>
+              <TooltipTrigger
+                className="h-7 w-7 rounded hover:bg-secondary flex items-center justify-center transition-colors relative"
+              >
+                <label className="w-6 h-6 rounded-lg cursor-pointer ring-1 ring-border overflow-hidden shrink-0 block flex items-center justify-center bg-transparent border-2 border-foreground/50">
+                  <input type="color" value={sh.stroke || "#000000"} onChange={(e) => update({ stroke: e.target.value, strokeWidth: sh.strokeWidth || 4 } as Partial<ShapeLayer>)} className="opacity-0 w-0 h-0 absolute" />
+                </label>
+              </TooltipTrigger>
+              <TooltipContent>Stroke color</TooltipContent>
+            </Tooltip>
+
+            {/* Corner radius for Shapes */}
+            {sh.shape === "rounded-rectangle" && (
+              <div className="flex items-center gap-0.5 shrink-0 ml-1">
+                <button type="button" onClick={() => update({ cornerRadius: Math.max(0, (sh.cornerRadius ?? 0) - 5) } as Partial<ShapeLayer>)} className="w-6 h-6 rounded hover:bg-secondary flex items-center justify-center text-muted-foreground"><Minus className="w-3 h-3" /></button>
+                <NumInput value={sh.cornerRadius ?? 0} onChange={(v) => update({ cornerRadius: v } as Partial<ShapeLayer>)} min={0} max={200} unit="r" width="w-8" />
+                <button type="button" onClick={() => update({ cornerRadius: Math.min(200, (sh.cornerRadius ?? 0) + 5) } as Partial<ShapeLayer>)} className="w-6 h-6 rounded hover:bg-secondary flex items-center justify-center text-muted-foreground"><Plus className="w-3 h-3" /></button>
+              </div>
+            )}
+
             <Separator orientation="vertical" className="h-5 mx-0.5 shrink-0" />
           </>
         )}

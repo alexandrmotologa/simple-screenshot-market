@@ -21,11 +21,17 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export function CharactersPanel() {
   const { activeSetId, activeScreenId, addLayer } = useEditorStore();
+  
+  const libraries = Array.from(new Set(CHARACTERS.map((c) => c.library || "Open Peeps")));
+  const [activeLibrary, setActiveLibrary] = useState<string>(libraries[0]);
+  
+  const libraryCharacters = CHARACTERS.filter((c) => (c.library || "Open Peeps") === activeLibrary);
+  
+  const categories = ["all", ...Array.from(new Set(libraryCharacters.map((c) => c.category)))];
   const [filter, setFilter] = useState<string>("all");
 
-  const categories = ["all", ...Array.from(new Set(CHARACTERS.map((c) => c.category)))];
   const filtered =
-    filter === "all" ? CHARACTERS : CHARACTERS.filter((c) => c.category === filter);
+    filter === "all" ? libraryCharacters : libraryCharacters.filter((c) => c.category === filter);
 
   const handleAdd = (char: Character) => {
     if (!activeSetId || !activeScreenId) return;
@@ -53,6 +59,28 @@ export function CharactersPanel() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
+      {/* Library tabs */}
+      <div className="flex gap-1 px-3 py-2 overflow-x-auto shrink-0 border-b border-border/30">
+        {libraries.map((lib) => (
+          <button
+            key={lib}
+            type="button"
+            onClick={() => {
+              setActiveLibrary(lib);
+              setFilter("all");
+            }}
+            className={cn(
+              "shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all",
+              activeLibrary === lib
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary"
+            )}
+          >
+            {lib}
+          </button>
+        ))}
+      </div>
+
       {/* Category filter */}
       <div className="px-3 pt-3 pb-2 shrink-0 border-b border-border/30">
         <div className="flex flex-wrap gap-1">
@@ -121,7 +149,7 @@ export function CharactersPanel() {
         {/* Info footer */}
         <div className="px-3 pb-3">
           <p className="text-[10px] text-muted-foreground text-center">
-            Open Peeps style · CC0 License · Click to add to canvas
+            {activeLibrary} style · CC0 License · Click to add to canvas
           </p>
         </div>
       </ScrollArea>

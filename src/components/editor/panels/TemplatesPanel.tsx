@@ -173,7 +173,7 @@ export function TemplatesPanel() {
 
       {/* Template grid */}
       {activeSet && activeScreen && (
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 min-h-0">
           <div className="p-3 grid grid-cols-2 gap-2.5">
             {filtered.length === 0 && (
               <div className="col-span-2 text-center py-8 text-xs text-muted-foreground">

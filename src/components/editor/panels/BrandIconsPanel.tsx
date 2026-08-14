@@ -99,9 +99,11 @@ export function BrandIconsPanel() {
     const screen = getActiveScreen();
     if (!set || !screen) return;
 
+    const proxyUrl = `/_next/image?url=${encodeURIComponent(`${SIMPLE_ICONS_CDN}/${brand.slug}`)}&w=256&q=75`;
+
     addLayer(set.id, screen.id, {
       type: "image" as const,
-      src: `${SIMPLE_ICONS_CDN}/${brand.slug}/${brand.color.replace("#", "")}`,
+      src: proxyUrl,
       x: Math.round(screen.width / 2 - 120),
       y: Math.round(screen.height / 2 - 120),
       width: 240,
@@ -128,7 +130,7 @@ export function BrandIconsPanel() {
       </div>
 
       {/* Grid */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 min-h-0">
         <div className="p-3 grid grid-cols-3 gap-2">
           {filtered.map((brand) => (
             <button
@@ -139,12 +141,9 @@ export function BrandIconsPanel() {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`${SIMPLE_ICONS_CDN}/${brand.slug}/${brand.color.replace("#", "")}`}
+                src={`/_next/image?url=${encodeURIComponent(`${SIMPLE_ICONS_CDN}/${brand.slug}`)}&w=64&q=75`}
                 alt={brand.name}
                 className="w-7 h-7 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
               />
               <span className="text-[9px] text-muted-foreground group-hover:text-foreground text-center leading-tight truncate w-full">
                 {brand.name}

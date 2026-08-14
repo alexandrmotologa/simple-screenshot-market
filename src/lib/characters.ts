@@ -17,6 +17,7 @@ export interface CharacterPose {
 export interface Character {
   id: string;
   name: string;
+  library?: "Open Peeps" | "Avataaars" | "Doodles";
   category: "happy" | "thinking" | "celebrating" | "sitting" | "standing" | "waving" | "working";
   description: string;
   /** Base color (skin tone) */
@@ -294,12 +295,75 @@ const SALY_3D_STYLE = `
   <!-- Legs (tubes) -->
   <path d="M 175 360 L 175 460" stroke="#3A0CA3" stroke-width="26" fill="none" stroke-linecap="round"/>
   <path d="M 225 360 L 225 460" stroke="#3A0CA3" stroke-width="26" fill="none" stroke-linecap="round"/>
-  
   <!-- Highlights -->
   <path d="M 145 230 Q 145 280 155 350" stroke="#FFFFFF" stroke-width="4" opacity="0.3" fill="none" stroke-linecap="round"/>
 </g>`;
 
-// ─── Character Library ─────────────────────────────────────────────────────────
+// ─── Avataaars / Circle Portraits ───────────────────────────────────────────
+
+const AVATAR_HAPPY_1 = `
+<g>
+  <circle cx="200" cy="200" r="190" fill="#FDE68A"/>
+  <!-- Shoulders -->
+  <path d="M 60 380 Q 200 200 340 380 Z" fill="#4F46E5"/>
+  <!-- Neck -->
+  <rect x="175" y="260" width="50" height="50" rx="10" fill="#FDBA74"/>
+  <!-- Head -->
+  <circle cx="200" cy="180" r="100" fill="#FDBA74"/>
+  <!-- Eyes -->
+  <circle cx="160" cy="160" r="12" fill="#1e1b4b"/>
+  <circle cx="240" cy="160" r="12" fill="#1e1b4b"/>
+  <circle cx="163" cy="155" r="4" fill="white"/>
+  <circle cx="243" cy="155" r="4" fill="white"/>
+  <!-- Smile -->
+  <path d="M 160 210 Q 200 250 240 210" stroke="#1e1b4b" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <!-- Hair -->
+  <path d="M 100 160 C 100 80 300 80 300 160 Q 310 180 300 200 C 300 100 100 100 100 200 Q 90 180 100 160 Z" fill="#78350F"/>
+</g>`;
+
+const AVATAR_THINKING = `
+<g>
+  <circle cx="200" cy="200" r="190" fill="#A7F3D0"/>
+  <!-- Shoulders -->
+  <path d="M 60 380 Q 200 200 340 380 Z" fill="#059669"/>
+  <!-- Neck -->
+  <rect x="175" y="260" width="50" height="50" rx="10" fill="#FCA5A5"/>
+  <!-- Head -->
+  <circle cx="200" cy="180" r="100" fill="#FCA5A5"/>
+  <!-- Eyes looking up -->
+  <circle cx="165" cy="150" r="12" fill="#1e1b4b"/>
+  <circle cx="245" cy="150" r="12" fill="#1e1b4b"/>
+  <!-- Thinking mouth -->
+  <circle cx="200" cy="220" r="10" fill="#1e1b4b"/>
+  <!-- Hair -->
+  <circle cx="200" cy="90" r="60" fill="#1e1b4b"/>
+  <circle cx="150" cy="110" r="50" fill="#1e1b4b"/>
+  <circle cx="250" cy="110" r="50" fill="#1e1b4b"/>
+</g>`;
+
+const DOODLE_WAVING = `
+<g stroke="#1e1b4b" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none">
+  <!-- Body outline -->
+  <rect x="120" y="200" width="160" height="200" rx="40" fill="#C4B5FD"/>
+  <!-- Head -->
+  <circle cx="200" cy="120" r="60" fill="#FCD34D"/>
+  <!-- Face -->
+  <path d="M 175 110 L 185 110" stroke-width="12"/>
+  <path d="M 215 110 L 225 110" stroke-width="12"/>
+  <path d="M 180 140 Q 200 160 220 140"/>
+  <!-- Waving arm -->
+  <path d="M 280 250 Q 350 200 320 120" fill="none"/>
+  <circle cx="320" cy="120" r="20" fill="#FCD34D"/>
+  <!-- Left arm -->
+  <path d="M 120 250 Q 50 300 80 380"/>
+  <!-- Legs -->
+  <path d="M 160 400 L 160 480"/>
+  <path d="M 240 400 L 240 480"/>
+</g>`;
+
+// ─── Character Database ───────────────────────────────────────────────────────
+
+
 
 export const CHARACTERS: Character[] = [
   {

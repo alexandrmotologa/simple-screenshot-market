@@ -29,13 +29,15 @@ export function FlagsPanel() {
     const screen = getActiveScreen();
     if (!set || !screen) return;
 
+    const proxyUrl = `/_next/image?url=${encodeURIComponent(`https://flagcdn.com/w160/${flag.code.toLowerCase()}.png`)}&w=256&q=75`;
+
     addLayer(set.id, screen.id, {
-      type: "flag" as const,
-      content: flag.emoji,
-      x: Math.round(screen.width / 2 - 100),
-      y: Math.round(screen.height / 2 - 100),
-      width: 200,
-      height: 200,
+      type: "image" as const,
+      src: proxyUrl,
+      x: Math.round(screen.width / 2 - 80),
+      y: Math.round(screen.height / 2 - 50),
+      width: 160,
+      height: 110,
       rotation: 0,
       opacity: 1,
     } as Parameters<typeof addLayer>[2]);
@@ -58,16 +60,21 @@ export function FlagsPanel() {
       </div>
 
       {/* Grid */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 min-h-0">
         <div className="p-3 grid grid-cols-4 gap-1.5">
           {filtered.map((flag) => (
             <button
               key={flag.code}
               onClick={() => handleAdd(flag)}
               title={flag.name}
-              className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-secondary transition-all group"
+              className="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-secondary transition-all group"
             >
-              <span className="text-2xl leading-none">{flag.emoji}</span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/_next/image?url=${encodeURIComponent(`https://flagcdn.com/w40/${flag.code.toLowerCase()}.png`)}&w=64&q=75`}
+                alt={flag.name}
+                className="w-8 object-contain rounded-[2px] shadow-sm"
+              />
               <span className="text-[10px] text-muted-foreground group-hover:text-foreground font-medium truncate w-full text-center">
                 {flag.name}
               </span>

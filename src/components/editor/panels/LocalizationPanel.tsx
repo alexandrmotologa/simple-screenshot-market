@@ -1,18 +1,35 @@
-﻿"use client";
+"use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { useLanguageStore, getLang, SUPPORTED_LANGUAGES } from "@/lib/store/languageStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TextLayer } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Globe, Sparkles, Copy, Check } from "lucide-react";
+import { Globe, Sparkles, Copy, Check, Plus, X, ChevronDown } from "lucide-react";
+import { AICaptionsModal } from "@/components/editor/AICaptionsModal";
 
 export function LocalizationPanel() {
   const { getActiveSet, getActiveScreen, updateLayerLocalization, clearLayerLocalization } =
     useEditorStore();
-  const { projectLanguages, activeLang, setActiveLang } = useLanguageStore();
+  const { projectLanguages, activeLang, setActiveLang, addLanguage, removeLanguage } = useLanguageStore();
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showPicker, setShowPicker] = useState(false);
+  const [search, setSearch] = useState("");
+  const [showAI, setShowAI] = useState(false);
+  const pickerRef = useRef<HTMLDivElement>(null);
+
+  // Close picker on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+        setShowPicker(false);
+        setSearch("");
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const set = getActiveSet();
   const screen = getActiveScreen();
@@ -21,41 +38,17 @@ export function LocalizationPanel() {
     (l): l is TextLayer => l.type === "text"
   );
 
-  const nonEnglish = projectLanguages.filter((c) => c !== "en");
-
-  if (!set || !screen) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground p-6 text-center">
-        <Globe className="w-8 h-8 opacity-30" />
-        <p className="text-sm">No screen selected</p>
-      </div>
-    );
-  }
-
-  if (textLayers.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground p-6 text-center">
-        <Globe className="w-8 h-8 opacity-30" />
-        <p className="text-sm font-medium">No text layers found</p>
-        <p className="text-xs">Add text layers to this screen first, then translate them here.</p>
-      </div>
-    );
-  }
-
-  if (nonEnglish.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground p-6 text-center">
-        <Globe className="w-8 h-8 opacity-30" />
-        <p className="text-sm font-medium">No languages added yet</p>
-        <p className="text-xs">Use the language bar above to add languages to your project.</p>
-      </div>
-    );
-  }
+  const available = SUPPORTED_LANGUAGES.filter(
+    (l) => !projectLanguages.includes(l.code) &&
+      (l.name.toLowerCase().includes(search.toLowerCase()) ||
+       l.nativeName.toLowerCase().includes(search.toLowerCase()) ||
+       l.code.toLowerCase().includes(search.toLowerCase()))
+  );
 
   const copyOriginalToAll = (layer: TextLayer) => {
-    nonEnglish.forEach((lang) => {
-      if (!screen.localizations?.[lang]?.[layer.id]?.content) {
-        updateLayerLocalization(set.id, screen.id, layer.id, lang, layer.content);
+    projectLanguages.filter(l => l !== "en").forEach((lang) => {
+      if (!screen?.localizations?.[lang]?.[layer.id]?.content) {
+        updateLayerLocalization(set!.id, screen!.id, layer.id, lang, layer.content);
       }
     });
     setCopiedId(layer.id);
@@ -63,118 +56,223 @@ export function LocalizationPanel() {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Language tab switcher */}
-      <div className="flex gap-1 px-3 pt-3 pb-2 shrink-0 overflow-x-auto scrollbar-none border-b border-border/30">
-        {nonEnglish.map((code) => {
-          const lang = getLang(code);
-          return (
+    <div className="flex flex-col h-full relative">
+      {/* Languages List */}
+      <div className="shrink-0 p-3 border-b border-border/30 flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <Globe className="w-3.5 h-3.5" />
+            Project Languages
+          </div>
+          {/* Add language button */}
+          <div className="relative shrink-0" ref={pickerRef}>
             <button
-              key={code}
               type="button"
-              onClick={() => setActiveLang(code)}
+              onClick={() => setShowPicker((v) => !v)}
               className={cn(
-                "shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all",
-                activeLang === code
-                  ? "bg-indigo-500 text-white shadow-sm"
-                  : "bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary"
+                "flex items-center gap-0.5 h-6 px-2 rounded-md text-[11px] font-medium transition-all",
+                showPicker
+                  ? "bg-indigo-500/20 text-indigo-400 ring-1 ring-indigo-500/40"
+                  : "bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary"
               )}
             >
-              <span>{lang?.flag}</span>
-              <span className="uppercase">{code}</span>
+              <Plus className="w-3 h-3" />
+              <span>Add</span>
+              <ChevronDown className={cn("w-2.5 h-2.5 transition-transform", showPicker && "rotate-180")} />
             </button>
-          );
-        })}
-      </div>
 
-      {/* Text layer list */}
-      <ScrollArea className="flex-1">
-        <div className="p-3 space-y-3">
-          {textLayers.map((layer) => {
-            const currentLang = activeLang === "en" ? "en" : activeLang;
-            const localized = currentLang !== "en"
-              ? (screen.localizations?.[currentLang]?.[layer.id]?.content ?? "")
-              : layer.content;
-
-            const hasTranslation = currentLang !== "en" &&
-              !!screen.localizations?.[currentLang]?.[layer.id]?.content;
-
-            return (
-              <div key={layer.id} className="space-y-1.5">
-                {/* Layer label */}
-                <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate max-w-32">
-                    {layer.content.split("\n")[0].substring(0, 20) || "Text layer"}
-                  </p>
-                  <div className="flex items-center gap-1">
-                    {!hasTranslation && currentLang !== "en" && (
-                      <span className="text-[9px] text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded px-1">
-                        Missing
-                      </span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => copyOriginalToAll(layer)}
-                      title="Copy original to all languages"
-                      className="w-5 h-5 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                    >
-                      {copiedId === layer.id
-                        ? <Check className="w-3 h-3 text-green-400" />
-                        : <Copy className="w-3 h-3" />}
-                    </button>
-                  </div>
+            {showPicker && (
+              <div className="absolute top-full right-0 mt-1 w-60 bg-card border border-border/60 rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50">
+                {/* Search */}
+                <div className="p-2 border-b border-border/40">
+                  <input
+                    autoFocus
+                    type="text"
+                    placeholder="Search languages..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-secondary/70 border border-border/30 text-xs outline-none text-foreground placeholder:text-muted-foreground"
+                  />
                 </div>
-
-                {/* EN base (read-only reference) */}
-                <div className="px-2.5 py-1.5 rounded-lg bg-secondary/30 border border-border/20 text-xs text-muted-foreground font-mono leading-relaxed">
-                  🇺🇸 {layer.content || <em>empty</em>}
-                </div>
-
-                {/* Translation field */}
-                {currentLang !== "en" && (
-                  <div className="relative">
-                    <textarea
-                      rows={Math.min(4, (localized.split("\n").length || 1) + 1)}
-                      value={localized}
-                      placeholder={`Translate to ${getLang(currentLang)?.nativeName ?? currentLang}...`}
-                      onChange={(e) =>
-                        updateLayerLocalization(set.id, screen.id, layer.id, currentLang, e.target.value)
-                      }
-                      onFocus={(e) => {
-                        if (!localized) e.target.value = layer.content;
-                      }}
-                      className={cn(
-                        "w-full px-2.5 py-1.5 rounded-lg text-xs outline-none resize-none leading-relaxed transition-all",
-                        "bg-secondary/60 border text-foreground placeholder:text-muted-foreground",
-                        hasTranslation
-                          ? "border-indigo-500/30 bg-indigo-500/5"
-                          : "border-border/40 hover:border-border/70 focus:border-indigo-500/50"
-                      )}
-                    />
-                    {hasTranslation && (
+                {/* Language list */}
+                <div className="max-h-52 overflow-y-auto p-1">
+                  {available.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-3">
+                      {search ? "No languages found" : "All languages added"}
+                    </p>
+                  ) : (
+                    available.map((lang) => (
                       <button
+                        key={lang.code}
                         type="button"
-                        onClick={() => clearLayerLocalization(set.id, screen.id, layer.id, currentLang)}
-                        className="absolute top-1 right-1 text-[9px] text-muted-foreground hover:text-destructive transition-colors px-1 rounded"
+                        onClick={() => {
+                          addLanguage(lang.code);
+                          setActiveLang(lang.code);
+                          setShowPicker(false);
+                          setSearch("");
+                        }}
+                        className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-secondary transition-colors text-left"
                       >
-                        clear
+                        <span className="text-base shrink-0">{lang.flag}</span>
+                        <span className="flex-1 font-medium">{lang.nativeName}</span>
+                        <span className="text-muted-foreground uppercase text-[10px]">{lang.code}</span>
                       </button>
-                    )}
-                  </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Language Tabs */}
+        <div className="flex gap-1 overflow-x-auto scrollbar-none pb-1">
+          {projectLanguages.map((code) => {
+            const lang = getLang(code);
+            const isActive = activeLang === code;
+            return (
+              <div key={code} className="flex items-center shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setActiveLang(code)}
+                  className={cn(
+                    "flex items-center gap-1 h-6 px-2 rounded-md text-[11px] font-medium transition-all",
+                    isActive
+                      ? "bg-indigo-500 text-white shadow-sm"
+                      : "bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  )}
+                >
+                  <span>{lang?.flag}</span>
+                  <span className="uppercase">{code}</span>
+                </button>
+                {code !== "en" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      removeLanguage(code);
+                      if (activeLang === code) setActiveLang("en");
+                    }}
+                    className="w-4 h-6 -ml-0.5 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
+                    title={`Remove ${lang?.name}`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
                 )}
               </div>
             );
           })}
         </div>
-      </ScrollArea>
-
-      {/* AI Generate hint */}
-      <div className="shrink-0 p-3 border-t border-border/30">
-        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-indigo-300">
-          <Sparkles className="w-3.5 h-3.5 shrink-0" />
-          <span>Use <strong>✨ AI Captions</strong> to auto-generate translations for all languages at once.</span>
-        </div>
       </div>
+
+      {(!set || !screen) ? (
+        <div className="flex flex-col items-center justify-center flex-1 gap-2 text-muted-foreground p-6 text-center">
+          <Globe className="w-8 h-8 opacity-30" />
+          <p className="text-sm">No screen selected</p>
+        </div>
+      ) : textLayers.length === 0 ? (
+        <div className="flex flex-col items-center justify-center flex-1 gap-2 text-muted-foreground p-6 text-center">
+          <Globe className="w-8 h-8 opacity-30" />
+          <p className="text-sm font-medium">No text layers found</p>
+          <p className="text-xs">Add text layers to this screen first, then translate them here.</p>
+        </div>
+      ) : (
+        <ScrollArea className="flex-1 min-h-0">
+          <div className="p-3 space-y-3">
+            {textLayers.map((layer) => {
+              const currentLang = activeLang === "en" ? "en" : activeLang;
+              const localized = currentLang !== "en"
+                ? (screen.localizations?.[currentLang]?.[layer.id]?.content ?? "")
+                : layer.content;
+
+              const hasTranslation = currentLang !== "en" &&
+                !!screen.localizations?.[currentLang]?.[layer.id]?.content;
+
+              return (
+                <div key={layer.id} className="space-y-1.5">
+                  {/* Layer label */}
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate max-w-32">
+                      {layer.content.split("\n")[0].substring(0, 20) || "Text layer"}
+                    </p>
+                    {currentLang !== "en" && (
+                      <div className="flex items-center gap-1">
+                        {!hasTranslation && (
+                          <span className="text-[9px] text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded px-1">
+                            Missing
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => copyOriginalToAll(layer)}
+                          title="Copy original to all languages"
+                          className="w-5 h-5 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        >
+                          {copiedId === layer.id
+                            ? <Check className="w-3 h-3 text-green-400" />
+                            : <Copy className="w-3 h-3" />}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* EN base (read-only reference) */}
+                  {currentLang !== "en" && (
+                    <div className="px-2.5 py-1.5 rounded-lg bg-secondary/30 border border-border/20 text-xs text-muted-foreground font-mono leading-relaxed">
+                      🇺🇸 {layer.content || <em>empty</em>}
+                    </div>
+                  )}
+
+                  {/* Translation field */}
+                  <div className="relative">
+                    <textarea
+                      rows={Math.min(4, (localized.split("\n").length || 1) + 1)}
+                      value={localized}
+                      placeholder={currentLang === "en" ? "Enter English text..." : `Translate to ${getLang(currentLang)?.nativeName ?? currentLang}...`}
+                      onChange={(e) =>
+                        updateLayerLocalization(set.id, screen.id, layer.id, currentLang, e.target.value)
+                      }
+                      onFocus={(e) => {
+                        if (currentLang !== "en" && !localized) e.target.value = layer.content;
+                      }}
+                      className={cn(
+                        "w-full px-2.5 py-1.5 rounded-lg text-xs outline-none resize-none leading-relaxed transition-all",
+                        "bg-secondary/60 border text-foreground placeholder:text-muted-foreground",
+                        hasTranslation || currentLang === "en"
+                          ? "border-indigo-500/30 focus:border-indigo-500/50"
+                          : "border-border/40 hover:border-border/70 focus:border-indigo-500/50"
+                      )}
+                    />
+                    {hasTranslation && currentLang !== "en" && (
+                      <button
+                        type="button"
+                        onClick={() => clearLayerLocalization(set.id, screen.id, layer.id, currentLang)}
+                        className="absolute top-1 right-1 text-[9px] text-muted-foreground hover:text-destructive transition-colors px-1 rounded bg-secondary/80 backdrop-blur"
+                      >
+                        clear
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </ScrollArea>
+      )}
+
+      {/* AI Generate Action */}
+      <div className="shrink-0 p-3 border-t border-border/30">
+        <button
+          onClick={() => setShowAI(true)}
+          className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 text-xs font-semibold text-violet-400 hover:bg-violet-500/20 hover:border-violet-500/30 transition-all"
+        >
+          <Sparkles className="w-4 h-4" />
+          AI Captions & Auto-Translate
+        </button>
+      </div>
+
+      {showAI && (
+        <AICaptionsModal onClose={() => setShowAI(false)} />
+      )}
     </div>
   );
 }

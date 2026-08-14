@@ -14,8 +14,6 @@ import { HorizontalCanvas } from "@/components/editor/HorizontalCanvas";
 import { FloatingToolbar } from "@/components/editor/FloatingToolbar";
 import { ScreenStrip } from "@/components/editor/ScreenStrip";
 import { ExportModal } from "@/components/editor/ExportModal";
-import { LanguageBar } from "@/components/editor/LanguageBar";
-import { AICaptionsModal } from "@/components/editor/AICaptionsModal";
 import { GifExportModal } from "@/components/editor/GifExportModal";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ScreenshotLayer } from "@/lib/types";
@@ -66,7 +64,6 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
   const saveProjectThumbnail = useProjectStore((s) => s.saveProjectThumbnail);
   const screenSets = useEditorStore((s) => s.screenSets);
   const [showExport, setShowExport] = useState(false);
-  const [showAI, setShowAI] = useState(false);
   const [showGif, setShowGif] = useState(false);
   const replaceFileRef = useRef<HTMLInputElement>(null);
   const thumbTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -272,17 +269,6 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
 
         <Separator orientation="vertical" className="h-4" />
 
-        {/* AI Captions */}
-        <button
-          type="button"
-          onClick={() => setShowAI(true)}
-          className="h-7 flex items-center gap-1.5 px-3 text-xs font-semibold rounded-lg bg-violet-500/15 text-violet-400 hover:bg-violet-500/25 ring-1 ring-violet-500/30 transition-all"
-          title="Generate captions with AI"
-        >
-          <Sparkles className="w-3 h-3" />
-          AI Captions
-        </button>
-
 
 
         {/* Theme Toggle */}
@@ -310,8 +296,6 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
 
         {/* Main canvas area */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Language bar */}
-          <LanguageBar />
           <HorizontalCanvas />
           {/* Bottom strip: quick screen navigation */}
           <ScreenStrip />
@@ -321,9 +305,6 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
       {/* Export modal */}
       {showExport && (
         <ExportModal projectId={projectId} onClose={() => setShowExport(false)} />
-      )}
-      {showAI && (
-        <AICaptionsModal onClose={() => setShowAI(false)} />
       )}
       {showGif && (
         <GifExportModal projectId={projectId} onClose={() => setShowGif(false)} />

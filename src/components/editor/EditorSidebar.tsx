@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import {
   Layers, Type, Image as ImageIcon, Square, Flag,
   Cpu, Upload, Grid3X3, X, Layout, Smile, Globe, User,
-  Smartphone
+  Smartphone, LayoutList
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LayersPanel } from "@/components/editor/panels/LayersPanel";
@@ -20,14 +20,16 @@ import { LocalizationPanel } from "@/components/editor/panels/LocalizationPanel"
 import { CharactersPanel } from "@/components/editor/panels/CharactersPanel";
 import { PlatformsPanel } from "@/components/editor/panels/PlatformsPanel";
 import { ThemesPanel } from "@/components/editor/panels/ThemesPanel";
+import { StoreListingPanel } from "@/components/editor/panels/StoreListingPanel";
 import { cn } from "@/lib/utils";
 
-type PanelId = "themes" | "platforms" | "layers" | "text" | "background" | "flags" | "brands" | "assets" | "blocks" | "templates" | "stickers" | "languages" | "characters" | null;
+type PanelId = "themes" | "platforms" | "layers" | "text" | "background" | "flags" | "brands" | "assets" | "blocks" | "templates" | "stickers" | "languages" | "characters" | "store_listing" | null;
 
 const SIDEBAR_TOOLS: { id: PanelId; icon: React.ElementType; label: string }[] = [
   { id: "themes", icon: Layout, label: "Themes" },
   { id: "templates", icon: Layout, label: "Templates" },
   { id: "platforms", icon: Smartphone, label: "Platforms" },
+  { id: "store_listing", icon: LayoutList, label: "Store Listing" },
   { id: "layers", icon: Layers, label: "Layers" },
   { id: "text", icon: Type, label: "Text" },
   { id: "background", icon: Grid3X3, label: "Background" },
@@ -54,6 +56,7 @@ const PANEL_TITLES: Record<NonNullable<PanelId>, string> = {
   blocks: "Block element",
   languages: "Languages & i18n",
   characters: "Characters",
+  store_listing: "Store Listing",
 };
 
 function renderPanel(panel: NonNullable<PanelId>) {
@@ -71,6 +74,7 @@ function renderPanel(panel: NonNullable<PanelId>) {
     case "blocks": return <BlocksPanel />;
     case "languages": return <LocalizationPanel />;
     case "characters": return <CharactersPanel />;
+    case "store_listing": return <StoreListingPanel />;
   }
 }
 
@@ -124,7 +128,7 @@ export function EditorSidebar() {
             </button>
           </div>
           {/* Panel content */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 min-h-0 flex flex-col">
             {renderPanel(activePanel)}
           </div>
         </div>

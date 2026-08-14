@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Plus, ExternalLink } from "lucide-react";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { ScreenSetRow } from "@/components/editor/ScreenSetRow";
-import { StoreListing } from "@/components/editor/StoreListing";
 
 export function HorizontalCanvas() {
   const { screenSets, zoom, setZoom, addScreenSet, updateScreen } = useEditorStore();
@@ -49,9 +48,6 @@ export function HorizontalCanvas() {
             <ScreenSetRow screenSet={ss} />
           </div>
         ))}
-
-
-        <StoreListing />
       </div>
     </div>
   );
