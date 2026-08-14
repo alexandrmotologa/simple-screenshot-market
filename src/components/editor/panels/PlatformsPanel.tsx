@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Apple, Smartphone } from "lucide-react";
 import { findModel } from "@/lib/deviceModels";
+import { ALL_DEVICES } from "@/lib/devices";
 
 export function PlatformsPanel() {
   const { screenSets, addScreenSet, removeScreenSet } = useEditorStore();
@@ -49,7 +50,7 @@ export function PlatformsPanel() {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm font-medium">iOS (App Store)</span>
-                  <span className="text-[10px] text-muted-foreground">{iosSet?.deviceId ? findModel(iosSet.deviceId)?.name || "iPhone" : "iPhone 16 Pro Max"}</span>
+                  <span className="text-[10px] text-muted-foreground">{iosSet?.mockup?.device ? ALL_DEVICES.find(d => d.id === iosSet.mockup!.device)?.name : findModel(iosSet?.deviceId || "")?.name || "iPhone"}</span>
                 </div>
               </div>
               <Switch
@@ -65,7 +66,7 @@ export function PlatformsPanel() {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm font-medium">Android (Google Play)</span>
-                  <span className="text-[10px] text-muted-foreground">{androidSet?.deviceId ? findModel(androidSet.deviceId)?.name || "Pixel" : "Pixel 9 Pro XL"}</span>
+                  <span className="text-[10px] text-muted-foreground">{androidSet?.mockup?.device ? ALL_DEVICES.find(d => d.id === androidSet.mockup!.device)?.name : findModel(androidSet?.deviceId || "")?.name || "Android"}</span>
                 </div>
               </div>
               <Switch
