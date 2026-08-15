@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { Search, Sparkles, Check } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useEditorStore } from "@/lib/store/editorStore";
-import { DEFAULT_TEMPLATES } from "@/lib/templates";
+import { ALL_TEMPLATES } from "@/lib/templates";
 import { cn } from "@/lib/utils";
 import type { Template } from "@/lib/types";
 
@@ -108,7 +108,7 @@ export function TemplatesPanel() {
   const activeScreen = getActiveScreen();
 
   const filtered = useMemo(() => {
-    return DEFAULT_TEMPLATES.filter((t) => {
+    return ALL_TEMPLATES.filter((t) => {
       const matchCat = category === "All" || t.category === category;
       const q = query.toLowerCase();
       const matchQ = !q ||

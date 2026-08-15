@@ -166,6 +166,18 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
       const g4 = ctx.createRadialGradient(W, H, 0, W, H, Math.hypot(W, H));
       g4.addColorStop(0, br + "cc"); g4.addColorStop(1, br + "00");
       ctx.fillStyle = g4; ctx.fillRect(0, 0, W, H);
+    } else if (bg.type === "image" && bg.imageUrl) {
+      try {
+        const bgImg = await loadImage(bg.imageUrl);
+        if (bg.imageSlice) {
+          const { x, y, width, height } = bg.imageSlice;
+          ctx.drawImage(bgImg, x, y, width, height, 0, 0, W, H);
+        } else {
+          ctx.drawImage(bgImg, 0, 0, W, H);
+        }
+      } catch (err) {
+        console.error("Failed to load background image:", err);
+      }
     } else {
       ctx.fillStyle = "#1a1a2e";
       ctx.fillRect(0, 0, W, H);

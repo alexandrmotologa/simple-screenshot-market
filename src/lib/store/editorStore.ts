@@ -56,7 +56,7 @@ interface EditorStore {
   updateAllScreensBackground: (setId: string, background: Background) => void;
 
   // Actions: layers
-  addLayer: (setId: string, screenId: string, layer: Layer) => void;
+  addLayer: (setId: string, screenId: string, layer: any) => void;
   updateLayer: (setId: string, screenId: string, layerId: string, updates: Partial<Layer>) => void;
   deleteLayer: (setId: string, screenId: string, layerId: string) => void;
   deleteSelectedLayers: () => void;
@@ -91,7 +91,7 @@ interface EditorStore {
   recordHistory: () => void;
 
   // Actions: templates
-  applyTemplate: (setId: string, template: Omit<ScreenSet, "id" | "store">) => void;
+  applyTemplate: (setId: string, template: any) => void;
 
   // Actions: screen sets
   addScreenSet: (store: "ios" | "android") => void;
@@ -316,13 +316,13 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
 
   addLayer: (setId, screenId, layer) => {
     const newLayer = { ...layer, id: nanoid() } as Layer;
-    set((state) => ({
-      screenSets: state.screenSets.map((ss) =>
+    set((state: any) => ({
+      screenSets: state.screenSets.map((ss: any) =>
         ss.id !== setId
           ? ss
           : {
               ...ss,
-              screens: ss.screens.map((s) =>
+              screens: ss.screens.map((s: any) =>
                 s.id !== screenId
                   ? s
                   : { ...s, layers: [...s.layers, newLayer] }
@@ -347,7 +347,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
                   : {
                       ...s,
                       layers: s.layers.map((l) =>
-                        l.id !== layerId ? l : { ...l, ...updates }
+                        l.id !== layerId ? l : ({ ...l, ...updates } as Layer)
                       ),
                     }
               ),
@@ -687,12 +687,12 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
           caption: "",
           background: tScreen.background ?? { type: "solid", color: "#1a1a2e" },
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          layers: (tScreen.layers ?? []).map((l: any) => {
+          layers: (tScreen.layers ?? []).map((l: any): Layer => {
             const id = nanoid();
             if (l.type === "screenshot" && existingSrcs[idx]) {
-              return { ...l, id, src: existingSrcs[idx] };
+              return { ...l, id, src: existingSrcs[idx] } as Layer;
             }
-            return { ...l, id };
+            return { ...l, id } as Layer;
           }),
         }));
         return { ...ss, screens: newScreens };

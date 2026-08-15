@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Project, Screen, Layer, ScreenSet } from "@/lib/types";
 import { nanoid } from "@/lib/utils";
-import { DEFAULT_TEMPLATES } from "@/lib/templates";
+import { ALL_TEMPLATES } from "@/lib/templates";
 
 interface ProjectStore {
   projects: Project[];
@@ -21,7 +21,7 @@ export const useProjectStore = create<ProjectStore>()(
 
       createProject: (templateId, name, platforms = { ios: true, android: true }) => {
         const template = templateId
-          ? DEFAULT_TEMPLATES.find((t) => t.id === templateId)
+          ? ALL_TEMPLATES.find((t) => t.id === templateId)
           : null;
 
         const baseScreens = template?.screens && template.screens.length > 0

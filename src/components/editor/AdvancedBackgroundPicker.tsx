@@ -65,7 +65,7 @@ export function AdvancedBackgroundPicker({ currentBackground, onSelect }: Props)
               <div 
                 className={cn(
                   "relative w-10 h-8 rounded-md border shadow-sm overflow-hidden flex-shrink-0 transition-transform hover:scale-105",
-                  currentBackground.type === "solid" && !PRESET_MINIMAL.includes(currentBackground.color) ? "ring-2 ring-primary ring-offset-1" : "border-border/50"
+                  currentBackground.type === "solid" && currentBackground.color && !PRESET_MINIMAL.includes(currentBackground.color) ? "ring-2 ring-primary ring-offset-1" : "border-border/50"
                 )}
                 style={{ backgroundColor: currentBackground.type === "solid" ? currentBackground.color : "#ffffff" }}
                 title="Pick a custom color"

@@ -119,6 +119,25 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
           }
           ctx.fillStyle = grad;
           ctx.fillRect(0, 0, screen.width, screen.height);
+        } else if (bg.type === "image" && bg.imageUrl) {
+          try {
+            const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+              const i = new Image();
+              i.crossOrigin = "anonymous";
+              i.onload = () => resolve(i);
+              i.onerror = reject;
+              i.src = bg.imageUrl!;
+            });
+            if (bg.imageSlice) {
+              const { x, y, width, height } = bg.imageSlice;
+              ctx.drawImage(img, x, y, width, height, 0, 0, screen.width, screen.height);
+            } else {
+              ctx.drawImage(img, 0, 0, screen.width, screen.height);
+            }
+          } catch {
+            ctx.fillStyle = "#1a1a2e";
+            ctx.fillRect(0, 0, screen.width, screen.height);
+          }
         } else {
           ctx.fillStyle = "#1a1a2e";
           ctx.fillRect(0, 0, screen.width, screen.height);

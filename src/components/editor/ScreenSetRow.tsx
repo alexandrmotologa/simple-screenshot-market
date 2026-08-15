@@ -31,6 +31,7 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
   const {
     activeSetId, setActiveSet, setActiveScreen, addScreen, zoom,
     updateDevice, updateMockup, screenSets, updateLayer, reorderScreens,
+    updateScreen,
   } = useEditorStore();
 
   const isActive = activeSetId === screenSet.id;

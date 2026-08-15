@@ -473,3 +473,65 @@ export const LAYOUT_META: Record<string, { icon: string; label: string; descript
   'text-only':         { icon: '✍️', label: 'Text Only',   description: 'No screenshot zone' },
 };
 
+import { FIGMA_TEMPLATES } from "./figmaTemplates";
+
+const mappedFigmaTemplates: Template[] = FIGMA_TEMPLATES.map((ft) => {
+  // We determine how many screens this template has by finding the max screenIndex
+  const maxScreenIndex = ft.screens.reduce((max, s) => Math.max(max, s.screenIndex), -1);
+  const totalScreens = Math.max(5, maxScreenIndex + 1); // Ensure at least 5 screens are mapped if possible
+
+  const templateScreens: TemplateScreen[] = [];
+  for (let i = 0; i < totalScreens; i++) {
+    // Find mockups for this screen
+    const screenMockups = ft.screens.filter((m) => m.screenIndex === i);
+    
+    // Convert them to ScreenshotLayer
+    const layers = screenMockups.map((m) => {
+      // Basic rotation parsing from SVG transform="rotate(-45 x y)"
+      let rotation = 0;
+      if (m.transform && m.transform.includes("rotate")) {
+        const match = m.transform.match(/rotate\(([-0-9.]+)/);
+        if (match) rotation = parseFloat(match[1]);
+      }
+      return {
+        type: "screenshot" as const,
+        src: undefined,
+        x: m.x,
+        y: m.y,
+        width: m.width,
+        height: m.height,
+        rotation: rotation,
+        opacity: 1,
+        objectFit: "cover" as const,
+        cornerRadius: 40,
+        showDeviceFrame: false,
+        label: "Drop your screenshot here",
+      };
+    });
+
+    templateScreens.push({
+      name: `Screen ${i + 1}`,
+      background: {
+        type: "image",
+        imageUrl: ft.backgroundUrl,
+        imageSlice: { x: i * 1290, y: 0, width: 1290, height: 2796 },
+      },
+      layers,
+    });
+  }
+
+  return {
+    id: ft.id,
+    name: ft.name,
+    description: "Imported from Figma",
+    category: "Figma",
+    tags: ["Figma", "Imported"],
+    previewColor: "#e5e7eb",
+    layout: "screenshot-full",
+    screens: templateScreens,
+  };
+});
+
+// Append the mapped figma templates to the end
+export const ALL_TEMPLATES: Template[] = [...DEFAULT_TEMPLATES, ...mappedFigmaTemplates];
+

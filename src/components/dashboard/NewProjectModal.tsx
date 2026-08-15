@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { DEFAULT_TEMPLATES, TEMPLATE_CATEGORIES, LAYOUT_META } from "@/lib/templates";
+import { ALL_TEMPLATES, TEMPLATE_CATEGORIES, LAYOUT_META } from "@/lib/templates";
 import { useProjectStore } from "@/lib/store/projectStore";
 import { cn } from "@/lib/utils";
 import { Template } from "@/lib/types";
@@ -145,7 +145,7 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
 
   // We filter out "blank" from the main list so we can append it at the bottom manually
   const themes = useMemo(() => {
-    return DEFAULT_TEMPLATES.filter(t => t.id !== "blank");
+    return ALL_TEMPLATES.filter(t => t.id !== "blank");
   }, []);
 
   const handleCreate = async () => {

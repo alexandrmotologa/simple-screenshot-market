@@ -63,6 +63,25 @@ async function renderScreenToCanvas(
     const g4 = ctx.createRadialGradient(sw, sh, 0, sw, sh, hyp);
     g4.addColorStop(0, br + "cc"); g4.addColorStop(1, br + "00");
     ctx.fillStyle = g4; ctx.fillRect(0, 0, sw, sh);
+  } else if (bg.type === "image" && bg.imageUrl) {
+    try {
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const i = new Image();
+        i.crossOrigin = "anonymous";
+        i.onload = () => resolve(i);
+        i.onerror = reject;
+        i.src = bg.imageUrl!;
+      });
+      if (bg.imageSlice) {
+        const { x, y, width, height } = bg.imageSlice;
+        ctx.drawImage(img, x, y, width, height, 0, 0, sw, sh);
+      } else {
+        ctx.drawImage(img, 0, 0, sw, sh);
+      }
+    } catch {
+      ctx.fillStyle = "#1a1a2e";
+      ctx.fillRect(0, 0, sw, sh);
+    }
   } else {
     ctx.fillStyle = "#1a1a2e";
     ctx.fillRect(0, 0, sw, sh);

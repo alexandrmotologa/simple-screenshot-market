@@ -94,6 +94,7 @@ export interface Background {
     stops: GradientStop[];
   };
   imageUrl?: string;
+  imageSlice?: { x: number; y: number; width: number; height: number };
   /** Mesh gradient — 4-corner colors */
   mesh?: MeshGradient;
   /** Overlay pattern on top of any background */

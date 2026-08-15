@@ -207,8 +207,8 @@ export function PropertiesPanel() {
               <div className="space-y-3">
                 <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Background Library</h4>
                 <AdvancedBackgroundPicker
-                  background={screen.background}
-                  onChange={handleBackgroundUpdate}
+                  currentBackground={screen.background}
+                  onSelect={handleBackgroundUpdate}
                 />
               </div>
             )}
@@ -582,7 +582,6 @@ function ScreenLayoutProperties({ screen, onUpdate }: { screen: import("@/lib/ty
           ))}
         </SelectContent>
       </Select>
-      </Select>
       <p className="text-[10px] text-muted-foreground leading-tight">
         Selecting a layout automatically snaps your primary text and screenshot layers into predefined positions.
       </p>
@@ -632,7 +631,7 @@ function ScreenshotProperties({ layer, onUpdate }: { layer: import("@/lib/types"
               min={0}
               max={50}
               step={1}
-              onValueChange={(v) => updateOverlay({ cropTop: v[0] })}
+              onValueChange={(v: any) => updateOverlay({ cropTop: v[0] })}
               className="h-1.5"
             />
           </div>
@@ -647,7 +646,7 @@ function ScreenshotProperties({ layer, onUpdate }: { layer: import("@/lib/types"
               min={0}
               max={50}
               step={1}
-              onValueChange={(v) => updateOverlay({ cropBottom: v[0] })}
+              onValueChange={(v: any) => updateOverlay({ cropBottom: v[0] })}
               className="h-1.5"
             />
           </div>
@@ -660,9 +659,9 @@ function ScreenshotProperties({ layer, onUpdate }: { layer: import("@/lib/types"
             <Slider
               value={[overlay.borderWidth]}
               min={0}
-              max={40}
+              max={20}
               step={1}
-              onValueChange={(v) => updateOverlay({ borderWidth: v[0] })}
+              onValueChange={(v: any) => updateOverlay({ borderWidth: v[0] })}
               className="h-1.5"
             />
           </div>

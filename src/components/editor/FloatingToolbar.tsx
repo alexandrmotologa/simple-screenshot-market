@@ -261,14 +261,11 @@ export function FloatingToolbar() {
               <Smartphone className="w-3.5 h-3.5" />
             </Btn>
             <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  className={cn("w-8 h-8 flex items-center justify-center rounded-lg transition-colors", !!sl.shadow ? "bg-secondary text-foreground" : "hover:bg-secondary/50 text-muted-foreground hover:text-foreground")}
-                  title="Shadow Settings"
-                >
-                  <div className="w-4 h-4 border-[1.5px] border-current rounded-[3px] drop-shadow-md" />
-                </button>
+              <PopoverTrigger
+                className={cn("w-8 h-8 flex items-center justify-center rounded-lg transition-colors", !!sl.shadow ? "bg-secondary text-foreground" : "hover:bg-secondary/50 text-muted-foreground hover:text-foreground")}
+                title="Shadow Settings"
+              >
+                <div className="w-4 h-4 border-[1.5px] border-current rounded-[3px] drop-shadow-md" />
               </PopoverTrigger>
               <PopoverContent className="w-[280px] p-4 flex flex-col gap-4 rounded-xl shadow-xl">
                 <div className="flex items-center justify-between">
@@ -328,16 +325,13 @@ export function FloatingToolbar() {
             </Popover>
 
             <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  className={cn("w-8 h-8 flex items-center justify-center rounded-lg transition-colors", sl.focusOverlay?.enabled ? "bg-secondary text-foreground" : "hover:bg-secondary/50 text-muted-foreground hover:text-foreground")}
-                  title="Focus Overlay Settings"
-                >
-                  <div className="relative w-4 h-4 rounded-[3px] border-[1.5px] border-current overflow-hidden flex items-center justify-center opacity-80">
-                     <div className="w-1.5 h-1.5 bg-current rounded-[1px] opacity-100" />
-                  </div>
-                </button>
+              <PopoverTrigger
+                className={cn("w-8 h-8 flex items-center justify-center rounded-lg transition-colors", sl.focusOverlay?.enabled ? "bg-secondary text-foreground" : "hover:bg-secondary/50 text-muted-foreground hover:text-foreground")}
+                title="Focus Overlay Settings"
+              >
+                <div className="relative w-4 h-4 rounded-[3px] border-[1.5px] border-current overflow-hidden flex items-center justify-center opacity-80">
+                   <div className="w-1.5 h-1.5 bg-current rounded-[1px] opacity-100" />
+                </div>
               </PopoverTrigger>
               <PopoverContent className="w-[320px] p-4 flex flex-col gap-5 rounded-xl shadow-xl">
                 <div className="flex items-center justify-between">
@@ -458,16 +452,13 @@ export function FloatingToolbar() {
           <>
             {/* Font family dropdown */}
             <Popover open={fontOpen} onOpenChange={setFontOpen}>
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-secondary text-xs text-foreground transition-colors shrink-0"
-                >
-                  <span className="max-w-24 truncate" style={{ fontFamily: `"${tl.fontFamily}", sans-serif` }}>
-                    {tl.fontFamily}
-                  </span>
-                  <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
-                </button>
+              <PopoverTrigger
+                className="flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-secondary text-xs text-foreground transition-colors shrink-0"
+              >
+                <span className="max-w-24 truncate" style={{ fontFamily: `"${tl.fontFamily}", sans-serif` }}>
+                  {tl.fontFamily}
+                </span>
+                <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
               </PopoverTrigger>
               <PopoverContent className="w-52 p-1 max-h-60 overflow-y-auto shadow-xl" align="start">
                 {FONT_FAMILIES.map((f) => (
