@@ -159,6 +159,18 @@ export interface ImageLayer {
   locked?: boolean;
 }
 
+export interface FocusOverlay {
+  enabled: boolean;
+  cropTop: number;
+  cropBottom: number;
+  borderWidth: number;
+  borderColor: string;
+  roundedCorners: "none" | "sm" | "md" | "xl";
+  blurBackground: boolean;
+  overlayShadow: boolean;
+  overlayColor?: string;
+}
+
 /**
  * ScreenshotLayer — the core concept of SnapFrame.
  * A reserved zone where the user's app screenshot is placed.
@@ -192,6 +204,8 @@ export interface ScreenshotLayer {
   };
   /** Slot label shown in placeholder (e.g. "Screenshot 1") */
   label?: string;
+  /** Focus Overlay settings */
+  focusOverlay?: FocusOverlay;
   locked?: boolean;
 }
 

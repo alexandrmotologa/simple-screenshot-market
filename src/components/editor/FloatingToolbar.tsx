@@ -11,34 +11,30 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
+import {
   Bold, AlignLeft, AlignCenter, AlignRight,
   Trash2, Copy, ChevronDown, Minus, Plus,
   RotateCcw, Upload, Maximize2, Minimize2, Smartphone,
   AlignCenterHorizontal, AlignCenterVertical,
   ArrowUpToLine, ArrowDownToLine, ArrowLeftToLine, ArrowRightToLine,
-  MoveHorizontal, MoveVertical, RefreshCw,
+  MoveHorizontal, MoveVertical, RefreshCw, Type
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, loadGoogleFont } from "@/lib/utils";
 
 // ── Google Fonts list for dropdown ────────────────────────────────────────────
 const FONT_FAMILIES = [
-  "Geist Sans", "Inter", "Roboto", "Poppins", "Montserrat", "Lato",
+  "Inter", "Roboto", "Poppins", "Montserrat", "Lato",
   "Oswald", "Raleway", "Nunito", "Playfair Display", "Merriweather",
   "Space Grotesk", "DM Sans", "Plus Jakarta Sans", "Outfit",
   "Bebas Neue", "Anton", "Syne", "Barlow", "Cabin",
 ];
 
-// ── Utility ───────────────────────────────────────────────────────────────────
-function loadGoogleFont(family: string) {
-  const href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@400;500;600;700;800;900&display=swap`;
-  if (!document.querySelector(`link[href="${href}"]`)) {
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = href;
-    document.head.appendChild(link);
-  }
-}
-
+// ── Google Fonts list for dropdown ────────────────────────────────────────────
 // ── Small toolbar button ──────────────────────────────────────────────────────
 function Btn({
   onClick, active, title, children, danger, className,
@@ -122,7 +118,7 @@ export function FloatingToolbar() {
   const {
     getActiveLayer, getActiveScreen, getActiveSet,
     updateLayer, deleteLayer, duplicateLayer, setActiveLayer,
-    syncTextToScreens,
+    syncTextToScreens, updateScreen
   } = useEditorStore();
 
   const layer = getActiveLayer();
@@ -164,7 +160,7 @@ export function FloatingToolbar() {
 
   return (
     <TooltipProvider>
-      <div className="absolute top-12 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-2 py-1.5 rounded-xl bg-card/95 backdrop-blur-md border border-border/60 shadow-xl shadow-black/30 max-w-[calc(100vw-200px)] flex-wrap">
+      <div className="w-full h-full flex items-center gap-2 px-4 overflow-x-auto">
 
         {/* Layer type badge */}
         <span className={cn(
@@ -264,20 +260,194 @@ export function FloatingToolbar() {
             >
               <Smartphone className="w-3.5 h-3.5" />
             </Btn>
-            {/* Shadow toggle */}
-            <Btn
-              active={!!sl.shadow}
-              onClick={() => {
-                if (sl.shadow) {
-                  update({ shadow: undefined } as Partial<ScreenshotLayer>);
-                } else {
-                  update({ shadow: { blur: 20, spread: 0, color: "rgba(0,0,0,0.3)", offsetX: 0, offsetY: 10 } } as Partial<ScreenshotLayer>);
-                }
-              }}
-              title="Toggle Drop Shadow"
-            >
-              <div className="w-3.5 h-3.5 border-2 border-current rounded-sm drop-shadow-md" />
-            </Btn>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className={cn("w-8 h-8 flex items-center justify-center rounded-lg transition-colors", !!sl.shadow ? "bg-secondary text-foreground" : "hover:bg-secondary/50 text-muted-foreground hover:text-foreground")}
+                  title="Shadow Settings"
+                >
+                  <div className="w-4 h-4 border-[1.5px] border-current rounded-[3px] drop-shadow-md" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[280px] p-4 flex flex-col gap-4 rounded-xl shadow-xl">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Enable Shadow</span>
+                  <Switch
+                    checked={!!sl.shadow}
+                    onCheckedChange={(checked) => {
+                      if (!checked) update({ shadow: undefined } as Partial<ScreenshotLayer>);
+                      else update({ shadow: { blur: 24, spread: 0, color: "rgba(0,0,0,0.3)", offsetX: 0, offsetY: 12 } } as Partial<ScreenshotLayer>);
+                    }}
+                  />
+                </div>
+                {sl.shadow && (
+                  <>
+                    <div className="flex flex-col gap-2">
+                      <span className="text-xs text-muted-foreground font-medium">Shadow Color</span>
+                      <label className="w-8 h-8 rounded-md cursor-pointer ring-1 ring-border overflow-hidden block hover:ring-foreground transition-all shadow-sm">
+                        <input
+                          type="color"
+                          value={sl.shadow.color.startsWith("rgba") ? "#000000" : sl.shadow.color}
+                          onChange={(e) => update({ shadow: { ...sl.shadow!, color: e.target.value } } as Partial<ScreenshotLayer>)}
+                          className="opacity-0 w-0 h-0 absolute"
+                        />
+                        <div className="w-full h-full" style={{ background: sl.shadow.color }} />
+                      </label>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <span className="text-xs text-muted-foreground font-medium">Shadow Size</span>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { label: "12px", blur: 12, offset: 6 },
+                          { label: "16px", blur: 16, offset: 8 },
+                          { label: "24px", blur: 24, offset: 12 },
+                          { label: "48px", blur: 48, offset: 24 },
+                          { label: "64px", blur: 64, offset: 32 },
+                          { label: "96px", blur: 96, offset: 48 },
+                        ].map((sz) => (
+                          <button
+                            key={sz.label}
+                            type="button"
+                            onClick={() => update({ shadow: { ...sl.shadow!, blur: sz.blur, offsetY: sz.offset } } as Partial<ScreenshotLayer>)}
+                            className={cn(
+                              "text-xs py-1.5 rounded-md border transition-all font-medium",
+                              sl.shadow?.blur === sz.blur
+                                ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                                : "bg-transparent text-muted-foreground border-border hover:border-foreground/30 hover:bg-secondary/50"
+                            )}
+                          >
+                            {sz.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </PopoverContent>
+            </Popover>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className={cn("w-8 h-8 flex items-center justify-center rounded-lg transition-colors", sl.focusOverlay?.enabled ? "bg-secondary text-foreground" : "hover:bg-secondary/50 text-muted-foreground hover:text-foreground")}
+                  title="Focus Overlay Settings"
+                >
+                  <div className="relative w-4 h-4 rounded-[3px] border-[1.5px] border-current overflow-hidden flex items-center justify-center opacity-80">
+                     <div className="w-1.5 h-1.5 bg-current rounded-[1px] opacity-100" />
+                  </div>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[320px] p-4 flex flex-col gap-5 rounded-xl shadow-xl">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Enable Focus Overlay</span>
+                  <Switch
+                    checked={sl.focusOverlay?.enabled ?? false}
+                    onCheckedChange={(checked) => {
+                      if (!checked) update({ focusOverlay: { ...sl.focusOverlay, enabled: false } as NonNullable<ScreenshotLayer["focusOverlay"]> } as Partial<ScreenshotLayer>);
+                      else update({ focusOverlay: { enabled: true, cropTop: 0, cropBottom: 0, borderWidth: 2, borderColor: "#3b82f6", roundedCorners: "xl", blurBackground: true, overlayShadow: true, overlayColor: "#9b87f540" } } as Partial<ScreenshotLayer>);
+                    }}
+                  />
+                </div>
+                {sl.focusOverlay?.enabled && (
+                  <div className="flex flex-col gap-5 border-t pt-4">
+                    <div className="flex flex-col gap-2 items-center justify-center">
+                      <label className="w-16 h-10 rounded-md cursor-pointer ring-1 ring-border overflow-hidden block hover:ring-foreground transition-all shadow-sm relative group">
+                        <input
+                          type="color"
+                          value={sl.focusOverlay.overlayColor?.slice(0, 7) || "#9b87f5"}
+                          onChange={(e) => update({ focusOverlay: { ...sl.focusOverlay!, overlayColor: e.target.value + "40" } } as Partial<ScreenshotLayer>)}
+                          className="opacity-0 w-0 h-0 absolute"
+                        />
+                        <div className="w-full h-full flex items-center justify-center bg-checkerboard">
+                          <div className="w-full h-full" style={{ background: sl.focusOverlay.overlayColor || "#9b87f540" }} />
+                        </div>
+                      </label>
+                      <span className="text-[10px] text-muted-foreground font-medium">Overlay Color</span>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="flex-1 flex flex-col gap-2">
+                        <span className="text-xs text-muted-foreground font-medium">Crop Top (%)</span>
+                        <NumInput
+                          value={sl.focusOverlay.cropTop}
+                          onChange={(v) => update({ focusOverlay: { ...sl.focusOverlay!, cropTop: v } } as Partial<ScreenshotLayer>)}
+                          min={0} max={100} width="w-full"
+                        />
+                      </div>
+                      <div className="flex-1 flex flex-col gap-2">
+                        <span className="text-xs text-muted-foreground font-medium">Crop Bottom (%)</span>
+                        <NumInput
+                          value={sl.focusOverlay.cropBottom}
+                          onChange={(v) => update({ focusOverlay: { ...sl.focusOverlay!, cropBottom: v } } as Partial<ScreenshotLayer>)}
+                          min={0} max={100} width="w-full"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="flex-1 flex flex-col gap-2">
+                        <span className="text-xs text-muted-foreground font-medium">Border Width</span>
+                        <NumInput
+                          value={sl.focusOverlay.borderWidth}
+                          onChange={(v) => update({ focusOverlay: { ...sl.focusOverlay!, borderWidth: v } } as Partial<ScreenshotLayer>)}
+                          min={0} max={50} width="w-full"
+                        />
+                      </div>
+                      <div className="flex-1 flex flex-col gap-2">
+                        <span className="text-xs text-muted-foreground font-medium">Border Color</span>
+                        <label className="h-8 rounded-md cursor-pointer ring-1 ring-border overflow-hidden block hover:ring-foreground transition-all shadow-sm">
+                          <input
+                            type="color"
+                            value={sl.focusOverlay.borderColor}
+                            onChange={(e) => update({ focusOverlay: { ...sl.focusOverlay!, borderColor: e.target.value } } as Partial<ScreenshotLayer>)}
+                            className="opacity-0 w-0 h-0 absolute"
+                          />
+                          <div className="w-full h-full" style={{ background: sl.focusOverlay.borderColor }} />
+                        </label>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <span className="text-xs text-muted-foreground font-medium">Rounded Corners</span>
+                      <div className="flex bg-secondary/50 p-1 rounded-lg">
+                        {(["none", "sm", "md", "xl"] as const).map((r) => (
+                          <button
+                            key={r}
+                            type="button"
+                            onClick={() => update({ focusOverlay: { ...sl.focusOverlay!, roundedCorners: r } } as Partial<ScreenshotLayer>)}
+                            className={cn(
+                              "flex-1 text-[11px] py-1.5 rounded-md transition-all font-medium uppercase",
+                              sl.focusOverlay?.roundedCorners === r
+                                ? "bg-background text-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
+                            )}
+                          >
+                            {r}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Blur background</span>
+                        <Switch
+                          size="sm"
+                          checked={sl.focusOverlay.blurBackground}
+                          onCheckedChange={(c) => update({ focusOverlay: { ...sl.focusOverlay!, blurBackground: c } } as Partial<ScreenshotLayer>)}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Overlay shadow</span>
+                        <Switch
+                          size="sm"
+                          checked={sl.focusOverlay.overlayShadow}
+                          onCheckedChange={(c) => update({ focusOverlay: { ...sl.focusOverlay!, overlayShadow: c } } as Partial<ScreenshotLayer>)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
 
             <Separator orientation="vertical" className="h-5 mx-0.5 shrink-0" />
           </>
@@ -287,40 +457,39 @@ export function FloatingToolbar() {
         {isText && tl && (
           <>
             {/* Font family dropdown */}
-            <div className="relative shrink-0">
-              <button
-                type="button"
-                onClick={() => setFontOpen((o) => !o)}
-                className="flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-secondary text-xs text-foreground transition-colors"
-              >
-                <span className="max-w-24 truncate" style={{ fontFamily: `"${tl.fontFamily}", sans-serif` }}>
-                  {tl.fontFamily}
-                </span>
-                <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
-              </button>
-              {fontOpen && (
-                <div className="absolute top-full left-0 mt-1 w-52 bg-popover border border-border rounded-xl shadow-xl py-1 z-[60] max-h-60 overflow-y-auto">
-                  {FONT_FAMILIES.map((f) => (
-                    <button
-                      key={f}
-                      type="button"
-                      onClick={() => {
-                        loadGoogleFont(f);
-                        update({ fontFamily: f } as Partial<TextLayer>);
-                        setFontOpen(false);
-                      }}
-                      className={cn(
-                        "w-full text-left px-3 py-1.5 text-xs hover:bg-secondary transition-colors",
-                        tl.fontFamily === f && "text-primary font-medium"
-                      )}
-                      style={{ fontFamily: `"${f}", sans-serif` }}
-                    >
-                      {f}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <Popover open={fontOpen} onOpenChange={setFontOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-secondary text-xs text-foreground transition-colors shrink-0"
+                >
+                  <span className="max-w-24 truncate" style={{ fontFamily: `"${tl.fontFamily}", sans-serif` }}>
+                    {tl.fontFamily}
+                  </span>
+                  <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-52 p-1 max-h-60 overflow-y-auto shadow-xl" align="start">
+                {FONT_FAMILIES.map((f) => (
+                  <button
+                    key={f}
+                    type="button"
+                    onClick={() => {
+                      loadGoogleFont(f);
+                      update({ fontFamily: f } as Partial<TextLayer>);
+                      setFontOpen(false);
+                    }}
+                    className={cn(
+                      "w-full text-left px-3 py-1.5 text-xs hover:bg-secondary rounded-md transition-colors",
+                      tl.fontFamily === f && "text-primary font-medium bg-primary/10"
+                    )}
+                    style={{ fontFamily: `"${f}", sans-serif` }}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </PopoverContent>
+            </Popover>
 
             {/* Color swatch */}
             <Tooltip>
@@ -328,7 +497,7 @@ export function FloatingToolbar() {
                 className="h-7 w-7 rounded hover:bg-secondary flex items-center justify-center transition-colors"
                 style={{ color: tl.color }}
               >
-                <label className="w-5 h-5 rounded cursor-pointer ring-1 ring-border overflow-hidden shrink-0 block">
+                <label className="w-5 h-5 rounded cursor-pointer ring-1 ring-black/20 dark:ring-white/20 overflow-hidden shrink-0 block">
                   <input type="color" value={tl.color.startsWith("rgba") ? "#ffffff" : tl.color} onChange={(e) => update({ color: e.target.value } as Partial<TextLayer>)} className="opacity-0 w-0 h-0" />
                   <div className="w-full h-full" style={{ background: tl.gradientColor ? `linear-gradient(to right, ${tl.gradientColor[0]}, ${tl.gradientColor[1]})` : tl.color }} />
                 </label>
@@ -389,7 +558,8 @@ export function FloatingToolbar() {
             <Separator orientation="vertical" className="h-5 mx-0.5 shrink-0" />
 
             {/* Font size */}
-            <div className="flex items-center gap-0.5 shrink-0">
+            <div className="flex items-center gap-0.5 shrink-0" title="Font Size">
+              <Type className="w-3.5 h-3.5 text-muted-foreground mr-1" />
               <button type="button" onClick={() => update({ fontSize: Math.max(8, tl.fontSize - 4) } as Partial<TextLayer>)} className="w-6 h-6 rounded hover:bg-secondary flex items-center justify-center text-muted-foreground"><Minus className="w-3 h-3" /></button>
               <NumInput value={tl.fontSize} onChange={(v) => update({ fontSize: v } as Partial<TextLayer>)} min={8} max={500} width="w-10" />
               <button type="button" onClick={() => update({ fontSize: Math.min(500, tl.fontSize + 4) } as Partial<TextLayer>)} className="w-6 h-6 rounded hover:bg-secondary flex items-center justify-center text-muted-foreground"><Plus className="w-3 h-3" /></button>

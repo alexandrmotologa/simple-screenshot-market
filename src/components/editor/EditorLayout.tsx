@@ -286,8 +286,10 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
         </button>
       </header>
 
-      {/* ── Floating Toolbar (appears when a layer is selected) ── */}
-      {activeLayerId && <FloatingToolbar />}
+      {/* ── Contextual Toolbar ── */}
+      <div className="h-12 w-full shrink-0 bg-card/90 backdrop-blur-md border-b border-border/50 z-30">
+        {activeLayerId && <FloatingToolbar />}
+      </div>
 
       {/* ── Body ── */}
       <div className="flex flex-1 overflow-hidden">
@@ -295,7 +297,8 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
         <EditorSidebar />
 
         {/* Main canvas area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden relative">
+          
           <HorizontalCanvas />
           {/* Bottom strip: quick screen navigation */}
           <ScreenStrip />

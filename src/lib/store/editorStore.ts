@@ -56,8 +56,7 @@ interface EditorStore {
   updateAllScreensBackground: (setId: string, background: Background) => void;
 
   // Actions: layers
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  addLayer: (setId: string, screenId: string, layer: any) => void;
+  addLayer: (setId: string, screenId: string, layer: Layer) => void;
   updateLayer: (setId: string, screenId: string, layerId: string, updates: Partial<Layer>) => void;
   deleteLayer: (setId: string, screenId: string, layerId: string) => void;
   deleteSelectedLayers: () => void;
@@ -92,12 +91,12 @@ interface EditorStore {
   recordHistory: () => void;
 
   // Actions: templates
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  applyTemplate: (setId: string, template: any) => void;
+  applyTemplate: (setId: string, template: Omit<ScreenSet, "id" | "store">) => void;
 
   // Actions: screen sets
   addScreenSet: (store: "ios" | "android") => void;
   removeScreenSet: (setId: string) => void;
+  updateScreenSet: (setId: string, updates: Partial<ScreenSet>) => void;
 }
 
 const MAX_HISTORY = 50;
@@ -222,7 +221,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
             objectFit: "cover", cornerRadius: 55,
             showDeviceFrame: true,
             label: "Drop your screenshot here",
-          } as any];
+          } as Layer];
         }
 
         const newScreen: Screen = {
@@ -336,19 +335,18 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   updateLayer: (setId, screenId, layerId, updates) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    set((state: any) => ({
-      screenSets: state.screenSets.map((ss: any) =>
+    set((state) => ({
+      screenSets: state.screenSets.map((ss) =>
         ss.id !== setId
           ? ss
           : {
               ...ss,
-              screens: ss.screens.map((s: any) =>
+              screens: ss.screens.map((s) =>
                 s.id !== screenId
                   ? s
                   : {
                       ...s,
-                      layers: s.layers.map((l: any) =>
+                      layers: s.layers.map((l) =>
                         l.id !== layerId ? l : { ...l, ...updates }
                       ),
                     }
@@ -404,7 +402,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         if (ss.id !== setId) return ss;
         return {
           ...ss,
-          screens: ss.screens.map((s) => {
+          screens: ss.screens.map((s: Screen) => {
             if (s.id !== screenId) return s;
             const layer = s.layers.find((l) => l.id === layerId);
             if (!layer) return s;
@@ -442,15 +440,14 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   lockLayer: (setId, screenId, layerId, locked) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    set((state: any) => ({
-      screenSets: state.screenSets.map((ss: any) =>
+    set((state) => ({
+      screenSets: state.screenSets.map((ss) =>
         ss.id !== setId ? ss : {
           ...ss,
-          screens: ss.screens.map((s: any) =>
+          screens: ss.screens.map((s) =>
             s.id !== screenId ? s : {
               ...s,
-              layers: s.layers.map((l: any) =>
+              layers: s.layers.map((l) =>
                 l.id !== layerId ? l : { ...l, locked }
               ),
             }
@@ -511,8 +508,6 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
           ...ss,
           screens: ss.screens.map((s) => {
             if (s.id === srcScreenId) return s;
-            const targetLayer = s.layers[layerIndex];
-            if (!targetLayer || targetLayer.type !== "text") return s;
             return {
               ...s,
               layers: s.layers.map((l, i) =>
@@ -768,7 +763,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
               showDeviceFrame: true,
               shadow: { blur: 80, spread: 0, color: "rgba(0,0,0,0.35)", offsetX: 0, offsetY: 20 },
               label: "Drop your screenshot here",
-            } as any
+            } as Layer
           ],
         },
       ],
@@ -795,6 +790,15 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       activeSetId: newActiveSet?.id ?? null,
       activeScreenId: newActiveSet?.screens[0]?.id ?? null,
     });
+    get().recordHistory();
+  },
+
+  updateScreenSet: (setId, updates) => {
+    set((state) => ({
+      screenSets: state.screenSets.map((ss) =>
+        ss.id === setId ? { ...ss, ...updates } : ss
+      ),
+    }));
     get().recordHistory();
   },
 }));

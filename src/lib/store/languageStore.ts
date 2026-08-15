@@ -1,4 +1,4 @@
-﻿import { create } from "zustand";
+import { create } from "zustand";
 
 // ISO 639-1 language codes with native names and flags
 export interface SupportedLanguage {

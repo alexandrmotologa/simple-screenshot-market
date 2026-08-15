@@ -3,13 +3,14 @@
 import { useRef, useState } from "react";
 import {
   Plus, ChevronDown, Smartphone, Square, Circle,
-  Sun, Moon, Link2, Upload, EyeOff, Eye,
+  Sun, Moon, Link2, Upload, EyeOff, Eye, CopyCheck,
 } from "lucide-react";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { ScreenSet, ScreenshotLayer } from "@/lib/types";
 import { ScreenCard } from "@/components/editor/ScreenCard";
 import { IOS_DEVICES, ANDROID_DEVICES, COLOR_HEX_MAP } from "@/lib/devices";
 import { cn } from "@/lib/utils";
+import { AdvancedBackgroundPicker } from "@/components/editor/AdvancedBackgroundPicker";
 import { DragDropContext, Droppable, DropResult } from "@hello-pangea/dnd";
 import {
   DropdownMenu,
@@ -91,14 +92,30 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
 
   // Sync mockup settings to ALL sets
   const syncAll = () => {
+    const currentMockup = screenSet.mockup || {};
+    const firstBg = screenSet.screens[0]?.background;
+
     for (const ss of screenSets) {
       if (ss.id === screenSet.id) continue;
+      
+      // Sync Mockup Settings (except device model which is platform specific)
       updateMockup(ss.id, {
-        showFrame: isFrameOn,
-        showShadow: isShadowOn,
-        color: currentColorName,
+        showFrame: currentMockup.showFrame,
+        showShadow: currentMockup.showShadow,
+        color: currentMockup.color,
+        frameType: currentMockup.frameType,
+        squircle: currentMockup.squircle,
+        notch: currentMockup.notch,
+        dynamicIsland: currentMockup.dynamicIsland,
+        reflection: currentMockup.reflection,
       });
+
+      // Sync Backgrounds
+      if (firstBg) {
+        ss.screens.forEach(s => updateScreen(ss.id, s.id, { background: firstBg }));
+      }
     }
+    useEditorStore.getState().recordHistory();
   };
 
   const handleDragEnd = (result: DropResult) => {
@@ -228,7 +245,7 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
               className="w-4 h-4 rounded-full border border-border/60 shrink-0 shadow-inner"
               style={{ background: getHex(currentColorName) }}
             />
-            <span className="max-w-16 truncate">{currentColorName}</span>
+            <span className="max-w-16 truncate capitalize">{currentColorName}</span>
             <ChevronDown className="w-3.5 h-3.5 text-muted-foreground ml-1" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-44">
@@ -248,13 +265,26 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
                     className="w-4 h-4 rounded-full border border-border/60 shrink-0"
                     style={{ background: getHex(colorName) }}
                   />
-                  {colorName}
+                  <span className="capitalize">{colorName}</span>
                   {currentColorName === colorName && <span className="ml-auto text-primary">✓</span>}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Advanced Background Picker */}
+        <AdvancedBackgroundPicker 
+          currentBackground={screenSet.screens[0]?.background || { type: "solid", color: "#ffffff" }}
+          onSelect={(bg) => {
+            // Apply background to all screens in this set
+            const state = useEditorStore.getState();
+            screenSet.screens.forEach(s => {
+              state.updateBackground(screenSet.id, s.id, bg);
+            });
+            state.recordHistory();
+          }}
+        />
 
         {/* Toggles Group */}
         <div className="flex items-center gap-4 ml-2">
@@ -330,36 +360,18 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
           {isShowingScreenshots ? "Screenshots" : "Hidden"}
         </button>
 
-        {/* Divider */}
-        <div className="h-5 w-px bg-border/50 mx-0.5" />
-
-        {/* Replace screenshot (all screens) */}
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleReplaceScreenshot(f); e.target.value = ""; }}
-        />
-        <button
-          type="button"
-          title="Replace screenshot on all screens in this set"
-          onClick={() => fileRef.current?.click()}
-          className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-secondary/70 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <Upload className="w-3 h-3" />
-          Replace screenshot
-        </button>
+        {/* Removed Replace screenshot per user request */}
 
         {/* Sync to all sets */}
         {screenSets.length > 1 && (
           <button
             type="button"
-            title="Sync device settings to all sets"
+            title="Apply all style and background settings to other platforms"
             onClick={syncAll}
-            className="w-6 h-6 rounded-lg bg-secondary/50 hover:bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-secondary/70 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
           >
-            <Link2 className="w-3 h-3" />
+            <CopyCheck className="w-3.5 h-3.5" />
+            Apply to all
           </button>
         )}
 

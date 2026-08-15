@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Project, Screen, Layer, ScreenSet, Background, MockupSettings } from "@/lib/types";
+import { Project, Screen, Layer, ScreenSet } from "@/lib/types";
 import { nanoid } from "@/lib/utils";
 import { DEFAULT_TEMPLATES } from "@/lib/templates";
 
@@ -58,17 +58,17 @@ export const useProjectStore = create<ProjectStore>()(
               } as any
             ];
 
-        const generateScreens = (prefix: string): Screen[] => {
+        const generateScreens = (): Screen[] => {
           return baseScreens.map((ts, index) => ({
             id: nanoid(),
             name: `Screen ${index + 1}`,
             width: 1290,
             height: 2796,
             background: { ...ts.background },
-            layers: (ts.layers ?? []).map((l: any) => ({
+            layers: (ts.layers ?? []).map((l: Layer) => ({
               ...l,
               id: nanoid(),
-            })) as Layer[],
+            })),
           }));
         };
 
@@ -93,7 +93,7 @@ export const useProjectStore = create<ProjectStore>()(
               showShadow: true,
               frameType: "3d",
             },
-            screens: generateScreens("ios"),
+            screens: generateScreens(),
           });
         }
 
@@ -116,7 +116,7 @@ export const useProjectStore = create<ProjectStore>()(
               showShadow: true,
               frameType: "3d",
             },
-            screens: generateScreens("android"),
+            screens: generateScreens(),
           });
         }
 

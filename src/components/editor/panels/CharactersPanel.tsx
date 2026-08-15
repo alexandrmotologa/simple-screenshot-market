@@ -33,12 +33,22 @@ export function CharactersPanel() {
   const filtered =
     filter === "all" ? libraryCharacters : libraryCharacters.filter((c) => c.category === filter);
 
-  const handleAdd = (char: Character) => {
+  const handleAdd = async (char: Character) => {
     if (!activeSetId || !activeScreenId) return;
     const pose = char.poses[0];
     if (!pose) return;
 
-    const svgContent = getCharacterSvgString(char.id, pose.id);
+    let svgContent = getCharacterSvgString(char.id, pose.id);
+
+    if (svgContent.startsWith("http")) {
+      try {
+        const res = await fetch(svgContent);
+        svgContent = await res.text();
+      } catch (err) {
+        console.error("Failed to fetch character SVG", err);
+        return;
+      }
+    }
 
     const layer: CharacterLayer = {
       id: nanoid(),
@@ -109,7 +119,9 @@ export function CharactersPanel() {
             const pose = char.poses[0];
             if (!pose) return null;
             const svgStr = getCharacterSvgString(char.id, pose.id);
-            const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgStr)}`;
+            const dataUrl = svgStr.startsWith("http") 
+              ? svgStr 
+              : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgStr)}`;
 
             return (
               <button

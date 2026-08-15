@@ -1,5 +1,5 @@
 import { useCallback, useRef, useEffect, useState } from "react";
-import { Trash2, Copy, ArrowUp, ArrowDown, Lock, RefreshCw } from "lucide-react";
+import { Trash2, Copy, ArrowUp, ArrowDown, Lock, RefreshCw, GripHorizontal } from "lucide-react";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { useLanguageStore } from "@/lib/store/languageStore";
 import {
@@ -7,7 +7,7 @@ import {
   ImageLayer, ScreenshotLayer, FlagLayer, Layer
 } from "@/lib/types";
 import { ALL_DEVICES, COLOR_HEX_MAP } from "@/lib/devices";
-import { cn } from "@/lib/utils";
+import { cn, loadGoogleFont } from "@/lib/utils";
 import { Draggable } from "@hello-pangea/dnd";
 
 interface ScreenCardProps {
@@ -58,6 +58,28 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
   // Drag over state for images
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
+  // ── Preload Fonts ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    let hasFonts = false;
+    const fontPromises: Promise<void>[] = [];
+    for (const layer of screen.layers) {
+      if (layer.type === "text" && (layer as TextLayer).fontFamily) {
+        fontPromises.push(loadGoogleFont((layer as TextLayer).fontFamily));
+        hasFonts = true;
+      }
+    }
+    if (hasFonts) {
+      Promise.all(fontPromises).then(() => {
+        // Redraw will be triggered automatically if we can force a canvas update,
+        // but since `draw` is defined below, we'll just rely on the component re-rendering
+        // if fonts load. Actually, `document.fonts.load` fires an event.
+        // Let's use a local state to trigger a re-render once fonts are loaded.
+        setFontsLoaded(prev => prev + 1);
+      });
+    }
+  }, [screen.layers]);
+
+  const [fontsLoaded, setFontsLoaded] = useState(0);
   const {
     activeSetId, activeScreenId, activeLayerId, selectedLayerIds,
     setActiveSet, setActiveScreen, setActiveLayer, toggleSelectLayer,
@@ -93,8 +115,19 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
 
     const W = screen.width;
     const H = screen.height;
-    canvas.width = W;
-    canvas.height = H;
+    
+    const dpr = window.devicePixelRatio || 1;
+    const displayW = CARD_DISPLAY_WIDTH;
+    const displayH = (H / W) * displayW;
+
+    canvas.width = displayW * dpr;
+    canvas.height = displayH * dpr;
+
+    const scale = (displayW * dpr) / W;
+    ctx.scale(scale, scale);
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
 
     // ── Background ────────────────────────────────────────────────────────────
     const bg = screen.background;
@@ -346,14 +379,14 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         const x = sl.x + (sl.width - w) / 2;
         const y = sl.y + (sl.height - h) / 2;
 
-        const defaultDeviceR = device.cornerRadius * scale + rawBezel * scale;
+        const defaultDeviceR = device.cornerRadius * scale + (hasFrame ? rawBezel * scale : 0);
         const r = (mockup?.squircle || hasFrame) ? defaultDeviceR : (sl.cornerRadius || 0);
 
-        const bezel = rawBezel * scale;
+        const bezel = hasFrame ? rawBezel * scale : 0;
         const innerX = x + bezel;
         const innerY = y + bezel;
-        const innerW = physicalW * scale;
-        const innerH = physicalH * scale;
+        const innerW = w - bezel * 2;
+        const innerH = h - bezel * 2;
         const innerR = Math.max(0, r - bezel);
 
         // When hideScreenshots is active, show a subtle dimmed placeholder instead
@@ -371,19 +404,22 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           continue;
         }
 
-        // Drop shadow
-        if (sl.shadow && mockup?.showShadow !== false) {
-          ctx.shadowBlur = sl.shadow.blur;
-          ctx.shadowColor = sl.shadow.color;
-          ctx.shadowOffsetX = sl.shadow.offsetX;
-          ctx.shadowOffsetY = sl.shadow.offsetY;
-        }
+        // Apply shadow parameters
+        const applyShadow = () => {
+            if (sl.shadow && mockup?.showShadow !== false) {
+              ctx.shadowBlur = sl.shadow.blur;
+              ctx.shadowColor = sl.shadow.color;
+              ctx.shadowOffsetX = sl.shadow.offsetX;
+              ctx.shadowOffsetY = sl.shadow.offsetY;
+            }
+        };
 
         const rawColorName = mockup?.color || "black";
         const baseHex = COLOR_HEX_MAP[rawColorName.toLowerCase()] || "#1a1a1c";
 
-        // 1. Draw outer device frame
+        // 1. Draw outer device frame OR minimal shadow
         if (hasFrame) {
+          applyShadow();
           
           if (mockup.frameType === "3d" || mockup.frameType === undefined) {
             // Draw Hardware Buttons First (underneath the rim)
@@ -501,11 +537,21 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             ctx.lineWidth = 2;
             ctx.stroke();
           }
+          // Reset shadow after drawing frame
+          ctx.shadowBlur = 0;
+          ctx.shadowColor = "transparent";
+        } else {
+          // Minimal or Borderless: Apply shadow to the image shape itself
+          applyShadow();
+          ctx.beginPath();
+          if (innerR > 0) ctx.roundRect(innerX, innerY, innerW, innerH, innerR);
+          else ctx.rect(innerX, innerY, innerW, innerH);
+          ctx.fillStyle = "#ffffff";
+          ctx.fill(); // Fill shadow
+          
+          ctx.shadowBlur = 0;
+          ctx.shadowColor = "transparent";
         }
-
-        // Reset shadow after drawing frame
-        ctx.shadowBlur = 0;
-        ctx.shadowColor = "transparent";
 
         // Clip to inner screen rect
         ctx.save();
@@ -517,111 +563,212 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         }
         ctx.clip();
 
-        // 2. Draw Screenshot image
+        let drawBaseImage: (() => void) | null = null;
+        let imgObj: HTMLImageElement | null = null;
+
         if (sl.src) {
           try {
-            const img = await loadImage(sl.src);
-            if (sl.objectFit === "cover") {
-              const imgRatio = img.width / img.height;
-              const zoneRatio = innerW / innerH;
-              let sx = 0, sy = 0, sw = img.width, sh = img.height;
-              if (imgRatio > zoneRatio) {
-                 // Image is wider than device screen, crop sides
-                 sw = img.height * zoneRatio;
-                 sx = (img.width - sw) / 2;
+            imgObj = await loadImage(sl.src);
+            drawBaseImage = () => {
+              if (!imgObj) return;
+              if (sl.objectFit === "cover") {
+                const imgRatio = imgObj.width / imgObj.height;
+                const zoneRatio = innerW / innerH;
+                let sx = 0, sy = 0, sw = imgObj.width, sh = imgObj.height;
+                if (imgRatio > zoneRatio) {
+                   sw = imgObj.height * zoneRatio;
+                   sx = (imgObj.width - sw) / 2;
+                } else {
+                   sh = imgObj.width / zoneRatio;
+                   sy = (imgObj.height - sh) / 2;
+                }
+                ctx.drawImage(imgObj, sx, sy, sw, sh, innerX, innerY, innerW, innerH);
               } else {
-                 // Image is taller than device screen, crop top/bottom
-                 sh = img.width / zoneRatio;
-                 sy = (img.height - sh) / 2;
+                ctx.drawImage(imgObj, innerX, innerY, innerW, innerH);
               }
-              ctx.drawImage(img, sx, sy, sw, sh, innerX, innerY, innerW, innerH);
-            } else {
-              ctx.drawImage(img, innerX, innerY, innerW, innerH);
-            }
+            };
           } catch {
-            drawPlaceholder(ctx, innerX, innerY, innerW, innerH, sl.label);
+            // error loading image
           }
+        }
+
+        const drawNotch = () => {
+            if (hasFrame && device.notchType !== "none") {
+              ctx.fillStyle = "#000000";
+              if (device.notchType === "island" && mockup.dynamicIsland !== false) {
+                const islandW = innerW * 0.285;
+                const islandH = innerW * 0.0887;
+                const islandX = innerX + (innerW - islandW) / 2;
+                const islandY = innerY + innerW * 0.025; // floating a bit lower
+                
+                // Top Speaker Grill
+                ctx.fillStyle = "#151515";
+                ctx.beginPath();
+                ctx.roundRect(innerX + (innerW - innerW * 0.16) / 2, innerY - bezel * 0.4, innerW * 0.16, bezel * 0.4, 2);
+                ctx.fill();
+
+                // The main black pill
+                ctx.fillStyle = "#000000";
+                ctx.beginPath();
+                ctx.roundRect(islandX, islandY, islandW, islandH, islandH / 2);
+                ctx.fill();
+                // TrueDepth Camera (left)
+                ctx.fillStyle = "#1e1e20";
+                ctx.beginPath();
+                ctx.arc(islandX + islandH * 0.8, islandY + islandH / 2, islandH * 0.22, 0, Math.PI * 2);
+                ctx.fill();
+                // Front Camera (right, slightly blueish reflection)
+                ctx.fillStyle = "#293246";
+                ctx.beginPath();
+                ctx.arc(islandX + islandW - islandH * 0.7, islandY + islandH / 2, islandH * 0.22, 0, Math.PI * 2);
+                ctx.fill();
+                // Tiny reflection in front camera
+                ctx.fillStyle = "rgba(255,255,255,0.25)";
+                ctx.beginPath();
+                ctx.arc(islandX + islandW - islandH * 0.7, islandY + islandH / 2.3, islandH * 0.08, 0, Math.PI * 2);
+                ctx.fill();
+              } else if (device.notchType === "hole" && mockup.notch !== false) {
+                const holeR = innerW * 0.025;
+                const holeX = innerX + innerW / 2;
+                const holeY = innerY + holeR * 2.5;
+                ctx.beginPath();
+                ctx.arc(holeX, holeY, holeR, 0, Math.PI * 2);
+                ctx.fill();
+              } else if (device.notchType === "notch" && mockup.notch !== false) {
+                const notchW = innerW * 0.45;
+                const notchH = innerW * 0.08;
+                const notchX = innerX + (innerW - notchW) / 2;
+                ctx.beginPath();
+                ctx.moveTo(notchX - notchH, innerY);
+                ctx.quadraticCurveTo(notchX, innerY, notchX, innerY + notchH * 0.4);
+                ctx.lineTo(notchX, innerY + notchH - notchH * 0.5);
+                ctx.quadraticCurveTo(notchX, innerY + notchH, notchX + notchH, innerY + notchH);
+                ctx.lineTo(notchX + notchW - notchH, innerY + notchH);
+                ctx.quadraticCurveTo(notchX + notchW, innerY + notchH, notchX + notchW, innerY + notchH - notchH * 0.5);
+                ctx.lineTo(notchX + notchW, innerY + notchH * 0.4);
+                ctx.quadraticCurveTo(notchX + notchW, innerY, notchX + notchW + notchH, innerY);
+                ctx.fill();
+              }
+            }
+        };
+
+        const drawReflection = () => {
+            if (hasFrame && mockup.reflection) {
+              const reflGrad = ctx.createLinearGradient(innerX, innerY, innerX + innerW, innerY + innerH);
+              reflGrad.addColorStop(0, "rgba(255,255,255,0.15)");
+              reflGrad.addColorStop(0.3, "rgba(255,255,255,0.05)");
+              reflGrad.addColorStop(0.5, "transparent");
+              reflGrad.addColorStop(1, "transparent");
+              ctx.fillStyle = reflGrad;
+              ctx.beginPath();
+              ctx.moveTo(innerX, innerY);
+              ctx.lineTo(innerX + innerW, innerY);
+              ctx.lineTo(innerX, innerY + innerH);
+              ctx.closePath();
+              ctx.fill();
+            }
+        };
+
+        const overlay = sl.focusOverlay;
+
+        // 2. Draw base screenshot, notch, reflection (with optional blur)
+        ctx.save();
+        if (overlay && overlay.enabled && overlay.blurBackground) {
+            ctx.filter = "blur(12px)";
+        }
+        
+        if (drawBaseImage) {
+            drawBaseImage();
         } else {
-          drawPlaceholder(ctx, innerX, innerY, innerW, innerH, sl.label);
+            drawPlaceholder(ctx, innerX, innerY, innerW, innerH, sl.label);
+        }
+        drawNotch();
+        drawReflection();
+        ctx.restore();
+
+        // 3. Draw overlay tint color (if focus overlay is enabled)
+        if (overlay && overlay.enabled && overlay.overlayColor) {
+            ctx.save();
+            ctx.fillStyle = overlay.overlayColor;
+            ctx.fillRect(innerX, innerY, innerW, innerH);
+            ctx.restore();
         }
 
-        // 3. Draw Notch / Dynamic Island
-        if (hasFrame && device.notchType !== "none") {
-          ctx.fillStyle = "#000000";
-          
-          if (device.notchType === "island" && mockup.dynamicIsland !== false) {
-            const islandW = innerW * 0.285;
-            const islandH = innerW * 0.0887;
-            const islandX = innerX + (innerW - islandW) / 2;
-            const islandY = innerY + innerW * 0.025; // floating a bit lower
+        ctx.restore(); // END CLIP INNER (we can now draw outside the inner screen)
+
+        // 3b. Draw Premium Subtle Border for Minimal/Borderless
+        if (!hasFrame) {
+            ctx.beginPath();
+            if (innerR > 0) {
+              ctx.roundRect(innerX, innerY, innerW, innerH, innerR);
+            } else {
+              ctx.rect(innerX, innerY, innerW, innerH);
+            }
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = "rgba(0,0,0,0.12)";
+            ctx.stroke();
+            // inner subtle highlight
+            ctx.beginPath();
+            if (innerR > 0) {
+              ctx.roundRect(innerX + 1, innerY + 1, innerW - 2, innerH - 2, innerR - 1);
+            } else {
+              ctx.rect(innerX + 1, innerY + 1, innerW - 2, innerH - 2);
+            }
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = "rgba(255,255,255,0.15)";
+            ctx.stroke();
+        }
+
+        // 4. Draw Focus Window (Pops out in front)
+        if (overlay && overlay.enabled && drawBaseImage) {
+            const fTop = (overlay.cropTop / 100) * innerH;
+            const fBottom = (overlay.cropBottom / 100) * innerH;
+            const fY = innerY + fTop;
+            const fH = Math.max(0, innerH - fTop - fBottom);
             
-            // Top Speaker Grill
-            ctx.fillStyle = "#151515";
+            let fRadius = 0;
+            if (overlay.roundedCorners === "sm") fRadius = innerW * 0.02;
+            if (overlay.roundedCorners === "md") fRadius = innerW * 0.05;
+            if (overlay.roundedCorners === "xl") fRadius = innerW * 0.1;
+            
+            const popScale = 1.15; // Scale up by 15% to overflow the device bezel
+            const cx = innerX + innerW / 2;
+            const cy = fY + fH / 2;
+            
+            ctx.save();
+            // Translate to center, scale, translate back
+            ctx.translate(cx, cy);
+            ctx.scale(popScale, popScale);
+            ctx.translate(-cx, -cy);
+            
             ctx.beginPath();
-            ctx.roundRect(innerX + (innerW - innerW * 0.16) / 2, innerY - bezel * 0.4, innerW * 0.16, bezel * 0.4, 2);
-            ctx.fill();
-
-            // The main black pill
-            ctx.fillStyle = "#000000";
-            ctx.beginPath();
-            ctx.roundRect(islandX, islandY, islandW, islandH, islandH / 2);
-            ctx.fill();
-            // TrueDepth Camera (left)
-            ctx.fillStyle = "#1e1e20";
-            ctx.beginPath();
-            ctx.arc(islandX + islandH * 0.8, islandY + islandH / 2, islandH * 0.22, 0, Math.PI * 2);
-            ctx.fill();
-            // Front Camera (right, slightly blueish reflection)
-            ctx.fillStyle = "#293246";
-            ctx.beginPath();
-            ctx.arc(islandX + islandW - islandH * 0.7, islandY + islandH / 2, islandH * 0.22, 0, Math.PI * 2);
-            ctx.fill();
-            // Tiny reflection in front camera
-            ctx.fillStyle = "rgba(255,255,255,0.25)";
-            ctx.beginPath();
-            ctx.arc(islandX + islandW - islandH * 0.7, islandY + islandH / 2.3, islandH * 0.08, 0, Math.PI * 2);
-            ctx.fill();
-          } else if (device.notchType === "hole" && mockup.notch !== false) {
-            const holeR = innerW * 0.025;
-            const holeX = innerX + innerW / 2;
-            const holeY = innerY + holeR * 2.5;
-            ctx.beginPath();
-            ctx.arc(holeX, holeY, holeR, 0, Math.PI * 2);
-            ctx.fill();
-          } else if (device.notchType === "notch" && mockup.notch !== false) {
-            const notchW = innerW * 0.45;
-            const notchH = innerW * 0.08;
-            const notchX = innerX + (innerW - notchW) / 2;
-            ctx.beginPath();
-            ctx.moveTo(notchX - notchH, innerY);
-            ctx.quadraticCurveTo(notchX, innerY, notchX, innerY + notchH * 0.4);
-            ctx.lineTo(notchX, innerY + notchH - notchH * 0.5);
-            ctx.quadraticCurveTo(notchX, innerY + notchH, notchX + notchH, innerY + notchH);
-            ctx.lineTo(notchX + notchW - notchH, innerY + notchH);
-            ctx.quadraticCurveTo(notchX + notchW, innerY + notchH, notchX + notchW, innerY + notchH - notchH * 0.5);
-            ctx.lineTo(notchX + notchW, innerY + notchH * 0.4);
-            ctx.quadraticCurveTo(notchX + notchW, innerY, notchX + notchW + notchH, innerY);
-            ctx.fill();
-          }
+            ctx.roundRect(innerX, fY, innerW, fH, fRadius);
+            
+            // Shadow
+            if (overlay.overlayShadow) {
+                ctx.save();
+                ctx.shadowColor = "rgba(0,0,0,0.3)";
+                ctx.shadowBlur = innerW * 0.08;
+                ctx.shadowOffsetY = innerW * 0.03;
+                ctx.fillStyle = "#ffffff"; 
+                ctx.fill();
+                ctx.restore();
+            }
+            
+            ctx.clip();
+            drawBaseImage();
+            
+            // Optional: redraw notch inside focus area? No, original app doesn't show notch in focus window
+            
+            if (overlay.borderWidth > 0) {
+                ctx.beginPath();
+                ctx.roundRect(innerX, fY, innerW, fH, fRadius);
+                ctx.lineWidth = overlay.borderWidth * (innerW / 1000) / popScale;
+                ctx.strokeStyle = overlay.borderColor;
+                ctx.stroke();
+            }
+            ctx.restore();
         }
-
-        // 4. Draw Reflection Overlay
-        if (hasFrame && mockup.reflection) {
-          const reflGrad = ctx.createLinearGradient(innerX, innerY, innerX + innerW, innerY + innerH);
-          reflGrad.addColorStop(0, "rgba(255,255,255,0.15)");
-          reflGrad.addColorStop(0.3, "rgba(255,255,255,0.05)");
-          reflGrad.addColorStop(0.5, "transparent");
-          reflGrad.addColorStop(1, "transparent");
-          ctx.fillStyle = reflGrad;
-          ctx.beginPath();
-          ctx.moveTo(innerX, innerY);
-          ctx.lineTo(innerX + innerW, innerY);
-          ctx.lineTo(innerX, innerY + innerH);
-          ctx.closePath();
-          ctx.fill();
-        }
-
-        ctx.restore(); // end clip inner
       }
 
       // ── SHAPE ─────────────────────────────────────────────────────────────
@@ -848,7 +995,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
     }
   }, [screen, isActiveScreen, activeLayerId, activeLang, hideScreenshots, screenSet.mockup]);
 
-  useEffect(() => { draw(); }, [draw]);
+  useEffect(() => { draw(); }, [draw, fontsLoaded]);
 
   // ── Hit testing ───────────────────────────────────────────────────────────
   const hitTest = (cx: number, cy: number): string | null => {
@@ -982,7 +1129,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         const dx = mx - resizeRef.current.centerX;
         const dy = my - resizeRef.current.centerY;
         // Angle in radians (add PI/2 so 12 o'clock is 0)
-        let angle = Math.atan2(dy, dx) + Math.PI / 2;
+        const angle = Math.atan2(dy, dx) + Math.PI / 2;
         let deg = Math.round((angle * 180) / Math.PI);
         // Snap to 45 degree increments if shift is held
         if (ev.shiftKey) {
@@ -1031,7 +1178,6 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
-          {...provided.dragHandleProps}
           className="shrink-0 flex flex-col gap-1.5 group"
           style={{
             width: CARD_DISPLAY_WIDTH,
@@ -1040,6 +1186,9 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         >
           {/* Header: index + caption editable + delete */}
       <div className="flex items-center gap-1.5">
+        <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground transition-colors" title="Drag to reorder screen">
+          <GripHorizontal className="w-3.5 h-3.5" />
+        </div>
         <span className="text-[10px] text-muted-foreground font-mono w-4 shrink-0">{index + 1}</span>
 
         {/* Caption — editable inline */}
@@ -1446,11 +1595,11 @@ function drawPlaceholder(
   ctx.stroke();
 
   // Label text
-  let instrY = iy + ih + h * 0.05;
+  let instrY = iy + ih + h * 0.06;
   if (label) {
-    const fontSize = Math.round(w * 0.07);
-    ctx.font = `600 ${fontSize}px -apple-system, sans-serif`;
-    ctx.fillStyle = "rgba(199,210,254,1)";
+    const fontSize = Math.round(w * 0.085);
+    ctx.font = `600 ${fontSize}px "Inter", sans-serif`;
+    ctx.fillStyle = "rgba(255,255,255,1)";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
 
@@ -1460,7 +1609,7 @@ function drawPlaceholder(
     const lines: string[] = [];
     for (let i = 0; i < words.length; i++) {
       const testLine = line + words[i] + " ";
-      if (ctx.measureText(testLine).width > w * 0.85 && i > 0) {
+      if (ctx.measureText(testLine).width > w * 0.9 && i > 0) {
         lines.push(line.trim());
         line = words[i] + " ";
       } else {
@@ -1473,15 +1622,15 @@ function drawPlaceholder(
       ctx.fillText(l, x + w / 2, instrY);
       instrY += fontSize * 1.3;
     }
-    instrY += h * 0.015;
+    instrY += h * 0.02;
   } else {
     instrY += w * 0.08 + h * 0.02;
   }
 
   // Tap instruction
-  const instrFontSize = Math.round(w * 0.045);
-  ctx.font = `500 ${instrFontSize}px -apple-system, sans-serif`;
-  ctx.fillStyle = "rgba(226,232,240,0.95)";
+  const instrFontSize = Math.round(w * 0.06);
+  ctx.font = `500 ${instrFontSize}px "Inter", sans-serif`;
+  ctx.fillStyle = "rgba(226,232,240,1)";
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   ctx.fillText("Click or drop image here", x + w / 2, instrY);

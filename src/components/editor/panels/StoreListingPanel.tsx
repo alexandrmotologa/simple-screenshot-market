@@ -52,6 +52,7 @@ export function StoreListingPanel() {
   // Sync state if project or active language changes
   useEffect(() => {
     const listingForLang = project?.storeListing?.[activeLang];
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAppStoreData({
       name: listingForLang?.ios?.name || "",
       subtitle: listingForLang?.ios?.subtitle || "",
@@ -59,6 +60,7 @@ export function StoreListingPanel() {
       promotionalText: listingForLang?.ios?.promotionalText || "",
       whatsNew: listingForLang?.ios?.whatsNew || "",
     });
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPlayStoreData({
       title: listingForLang?.android?.title || "",
       shortDescription: listingForLang?.android?.shortDescription || "",

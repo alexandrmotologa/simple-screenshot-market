@@ -51,7 +51,7 @@ function textLayer(
     type: "text",
     content, x, y, width: w, height: h,
     fontSize: 90,
-    fontFamily: "Geist Sans",
+    fontFamily: "Inter",
     fontWeight: 700,
     color: "#ffffff",
     align: "left",
@@ -148,26 +148,26 @@ export const DEFAULT_TEMPLATES: Template[] = [
           
           textLayer(
             isFirst ? "Redefining\nThe Future." : `Powerful Feature\nNumber ${i}`,
-            Math.round(W * 0.08), Math.round(H * 0.1), Math.round(W * 0.84), 380,
+            Math.round(W * 0.08), Math.round(H * 0.09), Math.round(W * 0.84), 380,
             { fontSize: 130, fontWeight: 900, color: "#ffffff", lineHeight: 1.05 }
           ),
           textLayer(
             isFirst ? "A short tagline describing your incredible application." : "Discover insights, stay connected, and boost productivity effortlessly.",
-            Math.round(W * 0.08), Math.round(H * 0.28), Math.round(W * 0.84), 160,
-            { fontSize: 50, fontWeight: 400, color: "rgba(148,163,184,0.9)", lineHeight: 1.4 }
+            Math.round(W * 0.08), Math.round(H * 0.22), Math.round(W * 0.84), 200,
+            { fontSize: 80, fontWeight: 500, color: "rgba(226,232,240,1)", lineHeight: 1.4 }
           ),
           
           // Accent Pill
-          shapeLayer("rounded-rectangle", Math.round(W * 0.08), Math.round(H * 0.06), 200, 50, "rgba(255,255,255,0.1)", { 
-            stroke: "rgba(255,255,255,0.2)", strokeWidth: 2, cornerRadius: 100 
+          shapeLayer("rounded-rectangle", Math.round(W * 0.08), Math.round(H * 0.04), 280, 90, "rgba(99, 102, 241, 0.3)", { 
+            stroke: "rgba(165, 180, 252, 0.7)", strokeWidth: 4, cornerRadius: 100 
           }),
-          textLayer(isFirst ? "NEW" : "PRO", Math.round(W * 0.1), Math.round(H * 0.065), 160, 40, {
-            fontSize: 28, fontWeight: 800, color: "#ffffff", align: "center", letterSpacing: 2
+          textLayer(isFirst ? "NEW" : "PRO", Math.round(W * 0.08), Math.round(H * 0.04) + 18, 280, 90, {
+            fontSize: 54, fontWeight: 900, color: "#ffffff", align: "center", letterSpacing: 6
           }),
 
           screenshotWithFrame(
             Math.round(W * 0.08),
-            Math.round(H * 0.42),
+            Math.round(H * 0.32),
             Math.round(W * 0.84),
             2400,
             "Drop Screenshot"
@@ -220,8 +220,8 @@ export const DEFAULT_TEMPLATES: Template[] = [
           ),
           textLayer(
             isFirst ? "Your application, stripped down to its perfect essence." : "Focus on what matters without the unnecessary clutter.",
-            Math.round(W * 0.12), Math.round(H * 0.89), Math.round(W * 0.76), 160,
-            { fontSize: 46, fontWeight: 500, color: "#64748b", lineHeight: 1.5 }
+            Math.round(W * 0.12), Math.round(H * 0.87), Math.round(W * 0.76), 200,
+            { fontSize: 60, fontWeight: 500, color: "#64748b", lineHeight: 1.5 }
           ),
         ],
       } as TemplateScreen;
@@ -264,8 +264,8 @@ export const DEFAULT_TEMPLATES: Template[] = [
           ),
           textLayer(
             isFirst ? "The most vibrant app experience out there." : "Bring joy to your daily routines and tasks.",
-            Math.round(W * 0.08), Math.round(H * 0.32), Math.round(W * 0.42), 200,
-            { fontSize: 48, fontWeight: 600, color: "rgba(255,255,255,0.8)", lineHeight: 1.4, align: "left" }
+            Math.round(W * 0.08), Math.round(H * 0.30), Math.round(W * 0.42), 250,
+            { fontSize: 60, fontWeight: 600, color: "rgba(255,255,255,0.8)", lineHeight: 1.4, align: "left" }
           ),
           
           screenshotWithFrame(
@@ -325,13 +325,13 @@ export const DEFAULT_TEMPLATES: Template[] = [
           
           textLayer(
             isFirst ? "Secure.\nReliable.\Fast." : `Grow Your\nBusiness.`,
-            Math.round(W * 0.12), Math.round(H * 0.77), Math.round(W * 0.76), 250,
-            { fontSize: 90, fontWeight: 800, color: "#1e3a8a", lineHeight: 1.1 }
+            Math.round(W * 0.12), Math.round(H * 0.76), Math.round(W * 0.76), 250,
+            { fontSize: 110, fontWeight: 800, color: "#1e3a8a", lineHeight: 1.1 }
           ),
           textLayer(
             isFirst ? "Enterprise-grade features for everyone." : "Advanced analytics and trusted security protocols.",
-            Math.round(W * 0.12), Math.round(H * 0.89), Math.round(W * 0.76), 160,
-            { fontSize: 44, fontWeight: 500, color: "#64748b", lineHeight: 1.5 }
+            Math.round(W * 0.12), Math.round(H * 0.88), Math.round(W * 0.76), 180,
+            { fontSize: 60, fontWeight: 500, color: "#64748b", lineHeight: 1.5 }
           ),
         ],
       } as TemplateScreen;
@@ -384,8 +384,8 @@ export const DEFAULT_TEMPLATES: Template[] = [
           ),
           textLayer(
             isFirst ? "Experience the next generation of power." : "Access unparalleled control and precision.",
-            Math.round(W * 0.08), Math.round(H * 0.85), Math.round(W * 0.84), 150,
-            { fontSize: 46, fontWeight: 400, color: "#06b6d4", lineHeight: 1.4, letterSpacing: 2 }
+            Math.round(W * 0.08), Math.round(H * 0.83), Math.round(W * 0.84), 200,
+            { fontSize: 60, fontWeight: 400, color: "#06b6d4", lineHeight: 1.4, letterSpacing: 2 }
           ),
         ],
       } as TemplateScreen;
@@ -427,8 +427,8 @@ export const DEFAULT_TEMPLATES: Template[] = [
           ),
           textLayer(
             isFirst ? "Unleash the full potential of your creativity today." : "An experience so smooth it feels like magic.",
-            Math.round(W * 0.60), Math.round(H * 0.32), Math.round(W * 0.35), 200,
-            { fontSize: 48, fontWeight: 600, color: "rgba(255,255,255,0.8)", lineHeight: 1.4, align: "left" }
+            Math.round(W * 0.60), Math.round(H * 0.30), Math.round(W * 0.35), 250,
+            { fontSize: 60, fontWeight: 600, color: "rgba(255,255,255,0.8)", lineHeight: 1.4, align: "left" }
           ),
           
           screenshotWithFrame(

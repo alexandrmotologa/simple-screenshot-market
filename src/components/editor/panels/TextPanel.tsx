@@ -11,7 +11,7 @@ const GOOGLE_FONTS = [
   "Raleway", "Nunito", "Playfair Display", "Merriweather",
   "Ubuntu", "Quicksand", "Josefin Sans", "Barlow",
   "Exo 2", "Syne", "Space Grotesk", "DM Sans", "Plus Jakarta Sans",
-  "Outfit", "Cabin", "Geist Sans", "Bebas Neue", "Anton",
+  "Outfit", "Cabin", "Bebas Neue", "Anton",
 ];
 
 // ── Text preset categories ─────────────────────────────────────────────────────
@@ -24,7 +24,7 @@ const PRESET_CATEGORIES = [
         preview: { text: "Big Title", fontSize: 28, fontWeight: 800, letterSpacing: -1.5 },
         layer: {
           type: "text", content: "Your Big Title",
-          fontSize: 140, fontWeight: 800, fontFamily: "Geist Sans",
+          fontSize: 140, fontWeight: 800, fontFamily: "Inter",
           color: "#ffffff", align: "left", lineHeight: 1.1,
           letterSpacing: -2, width: 1000, height: 300,
         },
@@ -34,7 +34,7 @@ const PRESET_CATEGORIES = [
         preview: { text: "DISPLAY", fontSize: 26, fontWeight: 900, letterSpacing: 2, uppercase: true },
         layer: {
           type: "text", content: "DISPLAY",
-          fontSize: 200, fontWeight: 900, fontFamily: "Geist Sans",
+          fontSize: 200, fontWeight: 900, fontFamily: "Inter",
           color: "#ffffff", align: "center", lineHeight: 1.0,
           letterSpacing: 8, width: 1290, height: 350,
         },
@@ -44,7 +44,7 @@ const PRESET_CATEGORIES = [
         preview: { text: "Big\nHeadline", fontSize: 22, fontWeight: 800, lineHeight: 1.0 },
         layer: {
           type: "text", content: "Big\nHeadline",
-          fontSize: 160, fontWeight: 800, fontFamily: "Geist Sans",
+          fontSize: 160, fontWeight: 800, fontFamily: "Inter",
           color: "#ffffff", align: "left", lineHeight: 1.0,
           letterSpacing: -3, width: 1000, height: 480,
         },
@@ -59,7 +59,7 @@ const PRESET_CATEGORIES = [
         preview: { text: "One clear subtitle", fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,0.7)" },
         layer: {
           type: "text", content: "One clear subtitle",
-          fontSize: 60, fontWeight: 500, fontFamily: "Geist Sans",
+          fontSize: 60, fontWeight: 500, fontFamily: "Inter",
           color: "rgba(255,255,255,0.8)", align: "left", lineHeight: 1.3,
           letterSpacing: 0, width: 1000, height: 120,
         },
@@ -69,7 +69,7 @@ const PRESET_CATEGORIES = [
         preview: { text: "Describe your app\nin two short lines", fontSize: 12, fontWeight: 400, color: "rgba(255,255,255,0.65)", lineHeight: 1.5 },
         layer: {
           type: "text", content: "Describe your app\nin two short lines",
-          fontSize: 52, fontWeight: 400, fontFamily: "Geist Sans",
+          fontSize: 52, fontWeight: 400, fontFamily: "Inter",
           color: "rgba(255,255,255,0.75)", align: "left", lineHeight: 1.5,
           letterSpacing: 0, width: 1000, height: 200,
         },
@@ -79,7 +79,7 @@ const PRESET_CATEGORIES = [
         preview: { text: "NEW FEATURE", fontSize: 10, fontWeight: 700, letterSpacing: 3, uppercase: true, color: "rgba(255,255,255,0.6)" },
         layer: {
           type: "text", content: "NEW FEATURE",
-          fontSize: 36, fontWeight: 700, fontFamily: "Geist Sans",
+          fontSize: 36, fontWeight: 700, fontFamily: "Inter",
           color: "rgba(255,255,255,0.65)", align: "left", lineHeight: 1.2,
           letterSpacing: 6, width: 800, height: 80,
         },
@@ -94,7 +94,7 @@ const PRESET_CATEGORIES = [
         preview: { text: "THE APP FOR EVERYONE", fontSize: 10, fontWeight: 600, letterSpacing: 3, uppercase: true },
         layer: {
           type: "text", content: "THE APP FOR EVERYONE",
-          fontSize: 44, fontWeight: 600, fontFamily: "Geist Sans",
+          fontSize: 44, fontWeight: 600, fontFamily: "Inter",
           color: "rgba(255,255,255,0.9)", align: "center", lineHeight: 1.3,
           letterSpacing: 6, width: 1100, height: 80,
         },
@@ -104,7 +104,7 @@ const PRESET_CATEGORIES = [
         preview: { text: "★ 4.9 · 10M+ Downloads", fontSize: 11, fontWeight: 600 },
         layer: {
           type: "text", content: "★ 4.9  ·  10M+ Downloads",
-          fontSize: 46, fontWeight: 600, fontFamily: "Geist Sans",
+          fontSize: 46, fontWeight: 600, fontFamily: "Inter",
           color: "rgba(255,255,255,0.85)", align: "center", lineHeight: 1.2,
           letterSpacing: 1, width: 900, height: 80,
         },
@@ -114,7 +114,7 @@ const PRESET_CATEGORIES = [
         preview: { text: "Available on App Store & Google Play", fontSize: 10, fontWeight: 400, color: "rgba(255,255,255,0.5)" },
         layer: {
           type: "text", content: "Available on App Store & Google Play",
-          fontSize: 38, fontWeight: 400, fontFamily: "Geist Sans",
+          fontSize: 38, fontWeight: 400, fontFamily: "Inter",
           color: "rgba(255,255,255,0.55)", align: "center", lineHeight: 1.5,
           letterSpacing: 0, width: 1100, height: 70,
         },
@@ -129,7 +129,7 @@ const PRESET_CATEGORIES = [
         preview: { text: "Pill Badge", fontSize: 14, fontWeight: 700, color: "#ffffff", uppercase: true, letterSpacing: 2 },
         layer: {
           type: "text", content: "NEW  ·  FEATURE",
-          fontSize: 40, fontWeight: 700, fontFamily: "Geist Sans",
+          fontSize: 40, fontWeight: 700, fontFamily: "Inter",
           color: "#ffffff", align: "center", lineHeight: 1.2,
           letterSpacing: 4, width: 800, height: 100,
           highlight: { color: "rgba(255,255,255,0.15)", paddingX: 30, paddingY: 15, cornerRadius: 50 },
@@ -140,7 +140,7 @@ const PRESET_CATEGORIES = [
         preview: { text: "Text in Card", fontSize: 16, fontWeight: 600, color: "#111827" },
         layer: {
           type: "text", content: "Important Message",
-          fontSize: 70, fontWeight: 600, fontFamily: "Geist Sans",
+          fontSize: 70, fontWeight: 600, fontFamily: "Inter",
           color: "#111827", align: "center", lineHeight: 1.3,
           letterSpacing: 0, width: 1000, height: 160,
           highlight: { color: "#ffffff", paddingX: 40, paddingY: 30, cornerRadius: 24 },
@@ -151,7 +151,7 @@ const PRESET_CATEGORIES = [
         preview: { text: "Highlighted Text", fontSize: 16, fontWeight: 800, color: "#1a1a2e" },
         layer: {
           type: "text", content: "Stand Out!",
-          fontSize: 90, fontWeight: 800, fontFamily: "Geist Sans",
+          fontSize: 90, fontWeight: 800, fontFamily: "Inter",
           color: "#1a1a2e", align: "center", lineHeight: 1.2,
           letterSpacing: -1, width: 900, height: 150,
           highlight: { color: "#fbbf24", paddingX: 20, paddingY: 10, cornerRadius: 8 },
@@ -162,7 +162,7 @@ const PRESET_CATEGORIES = [
         preview: { text: "OUTLINE", fontSize: 20, fontWeight: 900, color: "transparent", uppercase: true },
         layer: {
           type: "text", content: "OUTLINE",
-          fontSize: 160, fontWeight: 900, fontFamily: "Geist Sans",
+          fontSize: 160, fontWeight: 900, fontFamily: "Inter",
           color: "transparent", align: "center", lineHeight: 1.0,
           letterSpacing: 4, width: 1100, height: 250,
           stroke: { color: "#ffffff", width: 4 },
@@ -173,7 +173,7 @@ const PRESET_CATEGORIES = [
         preview: { text: "Glowing", fontSize: 18, fontWeight: 700, color: "#ffffff" },
         layer: {
           type: "text", content: "Glowing Title",
-          fontSize: 120, fontWeight: 700, fontFamily: "Geist Sans",
+          fontSize: 120, fontWeight: 700, fontFamily: "Inter",
           color: "#ffffff", align: "center", lineHeight: 1.2,
           letterSpacing: 0, width: 1100, height: 200,
           shadow: { color: "#8b5cf6", blur: 40, offsetX: 0, offsetY: 0 },
@@ -245,7 +245,7 @@ export function TextPanel() {
 
     // Load Google Font if needed
     const font = (preset.layer as { fontFamily?: string }).fontFamily;
-    if (font && font !== "Geist Sans") {
+    if (font && font !== "Inter") {
       const link = document.createElement("link");
       link.rel = "stylesheet";
       link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(font)}:wght@400;500;600;700;800;900&display=swap`;

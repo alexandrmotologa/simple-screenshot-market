@@ -8,7 +8,15 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
+        hostname: "api.dicebear.com",
+      },
+      {
+        protocol: "https",
         hostname: "cdn.simpleicons.org",
+      },
+      {
+        protocol: "https",
+        hostname: "icongr.am",
       },
       {
         protocol: "https",

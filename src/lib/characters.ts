@@ -365,7 +365,7 @@ const DOODLE_WAVING = `
 
 
 
-export const CHARACTERS: Character[] = [
+const BASE_CHARACTERS: Character[] = [
   {
     id: "alex",
     name: "Alex",
@@ -478,6 +478,119 @@ export const CHARACTERS: Character[] = [
       },
     ],
   },
+  {
+    id: "avataaar-happy",
+    name: "Happy Portrait",
+    category: "standing",
+    description: "Avataaars style portrait",
+    library: "Avataaars",
+    poses: [
+      {
+        id: "standing",
+        name: "Standing",
+        svg: AVATAR_HAPPY_1,
+        viewBox: "0 0 400 400",
+      },
+    ],
+  },
+  {
+    id: "avataaar-thinking",
+    name: "Thinking Portrait",
+    category: "thinking",
+    description: "Avataaars style thinking portrait",
+    library: "Avataaars",
+    poses: [
+      {
+        id: "thinking",
+        name: "Thinking",
+        svg: AVATAR_THINKING,
+        viewBox: "0 0 400 400",
+      },
+    ],
+  },
+  {
+    id: "doodle-waving",
+    name: "Waving Doodle",
+    category: "waving",
+    description: "Hand-drawn doodle style",
+    library: "Doodles",
+    poses: [
+      {
+        id: "waving",
+        name: "Waving",
+        svg: DOODLE_WAVING,
+        viewBox: "0 0 400 500",
+      },
+    ],
+  },
+];
+
+// Generate many more characters dynamically
+const SEEDS = [
+  "Felix", "Anita", "Jasper", "Oliver", "Max", "Mia", "Leo", "Lily", "Zoe", "Sam",
+  "Chloe", "Noah", "Emma", "Liam", "Ava", "Lucas", "Sophie", "Mason", "Isabella", "Ethan",
+  "Aiden", "Grace", "Logan", "Aria", "Jackson", "Evelyn", "Caleb", "Harper", "Ryan", "Ella",
+  "Luke", "Abigail", "Jack", "Amelia", "Owen", "Emily", "Gabriel", "Elizabeth", "William", "Sofia",
+  "James", "Benjamin", "Henry", "Alexander", "Michael", "Daniel", "Matthew", "Samuel", "David", "Joseph",
+  "Charlotte", "Amelia", "Harper", "Evelyn", "Abigail", "Emily", "Elizabeth", "Mila", "Ella", "Avery",
+  "Eleanor", "Madison", "Scarlett", "Victoria", "Aria", "Grace", "Chloe", "Camila", "Penelope", "Riley",
+  "Layla", "Lillian", "Nora", "Zoey", "Mila", "Aubrey", "Hannah", "Lily", "Addison", "Eleanor",
+  "Natalie", "Luna", "Savannah", "Brooklyn", "Leah", "Zoe", "Stella", "Hazel", "Ellie", "Paisley",
+  "Audrey", "Skylar", "Violet", "Claire", "Bella", "Aurora", "Lucy", "Anna", "Samantha", "Caroline"
+];
+
+const generatedCharacters: Character[] = [];
+
+SEEDS.forEach((seed, i) => {
+  // Avataaars
+  generatedCharacters.push({
+    id: `avataaar-${seed.toLowerCase()}`,
+    name: seed,
+    category: i % 3 === 0 ? "happy" : i % 3 === 1 ? "thinking" : "standing",
+    description: "Avataaars style portrait",
+    library: "Avataaars",
+    poses: [{
+      id: "portrait",
+      name: "Portrait",
+      svg: `https://api.dicebear.com/9.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffdfbf,ffd5dc`,
+      viewBox: "0 0 400 400"
+    }]
+  });
+
+  // Open Peeps
+  generatedCharacters.push({
+    id: `open-peeps-${seed.toLowerCase()}`,
+    name: seed,
+    category: i % 3 === 0 ? "standing" : i % 3 === 1 ? "sitting" : "waving",
+    description: "Hand-drawn Open Peeps style",
+    library: "Open Peeps",
+    poses: [{
+      id: "peep",
+      name: "Peep",
+      svg: `https://api.dicebear.com/9.x/open-peeps/svg?seed=${seed}`,
+      viewBox: "0 0 400 500"
+    }]
+  });
+
+  // Micah (Doodles)
+  generatedCharacters.push({
+    id: `doodle-${seed.toLowerCase()}`,
+    name: seed,
+    category: "happy",
+    description: "Modern vibrant doodle",
+    library: "Doodles",
+    poses: [{
+      id: "doodle",
+      name: "Doodle",
+      svg: `https://api.dicebear.com/9.x/micah/svg?seed=${seed}&backgroundColor=f8f9fa,e9ecef,dee2e6`,
+      viewBox: "0 0 400 400"
+    }]
+  });
+});
+
+export const CHARACTERS: Character[] = [
+  ...BASE_CHARACTERS,
+  ...generatedCharacters
 ];
 
 /** Get character SVG as a full SVG string for rendering/export */
@@ -486,13 +599,25 @@ export function getCharacterSvgString(characterId: string, poseId: string): stri
   if (!char) return "";
   const pose = char.poses.find((p) => p.id === poseId);
   if (!pose) return "";
+  if (pose.svg.startsWith("http")) return pose.svg;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${pose.viewBox}" width="400" height="500">${pose.svg}</svg>`;
 }
 
 /** Get character as a data URL for use in canvas */
 export async function getCharacterDataUrl(characterId: string, poseId: string): Promise<string> {
-  const svgStr = getCharacterSvgString(characterId, poseId);
+  let svgStr = getCharacterSvgString(characterId, poseId);
   if (!svgStr) return "";
+  
+  if (svgStr.startsWith("http")) {
+    try {
+      const res = await fetch(svgStr);
+      svgStr = await res.text();
+    } catch (e) {
+      console.error(e);
+      return "";
+    }
+  }
+
   const blob = new Blob([svgStr], { type: "image/svg+xml" });
   return URL.createObjectURL(blob);
 }

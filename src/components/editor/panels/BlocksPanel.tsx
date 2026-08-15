@@ -2,6 +2,7 @@
 
 import { useEditorStore } from "@/lib/store/editorStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Apple, Play } from "lucide-react";
 
 interface BlockPreset {
   id: string;
@@ -262,14 +263,14 @@ const BADGE_PRESETS: BlockPreset[] = [
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white text-[10px] font-semibold"
         style={{ background: "#000", minWidth: 100 }}
       >
-        <span className="text-base leading-none"></span>
+        <span className="text-base leading-none"><Apple className="w-5 h-5 fill-white" /></span>
         <div>
           <div className="text-[8px] opacity-75 font-normal">Download on the</div>
           <div className="text-sm font-bold leading-tight">App Store</div>
         </div>
       </div>
     ),
-    layer: { type: "shape", shape: "appstore-badge", fill: "#000000", stroke: "rgba(255,255,255,0.2)", strokeWidth: 1, cornerRadius: 0, width: 480, height: 140 },
+    layer: { type: "shape", shape: "appstore-badge", fill: "#000000", stroke: "rgba(255,255,255,0.2)", strokeWidth: 1, cornerRadius: 24, width: 480, height: 140 },
   },
   {
     id: "googleplay",
@@ -279,14 +280,14 @@ const BADGE_PRESETS: BlockPreset[] = [
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white text-[10px] font-semibold"
         style={{ background: "#000", minWidth: 100 }}
       >
-        <span className="text-base leading-none">▶</span>
+        <span className="text-base leading-none"><Play className="w-4 h-4 fill-white" /></span>
         <div>
           <div className="text-[8px] opacity-75 font-normal">GET IT ON</div>
           <div className="text-sm font-bold leading-tight">Google Play</div>
         </div>
       </div>
     ),
-    layer: { type: "shape", shape: "googleplay-badge", fill: "#000000", stroke: "rgba(255,255,255,0.2)", strokeWidth: 1, cornerRadius: 0, width: 480, height: 140 },
+    layer: { type: "shape", shape: "googleplay-badge", fill: "#000000", stroke: "rgba(255,255,255,0.2)", strokeWidth: 1, cornerRadius: 24, width: 480, height: 140 },
   },
 ];
 

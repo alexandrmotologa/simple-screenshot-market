@@ -38,7 +38,7 @@ export function EditorToolbar() {
         width: 600,
         height: 120,
         fontSize: 80,
-        fontFamily: "Geist Sans",
+        fontFamily: "Inter",
         fontWeight: 700,
         color: "#ffffff",
         align: "center",

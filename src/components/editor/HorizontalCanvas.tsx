@@ -55,15 +55,11 @@ export function HorizontalCanvas() {
 
 // ── Reference App Row ─────────────────────────────────────────────────────────
 function ReferenceAppRow({ screenSet }: { screenSet: import("@/lib/types").ScreenSet }) {
-  const { updateMockup } = useEditorStore();
+  const { updateScreenSet } = useEditorStore();
   const [value, setValue] = useState(screenSet.referenceUrl ?? "");
 
-  // Sync external url to screenSet via a hack: store in mockup for now
-  // (a proper store action would be better but avoids store re-plumbing for now)
   const handleBlur = () => {
-    // Store referenceUrl on the screenSet directly via a cast
-    // This is a display-only field for now; persistence handled by projectStore sync
-    (screenSet as import("@/lib/types").ScreenSet).referenceUrl = value.trim();
+    updateScreenSet(screenSet.id, { referenceUrl: value.trim() });
   };
 
   const isIOS = screenSet.store === "ios";

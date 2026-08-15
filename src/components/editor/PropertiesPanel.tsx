@@ -14,9 +14,10 @@ import { cn } from "@/lib/utils";
 import { SlideLayout } from "@/lib/types";
 import { LAYOUT_LABEL, LAYOUT_HINT } from "@/lib/themes";
 import { applyLayoutToScreen } from "@/lib/layoutEngine";
+import { AdvancedBackgroundPicker } from "@/components/editor/AdvancedBackgroundPicker";
 
 const FONT_FAMILIES = [
-  "Geist Sans",
+  "Inter",
   "Arial",
   "Helvetica",
   "Georgia",
@@ -172,6 +173,17 @@ export function PropertiesPanel() {
                 />
               </>
             )}
+
+            {/* Screenshot-specific */}
+            {layer.type === "screenshot" && (
+              <>
+                <Separator />
+                <ScreenshotProperties
+                  layer={layer as import("@/lib/types").ScreenshotLayer}
+                  onUpdate={handleLayerUpdate}
+                />
+              </>
+            )}
           </div>
         ) : (
           /* ——— Background properties & Checklist ——— */
@@ -189,6 +201,16 @@ export function PropertiesPanel() {
                   useEditorStore.getState().recordHistory();
                 }} 
               />
+            )}
+            <Separator />
+            {screen && (
+              <div className="space-y-3">
+                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Background Library</h4>
+                <AdvancedBackgroundPicker
+                  background={screen.background}
+                  onChange={handleBackgroundUpdate}
+                />
+              </div>
             )}
             <Separator />
             {screen && (
@@ -560,9 +582,146 @@ function ScreenLayoutProperties({ screen, onUpdate }: { screen: import("@/lib/ty
           ))}
         </SelectContent>
       </Select>
+      </Select>
       <p className="text-[10px] text-muted-foreground leading-tight">
         Selecting a layout automatically snaps your primary text and screenshot layers into predefined positions.
       </p>
+    </div>
+  );
+}
+
+function ScreenshotProperties({ layer, onUpdate }: { layer: import("@/lib/types").ScreenshotLayer; onUpdate: (updates: Record<string, unknown>) => void }) {
+  const overlay = layer.focusOverlay || {
+    enabled: false,
+    cropTop: 0,
+    cropBottom: 0,
+    borderWidth: 0,
+    borderColor: "#ffffff",
+    roundedCorners: "none",
+    blurBackground: false,
+    overlayShadow: false
+  };
+
+  const updateOverlay = (updates: Partial<typeof overlay>) => {
+    onUpdate({ focusOverlay: { ...overlay, ...updates } });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">Focus Overlay</h4>
+        <Button 
+          variant={overlay.enabled ? "default" : "outline"}
+          size="sm"
+          className="h-6 text-[10px] px-2"
+          onClick={() => updateOverlay({ enabled: !overlay.enabled })}
+        >
+          {overlay.enabled ? "Enabled" : "Enable"}
+        </Button>
+      </div>
+
+      {overlay.enabled && (
+        <div className="space-y-3 bg-secondary/30 p-3 rounded-lg border border-border/50">
+          <div className="space-y-1.5">
+            <div className="flex justify-between">
+              <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Crop Top</Label>
+              <span className="text-[10px] text-muted-foreground">{overlay.cropTop}%</span>
+            </div>
+            <Slider
+              value={[overlay.cropTop]}
+              min={0}
+              max={50}
+              step={1}
+              onValueChange={(v) => updateOverlay({ cropTop: v[0] })}
+              className="h-1.5"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex justify-between">
+              <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Crop Bottom</Label>
+              <span className="text-[10px] text-muted-foreground">{overlay.cropBottom}%</span>
+            </div>
+            <Slider
+              value={[overlay.cropBottom]}
+              min={0}
+              max={50}
+              step={1}
+              onValueChange={(v) => updateOverlay({ cropBottom: v[0] })}
+              className="h-1.5"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex justify-between">
+              <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Border Width</Label>
+              <span className="text-[10px] text-muted-foreground">{overlay.borderWidth}px</span>
+            </div>
+            <Slider
+              value={[overlay.borderWidth]}
+              min={0}
+              max={40}
+              step={1}
+              onValueChange={(v) => updateOverlay({ borderWidth: v[0] })}
+              className="h-1.5"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Border Color</Label>
+            <div className="flex gap-2">
+              <Input
+                type="color"
+                value={overlay.borderColor}
+                onChange={(e) => updateOverlay({ borderColor: e.target.value })}
+                className="w-8 h-8 p-0 border-0 rounded-md overflow-hidden cursor-pointer shrink-0"
+              />
+              <Input
+                type="text"
+                value={overlay.borderColor}
+                onChange={(e) => updateOverlay({ borderColor: e.target.value })}
+                className="h-8 text-xs bg-secondary border-0 flex-1 font-mono uppercase"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Rounding</Label>
+            <Select value={overlay.roundedCorners} onValueChange={(v: any) => updateOverlay({ roundedCorners: v })}>
+              <SelectTrigger className="h-8 text-xs bg-secondary border-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="sm">Small</SelectItem>
+                <SelectItem value="md">Medium</SelectItem>
+                <SelectItem value="xl">Large</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-border/50">
+            <div
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => updateOverlay({ blurBackground: !overlay.blurBackground })}
+            >
+              <div className={cn("w-3.5 h-3.5 rounded-sm border flex items-center justify-center shrink-0", overlay.blurBackground ? "bg-primary border-primary text-primary-foreground" : "border-border/60")}>
+                {overlay.blurBackground && <div className="w-1.5 h-1.5 bg-current rounded-full" />}
+              </div>
+              <Label className="text-xs font-medium cursor-pointer">Blur Background</Label>
+            </div>
+            <div
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => updateOverlay({ overlayShadow: !overlay.overlayShadow })}
+            >
+              <div className={cn("w-3.5 h-3.5 rounded-sm border flex items-center justify-center shrink-0", overlay.overlayShadow ? "bg-primary border-primary text-primary-foreground" : "border-border/60")}>
+                {overlay.overlayShadow && <div className="w-1.5 h-1.5 bg-current rounded-full" />}
+              </div>
+              <Label className="text-xs font-medium cursor-pointer">Overlay Shadow</Label>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
