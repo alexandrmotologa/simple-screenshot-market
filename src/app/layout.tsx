@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 const APP_URL = "https://snapframe.store";
 const APP_NAME = "SnapFrame";
-const TITLE = "SnapFrame — Free App Store Screenshot Generator";
+const TITLE = "SnapFrame - Free App Store & Google Play Screenshot Generator";
 const DESCRIPTION =
   "Create stunning App Store and Google Play screenshots in minutes. Free online screenshot generator with device mockups, multilingual export, AI captions, animated GIFs, and custom designs.";
 
