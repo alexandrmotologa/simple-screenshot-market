@@ -201,8 +201,8 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     return screen?.layers.find((l) => l.id === activeLayerId);
   },
 
-  setActiveSet: (id) => set({ activeSetId: id, activeLayerId: null, selectedLayerIds: [] }),
-  setActiveScreen: (id) => set({ activeScreenId: id, activeLayerId: null, selectedLayerIds: [] }),
+  setActiveSet: (id) => set((state) => (state.activeSetId === id ? { activeSetId: id } : { activeSetId: id, activeLayerId: null, selectedLayerIds: [] })),
+  setActiveScreen: (id) => set((state) => (state.activeScreenId === id ? { activeScreenId: id } : { activeScreenId: id, activeLayerId: null, selectedLayerIds: [] })),
   setActiveLayer: (id) => set({ activeLayerId: id, selectedLayerIds: id ? [id] : [] }),
 
   toggleSelectLayer: (id) => {
