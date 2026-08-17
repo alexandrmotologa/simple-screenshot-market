@@ -9,6 +9,7 @@ import {
 import { ALL_DEVICES, COLOR_HEX_MAP } from "@/lib/devices";
 import { cn, loadGoogleFont } from "@/lib/utils";
 import { Draggable } from "@hello-pangea/dnd";
+import { ScreenVerticalMenu } from "@/components/editor/ScreenVerticalMenu";
 
 interface ScreenCardProps {
   screen: Screen;
@@ -121,11 +122,17 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
     const dpr = window.devicePixelRatio || 1;
     const displayW = CARD_DISPLAY_WIDTH;
     const displayH = (H / W) * displayW;
+    const targetW = Math.round(displayW * dpr);
+    const targetH = Math.round(displayH * dpr);
 
-    canvas.width = displayW * dpr;
-    canvas.height = displayH * dpr;
+    if (canvas.width !== targetW || canvas.height !== targetH) {
+      canvas.width = targetW;
+      canvas.height = targetH;
+    }
 
-    const scale = (displayW * dpr) / W;
+    const scale = targetW / W;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, targetW, targetH);
     ctx.scale(scale, scale);
 
     ctx.imageSmoothingEnabled = true;
@@ -1023,7 +1030,13 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
     }
   }, [screen, isActiveScreen, activeLayerId, activeLang, hideScreenshots, screenSet.mockup]);
 
-  useEffect(() => { draw(); }, [draw, fontsLoaded]);
+  useEffect(() => {
+    let animId: number;
+    animId = requestAnimationFrame(() => {
+      draw();
+    });
+    return () => cancelAnimationFrame(animId);
+  }, [draw, fontsLoaded]);
 
   // ── Hit testing ───────────────────────────────────────────────────────────
   const hitTest = (cx: number, cy: number): string | null => {
@@ -1262,17 +1275,18 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         </button>
       </div>
 
-      {/* Canvas */}
+      {/* Canvas container */}
       <div
         className={cn(
-          "relative rounded-2xl overflow-hidden transition-all duration-150",
+          "relative rounded-2xl transition-all duration-150",
           isActiveScreen
             ? "ring-2 ring-primary shadow-lg shadow-primary/20"
             : "ring-1 ring-border/60 hover:ring-primary/30 hover:shadow-md"
         )}
         style={{ width: CARD_DISPLAY_WIDTH, height: displayH }}
       >
-        <canvas
+        <div className="w-full h-full rounded-2xl overflow-hidden relative">
+          <canvas
           ref={canvasRef}
           width={screen.width}
           height={screen.height}
@@ -1473,6 +1487,12 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             </div>
           );
         })()}
+        </div>
+
+        {/* Vertical Screen Context Menu (1-3 Mockups + Background) */}
+        {isActiveScreen && (
+          <ScreenVerticalMenu screen={screen} screenSet={screenSet} />
+        )}
       </div>
 
       {/* Screen name */}

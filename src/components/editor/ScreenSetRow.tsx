@@ -32,7 +32,7 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
   const {
     activeSetId, setActiveSet, setActiveScreen, addScreen, zoom,
     updateDevice, updateMockup, screenSets, updateLayer, reorderScreens,
-    updateScreen,
+    updateScreen, updateAllScreensBackground,
   } = useEditorStore();
 
   const isActive = activeSetId === screenSet.id;
@@ -295,12 +295,8 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
         <AdvancedBackgroundPicker 
           currentBackground={screenSet.screens[0]?.background || { type: "solid", color: "#ffffff" }}
           onSelect={(bg) => {
-            // Apply background to all screens in this set
-            const state = useEditorStore.getState();
-            screenSet.screens.forEach(s => {
-              state.updateBackground(screenSet.id, s.id, bg);
-            });
-            state.recordHistory();
+            updateAllScreensBackground(screenSet.id, bg);
+            useEditorStore.getState().recordHistory();
           }}
         />
 

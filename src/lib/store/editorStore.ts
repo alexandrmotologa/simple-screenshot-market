@@ -89,7 +89,7 @@ interface EditorStore {
   redo: () => void;
   canUndo: () => boolean;
   canRedo: () => boolean;
-  recordHistory: () => void;
+  recordHistory: (immediate?: boolean) => void;
 
   // Actions: templates
   applyTemplate: (setId: string, template: any) => void;
@@ -101,6 +101,24 @@ interface EditorStore {
 }
 
 const MAX_HISTORY = 50;
+let historyDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+const doRecordHistory = (get: any, set: any) => {
+  const { screenSets, hiddenScreenSets, history, historyIndex } = get();
+  const newHistory = history.slice(0, historyIndex + 1);
+
+  const clone = typeof structuredClone === "function"
+    ? structuredClone
+    : (obj: any) => JSON.parse(JSON.stringify(obj));
+
+  newHistory.push({
+    screenSets: clone(screenSets),
+    hiddenScreenSets: clone(hiddenScreenSets),
+  });
+
+  if (newHistory.length > MAX_HISTORY) newHistory.shift();
+  set({ history: newHistory, historyIndex: newHistory.length - 1 });
+};
 
 export const useEditorStore = create<EditorStore>((set, get) => ({
   projectId: null,
@@ -678,20 +696,19 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
   toggleGuides: () => set((state) => ({ showGuides: !state.showGuides })),
 
-  recordHistory: () => {
-    const { screenSets, hiddenScreenSets, history, historyIndex } = get();
-    // Truncate future history if we are currently undone
-    const newHistory = history.slice(0, historyIndex + 1);
-    
-    // Check if the current state is identical to the last state in history.
-    // If so, don't create a duplicate entry.
-    const currentStateStr = JSON.stringify({ screenSets, hiddenScreenSets });
-    const lastHistoryStr = newHistory.length > 0 ? JSON.stringify({ screenSets: newHistory[newHistory.length - 1].screenSets, hiddenScreenSets: newHistory[newHistory.length - 1].hiddenScreenSets }) : null;
-    if (currentStateStr === lastHistoryStr) return;
-
-    newHistory.push({ screenSets: JSON.parse(JSON.stringify(screenSets)), hiddenScreenSets: JSON.parse(JSON.stringify(hiddenScreenSets)) });
-    if (newHistory.length > MAX_HISTORY) newHistory.shift();
-    set({ history: newHistory, historyIndex: newHistory.length - 1 });
+  recordHistory: (immediate: boolean = false) => {
+    if (historyDebounceTimer) {
+      clearTimeout(historyDebounceTimer);
+      historyDebounceTimer = null;
+    }
+    if (immediate) {
+      doRecordHistory(get, set);
+    } else {
+      historyDebounceTimer = setTimeout(() => {
+        doRecordHistory(get, set);
+        historyDebounceTimer = null;
+      }, 300);
+    }
   },
 
   undo: () => {

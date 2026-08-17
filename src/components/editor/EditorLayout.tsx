@@ -288,7 +288,7 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
 
       {/* ── Contextual Toolbar ── */}
       <div className="h-12 w-full shrink-0 bg-card/90 backdrop-blur-md border-b border-border/50 z-30">
-        {activeLayerId && <FloatingToolbar />}
+        {(activeLayerId || activeScreenId) && <FloatingToolbar />}
       </div>
 
       {/* ── Body ── */}

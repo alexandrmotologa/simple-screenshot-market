@@ -51,11 +51,17 @@ export function ScreenThumbnailCanvas({
     const W = screen.width || 1290;
     const H = screen.height || 2796;
     const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+    const targetW = Math.round(width * dpr);
+    const targetH = Math.round(height * dpr);
 
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
+    if (canvas.width !== targetW || canvas.height !== targetH) {
+      canvas.width = targetW;
+      canvas.height = targetH;
+    }
 
-    const scale = (width * dpr) / W;
+    const scale = targetW / W;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, targetW, targetH);
     ctx.scale(scale, scale);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "medium";
