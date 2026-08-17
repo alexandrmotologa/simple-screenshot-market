@@ -9,6 +9,7 @@ import { useProjectStore } from "@/lib/store/projectStore";
 import { useLanguageStore, getLang } from "@/lib/store/languageStore";
 import type { TextLayer, ShapeLayer, ImageLayer } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { AppleStoreIcon, GooglePlayIcon, APP_STORE_LABEL, GOOGLE_PLAY_LABEL } from "@/components/icons/StoreIcons";
 
 interface ExportModalProps {
   projectId: string;
@@ -334,9 +335,13 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
                         : "border-border/50 bg-secondary/30 text-muted-foreground hover:bg-secondary/60"
                     )}
                   >
-                    {isIOS ? <Apple className="w-4 h-4 shrink-0" /> : <Smartphone className="w-4 h-4 shrink-0" />}
+                    {isIOS ? (
+                      <AppleStoreIcon className="w-4 h-4 shrink-0 text-foreground" />
+                    ) : (
+                      <GooglePlayIcon className="w-4 h-4 shrink-0" />
+                    )}
                     <span className="flex-1 font-medium">
-                      {isIOS ? "App Store (iOS)" : "Google Play (Android)"}
+                      {isIOS ? APP_STORE_LABEL : GOOGLE_PLAY_LABEL}
                     </span>
                     <span className="text-xs opacity-70">{ss.screens.length} screens</span>
                     <div className={cn(

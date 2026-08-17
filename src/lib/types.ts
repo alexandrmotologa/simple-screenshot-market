@@ -4,22 +4,24 @@ export type StoreType = "ios" | "android";
 
 export type LayerType = "text" | "image" | "screenshot" | "shape" | "flag" | "emoji" | "brand" | "character";
 
-export type ThemeId =
-  | "clean-light"
-  | "dark-bold"
-  | "warm-editorial"
-  | "ocean-fresh"
-  | "bloom-roast";
+export type ThemeCategory = "all" | "light" | "dark" | "vibrant" | "pastel" | "earthy" | "gradient" | "neon";
+
+export type ThemeId = string;
 
 export interface Theme {
   id: ThemeId;
   name: string;
+  category?: ThemeCategory;
   bg: string;
-  bgAlt: string;
+  bgAlt?: string;
   fg: string;
-  fgAlt: string;
-  accent: string;
-  muted: string;
+  fgAlt?: string;
+  accent?: string;
+  muted?: string;
+  gradient?: {
+    direction: GradientDirection;
+    stops: { color: string; position: number }[];
+  };
 }
 
 export type SlideLayout =

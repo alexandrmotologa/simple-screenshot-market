@@ -77,6 +77,7 @@ interface EditorStore {
   updateDevice: (setId: string, deviceId: string) => void;
   setThemeId: (themeId: ThemeId) => void;
   applyThemeToProject: (themeId: ThemeId) => void;
+  applyCustomThemeToProject: (palette: { bg: string; fg: string; gradient?: Background["gradient"] }) => void;
 
   // Actions: UI
   setZoom: (zoom: number) => void;
@@ -615,14 +616,50 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         ...ss,
         screens: ss.screens.map(s => ({
           ...s,
-          background: {
-            ...s.background,
-            type: "solid",
-            color: theme.bg,
-          },
+          background: theme.gradient
+            ? {
+                ...s.background,
+                type: "gradient",
+                gradient: theme.gradient,
+              }
+            : {
+                ...s.background,
+                type: "solid",
+                color: theme.bg,
+              },
           layers: s.layers.map(l => {
             if (l.type === "text") {
               return { ...l, color: theme.fg };
+            }
+            return l;
+          }),
+        }))
+      }))
+    }));
+    get().recordHistory();
+  },
+
+  applyCustomThemeToProject: (palette) => {
+    set((state) => ({
+      themeId: "custom",
+      screenSets: state.screenSets.map(ss => ({
+        ...ss,
+        screens: ss.screens.map(s => ({
+          ...s,
+          background: palette.gradient
+            ? {
+                ...s.background,
+                type: "gradient",
+                gradient: palette.gradient,
+              }
+            : {
+                ...s.background,
+                type: "solid",
+                color: palette.bg,
+              },
+          layers: s.layers.map(l => {
+            if (l.type === "text") {
+              return { ...l, color: palette.fg };
             }
             return l;
           }),

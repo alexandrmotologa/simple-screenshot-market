@@ -1206,7 +1206,8 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
-          className="shrink-0 flex flex-col gap-1.5 group"
+          data-screen-card="true"
+          className="shrink-0 flex flex-col gap-1.5 group cursor-default"
           style={{
             width: CARD_DISPLAY_WIDTH,
             ...provided.draggableProps.style,

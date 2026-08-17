@@ -3,9 +3,9 @@
 import { useEditorStore } from "@/lib/store/editorStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
-import { Apple, Smartphone } from "lucide-react";
 import { findModel } from "@/lib/deviceModels";
 import { ALL_DEVICES } from "@/lib/devices";
+import { AppleStoreIcon, GooglePlayIcon, APP_STORE_LABEL, GOOGLE_PLAY_LABEL } from "@/components/icons/StoreIcons";
 
 export function PlatformsPanel() {
   const { screenSets, addScreenSet, removeScreenSet } = useEditorStore();
@@ -43,13 +43,13 @@ export function PlatformsPanel() {
           </p>
 
           <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between bg-secondary/50 p-3 rounded-lg border border-border/50">
+            <div className="flex items-center justify-between bg-secondary/50 p-3 rounded-xl border border-border/50">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded bg-background flex items-center justify-center text-foreground shadow-sm">
-                  <Apple className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center text-foreground shadow-xs border border-border/40">
+                  <AppleStoreIcon className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium">iOS (App Store)</span>
+                  <span className="text-xs font-semibold text-foreground">{APP_STORE_LABEL}</span>
                   <span className="text-[10px] text-muted-foreground">{iosSet?.mockup?.device ? ALL_DEVICES.find(d => d.id === iosSet.mockup!.device)?.name : findModel(iosSet?.deviceId || "")?.name || "iPhone"}</span>
                 </div>
               </div>
@@ -59,13 +59,13 @@ export function PlatformsPanel() {
               />
             </div>
 
-            <div className="flex items-center justify-between bg-secondary/50 p-3 rounded-lg border border-border/50">
+            <div className="flex items-center justify-between bg-secondary/50 p-3 rounded-xl border border-border/50">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded bg-background flex items-center justify-center text-foreground shadow-sm">
-                  <Smartphone className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center text-foreground shadow-xs border border-border/40">
+                  <GooglePlayIcon className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium">Android (Google Play)</span>
+                  <span className="text-xs font-semibold text-foreground">{GOOGLE_PLAY_LABEL}</span>
                   <span className="text-[10px] text-muted-foreground">{androidSet?.mockup?.device ? ALL_DEVICES.find(d => d.id === androidSet.mockup!.device)?.name : findModel(androidSet?.deviceId || "")?.name || "Android"}</span>
                 </div>
               </div>

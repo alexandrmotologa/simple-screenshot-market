@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
+import { AppleStoreIcon, GooglePlayIcon, APP_STORE_LABEL, GOOGLE_PLAY_LABEL } from "@/components/icons/StoreIcons";
 
 interface ScreenSetRowProps {
   screenSet: ScreenSet;
@@ -146,11 +147,11 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
     reader.readAsDataURL(file);
   };
 
-  const storeLabel = screenSet.store === "ios" ? "App Store (iOS)" : "Google Play (Android)";
-  const storeIcon = screenSet.store === "ios" ? "🍎" : "▶";
-  const storeColor = screenSet.store === "ios"
-    ? "bg-blue-500/12 text-blue-400 ring-1 ring-blue-500/30"
-    : "bg-green-500/12 text-green-400 ring-1 ring-green-500/30";
+  const isIOS = screenSet.store === "ios";
+  const storeLabel = isIOS ? APP_STORE_LABEL : GOOGLE_PLAY_LABEL;
+  const storeColor = isIOS
+    ? "bg-blue-500/15 text-blue-400 ring-1 ring-blue-500/40"
+    : "bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/40";
   const storeColorInactive = "bg-secondary/70 text-muted-foreground hover:text-foreground";
 
   return (
@@ -162,7 +163,7 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
         <button
           type="button"
           className={cn(
-            "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all",
+            "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all shadow-xs",
             isActive ? storeColor : storeColorInactive
           )}
           onClick={() => {
@@ -170,8 +171,12 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
             if (screenSet.screens[0]) setActiveScreen(screenSet.screens[0].id);
           }}
         >
-          <span className="text-sm leading-none">{storeIcon}</span>
-          {storeLabel}
+          {isIOS ? (
+            <AppleStoreIcon className="w-3.5 h-3.5 shrink-0" />
+          ) : (
+            <GooglePlayIcon className="w-3.5 h-3.5 shrink-0" />
+          )}
+          <span>{storeLabel}</span>
         </button>
 
         {/* Divider */}

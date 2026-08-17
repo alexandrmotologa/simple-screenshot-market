@@ -4,10 +4,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Plus, ExternalLink } from "lucide-react";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { ScreenSetRow } from "@/components/editor/ScreenSetRow";
+import { cn } from "@/lib/utils";
 
 export function HorizontalCanvas() {
-  const { screenSets, zoom, setZoom, addScreenSet, updateScreen } = useEditorStore();
+  const { screenSets, zoom, setZoom } = useEditorStore();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isPanning, setIsPanning] = useState(false);
+  const panStateRef = useRef<{
+    startX: number;
+    startY: number;
+    scrollLeft: number;
+    scrollTop: number;
+  } | null>(null);
 
   // Ctrl+Scroll to zoom
   const handleWheel = useCallback(
@@ -28,13 +36,59 @@ export function HorizontalCanvas() {
     return () => el.removeEventListener("wheel", handleWheel);
   }, [handleWheel]);
 
-  const hasIOS = screenSets.some((ss) => ss.store === "ios");
-  const hasAndroid = screenSets.some((ss) => ss.store === "android");
+  // Pan / Drag-to-scroll handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    // Only drag on left click
+    if (e.button !== 0) return;
+
+    // Do not initiate pan if clicking on a screen card, button, input, select, textarea, etc.
+    const target = e.target as HTMLElement | null;
+    if (
+      target?.closest(
+        "[data-screen-card], [data-no-pan], button, input, textarea, select, [role='button'], a"
+      )
+    ) {
+      return;
+    }
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    setIsPanning(true);
+    panStateRef.current = {
+      startX: e.pageX,
+      startY: e.pageY,
+      scrollLeft: container.scrollLeft,
+      scrollTop: container.scrollTop,
+    };
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (!panStateRef.current || !containerRef.current) return;
+      const dx = moveEvent.pageX - panStateRef.current.startX;
+      const dy = moveEvent.pageY - panStateRef.current.startY;
+      containerRef.current.scrollLeft = panStateRef.current.scrollLeft - dx;
+      containerRef.current.scrollTop = panStateRef.current.scrollTop - dy;
+    };
+
+    const handleMouseUp = () => {
+      setIsPanning(false);
+      panStateRef.current = null;
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+  }, []);
 
   return (
     <div
       ref={containerRef}
-      className="flex-1 overflow-auto bg-background"
+      onMouseDown={handleMouseDown}
+      className={cn(
+        "flex-1 overflow-auto bg-background transition-colors",
+        isPanning ? "cursor-grabbing select-none" : "cursor-grab"
+      )}
       style={{
         backgroundImage:
           "radial-gradient(circle, var(--color-foreground) 1px, transparent 1px)",

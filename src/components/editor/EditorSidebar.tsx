@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import {
   Layers, Type, Image as ImageIcon, Square, Flag,
-  Cpu, Upload, Grid3X3, X, Layout, Smile, Globe, User,
+  Cpu, Upload, Grid3X3, X, Palette, Smile, Globe, User,
   Smartphone, LayoutList
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -14,7 +14,6 @@ import { FlagsPanel } from "@/components/editor/panels/FlagsPanel";
 import { BrandIconsPanel } from "@/components/editor/panels/BrandIconsPanel";
 import { AssetsPanel } from "@/components/editor/panels/AssetsPanel";
 import { BlocksPanel } from "@/components/editor/panels/BlocksPanel";
-import { TemplatesPanel } from "@/components/editor/panels/TemplatesPanel";
 import { StickersPanel } from "@/components/editor/panels/StickersPanel";
 import { LocalizationPanel } from "@/components/editor/panels/LocalizationPanel";
 import { CharactersPanel } from "@/components/editor/panels/CharactersPanel";
@@ -23,11 +22,10 @@ import { ThemesPanel } from "@/components/editor/panels/ThemesPanel";
 import { StoreListingPanel } from "@/components/editor/panels/StoreListingPanel";
 import { cn } from "@/lib/utils";
 
-type PanelId = "themes" | "platforms" | "layers" | "text" | "background" | "flags" | "brands" | "assets" | "blocks" | "templates" | "stickers" | "languages" | "characters" | "store_listing" | null;
+type PanelId = "themes" | "platforms" | "layers" | "text" | "background" | "flags" | "brands" | "assets" | "blocks" | "stickers" | "languages" | "characters" | "store_listing" | null;
 
 const SIDEBAR_TOOLS: { id: PanelId; icon: React.ElementType; label: string }[] = [
-  { id: "themes", icon: Layout, label: "Themes" },
-  { id: "templates", icon: Layout, label: "Templates" },
+  { id: "themes", icon: Palette, label: "Color Themes" },
   { id: "platforms", icon: Smartphone, label: "Platforms" },
   { id: "store_listing", icon: LayoutList, label: "Store Listing" },
   { id: "layers", icon: Layers, label: "Layers" },
@@ -43,8 +41,7 @@ const SIDEBAR_TOOLS: { id: PanelId; icon: React.ElementType; label: string }[] =
 ];
 
 const PANEL_TITLES: Record<NonNullable<PanelId>, string> = {
-  themes: "Themes",
-  templates: "Templates",
+  themes: "Color Themes",
   platforms: "Platforms",
   layers: "Layers",
   text: "Text",
@@ -62,7 +59,6 @@ const PANEL_TITLES: Record<NonNullable<PanelId>, string> = {
 function renderPanel(panel: NonNullable<PanelId>) {
   switch (panel) {
     case "themes": return <ThemesPanel />;
-    case "templates": return <TemplatesPanel />;
     case "platforms": return <PlatformsPanel />;
     case "layers": return <LayersPanel />;
     case "text": return <TextPanel />;

@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/accordion";
 import { useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { AppleStoreIcon, GooglePlayIcon, APP_STORE_LABEL, GOOGLE_PLAY_LABEL } from "@/components/icons/StoreIcons";
 
 export function StoreListingPanel() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -126,11 +127,11 @@ export function StoreListingPanel() {
             {hasIOS && (
               <AccordionItem value="appstore" className="border border-border/40 bg-secondary/10 rounded-xl overflow-hidden px-3">
                 <AccordionTrigger className="hover:no-underline py-3">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-blue-500 p-1.5 rounded-lg text-white">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 15c-.1-1.3 1.1-2 1.2-2.1-1.2-1.8-3-2-3.7-2.1-1.6-.2-3 1-3.9 1-.9 0-2-1-3.3-1-1.7 0-3.3 1-4.2 2.5-1.9 3.2-.5 8.1 1.4 10.7.9 1.3 2 2.7 3.3 2.7 1.3-.1 1.9-.9 3.4-.9 1.5 0 2 1 3.5 1 1.4 0 2.4-1.3 3.3-2.6 1.1-1.6 1.5-3.2 1.5-3.3-.1 0-2.4-.9-2.5-3.8zM14.8 7.3c.7-.9 1.2-2.2 1.1-3.4-1.1.1-2.5.7-3.3 1.7-.6.7-1.2 2-1 3.3 1.2.1 2.5-.6 3.2-1.6z"/></svg>
+                  <div className="flex items-center gap-2.5">
+                    <div className="bg-blue-500/15 text-blue-400 p-1.5 rounded-lg border border-blue-500/30 flex items-center justify-center">
+                      <AppleStoreIcon className="w-3.5 h-3.5" />
                     </div>
-                    <span className="font-semibold text-xs">App Store</span>
+                    <span className="font-semibold text-xs text-foreground">{APP_STORE_LABEL}</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pt-1 pb-3 space-y-4">
@@ -180,11 +181,11 @@ export function StoreListingPanel() {
             {hasAndroid && (
               <AccordionItem value="playstore" className="border border-border/40 bg-secondary/10 rounded-xl overflow-hidden px-3">
                 <AccordionTrigger className="hover:no-underline py-3">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-green-500 p-1.5 rounded-lg text-white">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M4 2v20l17-10L4 2z"/></svg>
+                  <div className="flex items-center gap-2.5">
+                    <div className="bg-emerald-500/15 text-emerald-400 p-1.5 rounded-lg border border-emerald-500/30 flex items-center justify-center">
+                      <GooglePlayIcon className="w-3.5 h-3.5" />
                     </div>
-                    <span className="font-semibold text-xs">Google Play</span>
+                    <span className="font-semibold text-xs text-foreground">{GOOGLE_PLAY_LABEL}</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pt-1 pb-3 space-y-4">
