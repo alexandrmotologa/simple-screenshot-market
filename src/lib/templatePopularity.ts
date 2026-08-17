@@ -76,10 +76,16 @@ export function getTemplateScore(
   return base + global * 10 + local * 5;
 }
 
-export type TemplateSortOption = "popularity" | "name-asc" | "name-desc" | "newest";
+export type TemplateSortOption =
+  | "popularity"
+  | "popularity-desc"
+  | "popularity-asc"
+  | "name-asc"
+  | "name-desc"
+  | "newest";
 
 /**
- * Sorts and filters templates by query and sort option
+ * Sorts and filters templates by query and bidirectional sort option
  */
 export function sortAndFilterTemplates(
   templates: Template[],
@@ -104,10 +110,15 @@ export function sortAndFilterTemplates(
 
   // Sort
   list.sort((a, b) => {
-    if (sortBy === "popularity") {
+    if (sortBy === "popularity" || sortBy === "popularity-desc") {
       const scoreA = getTemplateScore(a.id, globalCounts);
       const scoreB = getTemplateScore(b.id, globalCounts);
       return scoreB - scoreA;
+    }
+    if (sortBy === "popularity-asc") {
+      const scoreA = getTemplateScore(a.id, globalCounts);
+      const scoreB = getTemplateScore(b.id, globalCounts);
+      return scoreA - scoreB;
     }
     if (sortBy === "name-asc") {
       return a.name.localeCompare(b.name);

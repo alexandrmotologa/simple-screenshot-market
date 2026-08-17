@@ -255,38 +255,53 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
                 </span>
                 <button
                   type="button"
-                  onClick={() => setSortBy("popularity")}
+                  onClick={() => {
+                    if (sortBy === "popularity" || sortBy === "popularity-desc") {
+                      setSortBy("popularity-asc");
+                    } else {
+                      setSortBy("popularity-desc");
+                    }
+                  }}
                   className={cn(
-                    "px-2.5 py-1 rounded-lg font-medium transition-all flex items-center gap-1",
-                    sortBy === "popularity"
+                    "px-2.5 py-1 rounded-lg font-medium transition-all flex items-center gap-1 cursor-pointer select-none",
+                    sortBy === "popularity" || sortBy === "popularity-desc" || sortBy === "popularity-asc"
                       ? "bg-background text-foreground shadow-xs ring-1 ring-border/50 font-semibold"
                       : "text-muted-foreground hover:text-foreground"
                   )}
+                  title={sortBy === "popularity-asc" ? "Least Popular first (click for Most Popular)" : "Most Popular first (click for Least Popular)"}
                 >
                   <Flame className="w-3 h-3 text-amber-500" />
-                  Popularity
+                  Popularity {sortBy === "popularity-asc" ? "↑" : "↓"}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setSortBy("name-asc")}
+                  onClick={() => {
+                    if (sortBy === "name-asc") {
+                      setSortBy("name-desc");
+                    } else {
+                      setSortBy("name-asc");
+                    }
+                  }}
                   className={cn(
-                    "px-2.5 py-1 rounded-lg font-medium transition-all",
-                    sortBy === "name-asc"
+                    "px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer select-none",
+                    sortBy === "name-asc" || sortBy === "name-desc"
                       ? "bg-background text-foreground shadow-xs ring-1 ring-border/50 font-semibold"
                       : "text-muted-foreground hover:text-foreground"
                   )}
+                  title={sortBy === "name-desc" ? "Z to A (click for A to Z)" : "A to Z (click for Z to A)"}
                 >
-                  Name A–Z
+                  Name {sortBy === "name-desc" ? "Z–A ↑" : "A–Z ↓"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setSortBy("newest")}
                   className={cn(
-                    "px-2.5 py-1 rounded-lg font-medium transition-all",
+                    "px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer select-none",
                     sortBy === "newest"
                       ? "bg-background text-foreground shadow-xs ring-1 ring-border/50 font-semibold"
                       : "text-muted-foreground hover:text-foreground"
                   )}
+                  title="Newest templates first"
                 >
                   Newest
                 </button>
