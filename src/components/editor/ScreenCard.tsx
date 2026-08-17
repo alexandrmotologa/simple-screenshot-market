@@ -1733,12 +1733,56 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         return;
       }
 
-      const dx = (ev.clientX - resizeRef.current.startX) / scale;
-      const dy = (ev.clientY - resizeRef.current.startY) / scale;
-      let { origX: nx, origY: ny, origW: nw, origH: nh } = resizeRef.current;
+      let dx = (ev.clientX - resizeRef.current.startX) / scale;
+      let dy = (ev.clientY - resizeRef.current.startY) / scale;
 
-      const scaleX = nw / resizeRef.current.origW;
-      const scaleY = nh / resizeRef.current.origH;
+      const rot = resizeRef.current.origRot;
+      if (rot !== 0) {
+        const rad = (-rot * Math.PI) / 180;
+        const cos = Math.cos(rad);
+        const sin = Math.sin(rad);
+        const unrotDx = dx * cos - dy * sin;
+        const unrotDy = dx * sin + dy * cos;
+        dx = unrotDx;
+        dy = unrotDy;
+      }
+
+      const { origX, origY, origW, origH } = resizeRef.current;
+      let nx = origX;
+      let ny = origY;
+      let nw = origW;
+      let nh = origH;
+
+      if (h === "e") {
+        nw = Math.max(20, origW + dx);
+      } else if (h === "w") {
+        nw = Math.max(20, origW - dx);
+        nx = origX + (origW - nw);
+      } else if (h === "s") {
+        nh = Math.max(20, origH + dy);
+      } else if (h === "n") {
+        nh = Math.max(20, origH - dy);
+        ny = origY + (origH - nh);
+      } else if (h === "se") {
+        nw = Math.max(20, origW + dx);
+        nh = Math.max(20, origH + dy);
+      } else if (h === "sw") {
+        nw = Math.max(20, origW - dx);
+        nx = origX + (origW - nw);
+        nh = Math.max(20, origH + dy);
+      } else if (h === "ne") {
+        nw = Math.max(20, origW + dx);
+        nh = Math.max(20, origH - dy);
+        ny = origY + (origH - nh);
+      } else if (h === "nw") {
+        nw = Math.max(20, origW - dx);
+        nx = origX + (origW - nw);
+        nh = Math.max(20, origH - dy);
+        ny = origY + (origH - nh);
+      }
+
+      const scaleX = nw / origW;
+      const scaleY = nh / origH;
       const avgScale = (scaleX + scaleY) / 2;
 
       if (resizeRef.current.groupLayers && resizeRef.current.groupLayers.length > 1) {
@@ -1768,12 +1812,19 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           }
         });
       } else {
-        updateLayer(screenSet.id, screen.id, activeLayer.id, {
+        const updates: any = {
           x: Math.round(nx),
           y: Math.round(ny),
           width: Math.round(nw),
           height: Math.round(nh),
-        } as Parameters<typeof updateLayer>[3]);
+        };
+        if (activeLayer.type === "text") {
+          const origFontSize = resizeRef.current.groupLayers?.[0]?.origFontSize || (activeLayer as any).fontSize || 40;
+          if (h === "se" || h === "sw" || h === "ne" || h === "nw") {
+            updates.fontSize = Math.max(8, Math.round(origFontSize * avgScale));
+          }
+        }
+        updateLayer(screenSet.id, screen.id, activeLayer.id, updates as Parameters<typeof updateLayer>[3]);
       }
     };
 
@@ -2144,7 +2195,7 @@ function ResizeOverlay({
   const y = layer.y * scale;
   const w = layer.width * scale;
   const h = layer.height * scale;
-  const hs = 8; // handle size px
+  const hs = 10; // handle size px
   const rot = layer.rotation || 0;
 
   const handles: { id: string; cx: number; cy: number; cursor: string }[] = [
