@@ -215,7 +215,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     });
   },
 
-  clearSelection: () => set({ selectedLayerIds: [], activeLayerId: null }),
+  clearSelection: () => set({ selectedLayerIds: [], activeLayerId: null, activeScreenId: null }),
 
   addScreen: (setId) => {
     const targetSet = get().screenSets.find((s) => s.id === setId);
