@@ -1465,6 +1465,10 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           {...provided.draggableProps}
           data-screen-card="true"
           data-screen-id={screen.id}
+          onClick={() => {
+            setActiveSet(screenSet.id);
+            setActiveScreen(screen.id);
+          }}
           className="shrink-0 flex flex-col gap-1.5 group cursor-default"
           style={{
             width: CARD_DISPLAY_WIDTH,

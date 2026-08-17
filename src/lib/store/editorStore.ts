@@ -43,6 +43,7 @@ interface EditorStore {
   setActiveLayer: (id: string | null) => void;
   toggleSelectLayer: (id: string) => void;
   clearSelection: () => void;
+  clearAllSelection: () => void;
 
   // Actions: screens
   addScreen: (setId: string) => void;
@@ -216,7 +217,8 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     });
   },
 
-  clearSelection: () => set({ selectedLayerIds: [], activeLayerId: null, activeScreenId: null }),
+  clearSelection: () => set({ selectedLayerIds: [], activeLayerId: null }),
+  clearAllSelection: () => set({ selectedLayerIds: [], activeLayerId: null, activeScreenId: null }),
 
   addScreen: (setId) => {
     const targetSet = get().screenSets.find((s) => s.id === setId);
