@@ -36,8 +36,9 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 }
 
 // ── Draw gradient string helper ────────────────────────────────────────────────
-function parseColorStr(ctx: CanvasRenderingContext2D, fill: string, x: number, y: number, w: number, h: number): string | CanvasGradient {
-  if (fill.startsWith("linear-gradient")) {
+function parseColorStr(ctx: CanvasRenderingContext2D, fill: string | undefined, x: number, y: number, w: number, h: number): string | CanvasGradient {
+  if (!fill) return "#000000";
+  if (typeof fill === "string" && fill.startsWith("linear-gradient")) {
     // Simple top-to-bottom gradient fallback
     const g = ctx.createLinearGradient(x, y, x, y + h);
     g.addColorStop(0, "rgba(0,0,0,0)");
