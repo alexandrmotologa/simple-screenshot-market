@@ -58,6 +58,7 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleAddScreen = () => {
+    if (screenSet.screens.length >= 10) return;
     setActiveSet(screenSet.id);
     addScreen(screenSet.id);
   };
@@ -159,7 +160,7 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
       {/* ── Device Controls Row ──────────────────────────────────────────────── */}
       <div className="flex items-center gap-1.5 flex-wrap">
 
-        {/* Store badge */}
+        {/* Store badge & count */}
         <button
           type="button"
           className={cn(
@@ -170,6 +171,7 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
             setActiveSet(screenSet.id);
             if (screenSet.screens[0]) setActiveScreen(screenSet.screens[0].id);
           }}
+          title={`${storeLabel} — ${screenSet.screens.length} of 10 screenshots`}
         >
           {isIOS ? (
             <AppleStoreIcon className="w-3.5 h-3.5 shrink-0" />
@@ -177,6 +179,16 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
             <GooglePlayIcon className="w-3.5 h-3.5 shrink-0" />
           )}
           <span>{storeLabel}</span>
+          <span
+            className={cn(
+              "px-1.5 py-0.2 rounded-md text-[10px] font-mono font-bold tracking-tight ml-0.5",
+              screenSet.screens.length >= 10
+                ? "bg-amber-500/25 text-amber-300 border border-amber-500/30"
+                : "bg-black/20 text-foreground/80"
+            )}
+          >
+            {screenSet.screens.length}/10
+          </span>
         </button>
 
         {/* Divider */}
@@ -404,8 +416,8 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
               ))}
               {provided.placeholder}
 
-              {/* Add screen button */}
-              {screenSet.screens.length < 12 && (
+              {/* Add screen button or Max reached card */}
+              {screenSet.screens.length < 10 ? (
                 <div className="shrink-0 flex flex-col gap-1.5">
                   {/* Spacer to match ScreenCard header height (h-5) */}
                   <div className="h-5 pointer-events-none" />
@@ -413,15 +425,30 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
                     id={`add-screen-row-${screenSet.id}`}
                     onClick={handleAddScreen}
                     type="button"
-                    className="flex flex-col items-center justify-center gap-2.5 rounded-2xl border-2 border-dashed border-border/60 hover:border-primary/60 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all cursor-pointer"
+                    className="flex flex-col items-center justify-center gap-2.5 rounded-2xl border-2 border-dashed border-border/60 hover:border-primary/60 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all cursor-pointer group"
                     style={{ width: cardW, height: cardH }}
-                    title="Add new screen to this set"
+                    title={`Add new screen (${screenSet.screens.length}/10)`}
                   >
                     <div className="w-10 h-10 rounded-full bg-secondary/80 border border-border/40 flex items-center justify-center text-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors shadow-2xs">
                       <Plus className="w-5 h-5" />
                     </div>
-                    <span className="text-xs font-semibold">Add Screen</span>
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span className="text-xs font-semibold">Add Screen</span>
+                      <span className="text-[10px] text-muted-foreground font-mono font-medium">{screenSet.screens.length}/10</span>
+                    </div>
                   </button>
+                </div>
+              ) : (
+                <div className="shrink-0 flex flex-col gap-1.5 opacity-60">
+                  <div className="h-5 pointer-events-none" />
+                  <div
+                    className="flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-border/50 bg-secondary/15 text-muted-foreground select-none"
+                    style={{ width: cardW, height: cardH }}
+                    title="Maximum 10 screenshots reached (Store Limit)"
+                  >
+                    <span className="text-xs font-semibold text-muted-foreground/90">10/10 Reached</span>
+                    <span className="text-[10px] text-muted-foreground/60">Max store limit</span>
+                  </div>
                 </div>
               )}
             </div>

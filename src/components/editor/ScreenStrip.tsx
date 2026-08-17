@@ -52,7 +52,7 @@ export function ScreenStrip() {
                   setActiveSet(ss.id);
                   if (ss.screens[0]) setActiveScreen(ss.screens[0].id);
                 }}
-                title={isIOS ? APP_STORE_LABEL : GOOGLE_PLAY_LABEL}
+                title={`${isIOS ? APP_STORE_LABEL : GOOGLE_PLAY_LABEL} — ${ss.screens.length} of 10 screenshots`}
               >
                 {isIOS ? (
                   <AppleStoreIcon className="w-3 h-3 shrink-0" />
@@ -60,6 +60,16 @@ export function ScreenStrip() {
                   <GooglePlayIcon className="w-3 h-3 shrink-0" />
                 )}
                 <span>{isIOS ? "iOS" : "Android"}</span>
+                <span
+                  className={cn(
+                    "text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ml-0.5",
+                    ss.screens.length >= 10
+                      ? "bg-amber-500/25 text-amber-300 border border-amber-500/30"
+                      : "bg-black/25 text-foreground/80"
+                  )}
+                >
+                  {ss.screens.length}/10
+                </span>
               </button>
             </div>
 
@@ -126,15 +136,16 @@ export function ScreenStrip() {
               })}
 
               {/* Add Screen Button */}
-              {ss.screens.length < 12 && (
+              {ss.screens.length < 10 && (
                 <button
                   id={`add-screen-strip-${ss.id}`}
                   type="button"
-                  title="Add Screen"
+                  title={`Add Screen (${ss.screens.length}/10)`}
                   onClick={() => addScreen(ss.id)}
-                  className="w-[42px] h-[82px] rounded-xl border-2 border-dashed border-border/80 hover:border-primary/60 hover:bg-primary/5 flex items-center justify-center text-muted-foreground hover:text-primary transition-all shrink-0 shadow-2xs cursor-pointer"
+                  className="w-[42px] h-[82px] rounded-xl border-2 border-dashed border-border/80 hover:border-primary/60 hover:bg-primary/5 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-all shrink-0 shadow-2xs cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
+                  <span className="text-[8px] font-mono font-semibold opacity-70">{ss.screens.length}/10</span>
                 </button>
               )}
             </div>

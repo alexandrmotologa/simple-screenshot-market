@@ -200,6 +200,10 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   clearSelection: () => set({ selectedLayerIds: [], activeLayerId: null }),
 
   addScreen: (setId) => {
+    const targetSet = get().screenSets.find((s) => s.id === setId);
+    if (targetSet && targetSet.screens.length >= 10) {
+      return;
+    }
     get().recordHistory();
     set((state) => {
       const sets = state.screenSets.map((ss) => {
