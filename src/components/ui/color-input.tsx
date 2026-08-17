@@ -9,56 +9,62 @@ export interface ColorInputProps
   onColorCommit?: (color: string) => void;
 }
 
+function normalizeHex(val: string | undefined | null): string {
+  if (!val) return "#000000";
+  const trimmed = val.trim();
+  if (trimmed.startsWith("#")) {
+    if (trimmed.length === 7) return trimmed;
+    if (trimmed.length === 4) {
+      return `#${trimmed[1]}${trimmed[1]}${trimmed[2]}${trimmed[2]}${trimmed[3]}${trimmed[3]}`;
+    }
+    if (trimmed.length > 7) {
+      return trimmed.slice(0, 7);
+    }
+  }
+  if (trimmed.startsWith("rgb")) {
+    const match = trimmed.match(/\d+/g);
+    if (match && match.length >= 3) {
+      const r = Math.min(255, parseInt(match[0], 10)).toString(16).padStart(2, "0");
+      const g = Math.min(255, parseInt(match[1], 10)).toString(16).padStart(2, "0");
+      const b = Math.min(255, parseInt(match[2], 10)).toString(16).padStart(2, "0");
+      return `#${r}${g}${b}`;
+    }
+  }
+  return "#000000";
+}
+
 /**
- * Ultra-fast, butter-smooth Color Input.
- *
- * Prevents React from clobbering the native browser color picker with controlled `.value` resets
- * during active dragging (which causes extreme mouse stutter/lag in Chromium/Windows).
- * Uses requestAnimationFrame throttling for buttery 60/120 FPS updates.
+ * Fast, responsive Color Input.
+ * Synchronizes `.value` with incoming props when changed externally while preserving native picker fluidity.
  */
 export const ColorInput = React.forwardRef<HTMLInputElement, ColorInputProps>(
   function ColorInput({ value = "#000000", onColorChange, onColorCommit, className, ...props }, ref) {
     const internalRef = useRef<HTMLInputElement>(null);
     const inputRef = (ref as React.RefObject<HTMLInputElement>) || internalRef;
-    const rafRef = useRef<number | null>(null);
-    const isInteractingRef = useRef(false);
 
-    // Sync input value only when external value changes and user is NOT actively dragging
+    const normalizedValue = normalizeHex(value);
+
+    // Keep input element in sync when external prop changes
     useEffect(() => {
-      if (inputRef.current && !isInteractingRef.current) {
-        inputRef.current.value = value || "#000000";
+      if (inputRef.current) {
+        if (inputRef.current.value.toLowerCase() !== normalizedValue.toLowerCase()) {
+          inputRef.current.value = normalizedValue;
+        }
       }
-    }, [value, inputRef]);
-
-    // Clean up RAF on unmount
-    useEffect(() => {
-      return () => {
-        if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      };
-    }, []);
+    }, [normalizedValue, inputRef]);
 
     const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
-      isInteractingRef.current = true;
       const newColor = (e.target as HTMLInputElement).value;
-
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
-      rafRef.current = requestAnimationFrame(() => {
-        onColorChange(newColor);
-      });
+      onColorChange(newColor);
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const finalColor = e.target.value;
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
       onColorChange(finalColor);
       onColorCommit?.(finalColor);
-      isInteractingRef.current = false;
     };
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-      isInteractingRef.current = false;
       onColorCommit?.(e.target.value);
     };
 
@@ -66,7 +72,7 @@ export const ColorInput = React.forwardRef<HTMLInputElement, ColorInputProps>(
       <input
         ref={inputRef}
         type="color"
-        defaultValue={value || "#000000"}
+        defaultValue={normalizedValue}
         onInput={handleInput}
         onChange={handleChange}
         onBlur={handleBlur}
@@ -76,3 +82,4 @@ export const ColorInput = React.forwardRef<HTMLInputElement, ColorInputProps>(
     );
   }
 );
+

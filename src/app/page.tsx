@@ -11,8 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { NewProjectModal } from "@/components/dashboard/NewProjectModal";
 import { useProjectStore } from "@/lib/store/projectStore";
+import Link from "next/link";
 import { formatDate, backgroundToCSS } from "@/lib/utils";
 import { Project } from "@/lib/types";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { ConfirmActionModal } from "@/components/dashboard/ConfirmActionModal";
+import { Footer } from "@/components/dashboard/Footer";
 
 // ── Mini canvas thumbnail ─────────────────────────────────────────────────────
 function ProjectThumbnail({ project }: { project: Project }) {
@@ -112,8 +116,8 @@ function ProjectCard({
 }: {
   project: Project;
   onOpen: (id: string) => void;
-  onDuplicate: (e: React.MouseEvent, id: string) => void;
-  onDelete: (e: React.MouseEvent, id: string) => void;
+  onDuplicate: (e: React.MouseEvent, id: string, name: string) => void;
+  onDelete: (e: React.MouseEvent, id: string, name: string) => void;
   deleting: boolean;
 }) {
   const totalScreens = project.screenSets.reduce((acc, ss) => acc + ss.screens.length, 0);
@@ -150,7 +154,7 @@ function ProjectCard({
       >
         <button
           type="button"
-          onClick={(e) => onDuplicate(e, project.id)}
+          onClick={(e) => onDuplicate(e, project.id, project.name)}
           className="w-7 h-7 rounded-lg bg-black/60 backdrop-blur-sm hover:bg-black/80 flex items-center justify-center text-white transition-colors"
           title="Duplicate"
         >
@@ -158,7 +162,7 @@ function ProjectCard({
         </button>
         <button
           type="button"
-          onClick={(e) => onDelete(e, project.id)}
+          onClick={(e) => onDelete(e, project.id, project.name)}
           className="w-7 h-7 rounded-lg bg-black/60 backdrop-blur-sm hover:bg-destructive/80 flex items-center justify-center text-white transition-colors"
           title="Delete"
         >
@@ -195,8 +199,39 @@ export default function DashboardPage() {
   const { projects, deleteProject, duplicateProject } = useProjectStore();
   const [showNewProject, setShowNewProject] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{
+    type: "delete" | "duplicate";
+    projectId: string;
+    projectName: string;
+  } | null>(null);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"updated" | "created" | "name">("updated");
+
+  const promptDelete = (e: React.MouseEvent, id: string, name: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setConfirmModal({ type: "delete", projectId: id, projectName: name });
+  };
+
+  const promptDuplicate = (e: React.MouseEvent, id: string, name: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setConfirmModal({ type: "duplicate", projectId: id, projectName: name });
+  };
+
+  const handleConfirmAction = () => {
+    if (!confirmModal) return;
+    if (confirmModal.type === "delete") {
+      const id = confirmModal.projectId;
+      setDeletingId(id);
+      setTimeout(() => {
+        deleteProject(id);
+        setDeletingId(null);
+      }, 300);
+    } else if (confirmModal.type === "duplicate") {
+      duplicateProject(confirmModal.projectId);
+    }
+  };
 
   const handleDelete = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
@@ -224,17 +259,27 @@ export default function DashboardPage() {
   }, [projects, search, sortBy]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col bg-background">
       {/* ── Header ── */}
       <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-sm shadow-primary/40">
+          <Link
+            href="/"
+            onClick={() => {
+              setSearch("");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            className="flex items-center gap-3 cursor-pointer group"
+          >
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-sm shadow-primary/40 group-hover:scale-105 transition-transform">
               <Layers className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="font-semibold text-lg tracking-tight">SnapFrame</span>
+            <span className="font-semibold text-lg tracking-tight group-hover:text-primary transition-colors">
+              SnapFrame
+            </span>
             <Badge variant="secondary" className="text-xs">Beta</Badge>
-          </div>
+          </Link>
+
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -245,6 +290,7 @@ export default function DashboardPage() {
               <Globe className="w-4 h-4 mr-1.5" />
               GitHub
             </Button>
+            <ThemeToggle />
             <Button
               id="new-project-btn"
               onClick={() => setShowNewProject(true)}
@@ -258,14 +304,14 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-10">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-10">
         {/* ── Empty state (Hallmark Premium Style) ── */}
         {projects.length === 0 ? (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="relative flex flex-col items-center justify-center py-32 text-center overflow-hidden rounded-3xl border border-border/50 bg-card/30 backdrop-blur-sm"
+            className="relative flex flex-col items-center justify-center py-24 text-center overflow-hidden rounded-3xl border border-border/50 bg-card/30 backdrop-blur-sm px-6"
           >
             {/* Background Effects */}
             <div className="absolute inset-0 z-0 pointer-events-none">
@@ -279,52 +325,78 @@ export default function DashboardPage() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="relative z-10 flex flex-col items-center"
             >
-              <div className="relative mb-10 group">
+              <div className="relative mb-8 group">
                 <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-primary to-violet-600 opacity-30 blur-lg group-hover:opacity-60 transition duration-500"></div>
-                <div className="relative w-24 h-24 rounded-3xl bg-card border border-border flex items-center justify-center shadow-2xl">
-                  <Sparkles className="w-10 h-10 text-primary animate-pulse" />
+                <div className="relative w-20 h-20 rounded-3xl bg-card border border-border flex items-center justify-center shadow-2xl">
+                  <Sparkles className="w-9 h-9 text-primary animate-pulse" />
                 </div>
               </div>
 
-              <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-6 bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent max-w-2xl">
+              <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-4 bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent max-w-2xl">
                 Create stunning app screenshots in minutes
               </h1>
-              <p className="text-muted-foreground text-lg sm:text-xl max-w-xl mb-12 leading-relaxed">
+              <p className="text-muted-foreground text-base sm:text-lg max-w-xl mb-10 leading-relaxed">
                 Build beautiful App Store & Google Play visuals with device mockups,
                 premium templates, and a powerful drag-and-drop editor.
               </p>
 
-              <div className="flex flex-wrap gap-3 justify-center mb-14 max-w-2xl">
+              <div className="flex flex-wrap gap-2.5 justify-center mb-10 max-w-2xl">
                 {[
                   "📱 iOS & Android", "🎨 Premium templates", "📐 Store-ready sizes",
-                  "💾 Export PNG/ZIP", "🖼️ Device mockups",
+                  "💾 Export PNG/ZIP", "🖼️ Device mockups", "🌐 Multi-language",
                 ].map((f) => (
-                  <span key={f} className="px-4 py-2 rounded-full bg-secondary/50 border border-border/50 text-secondary-foreground text-sm font-medium backdrop-blur-md">
+                  <span key={f} className="px-3.5 py-1.5 rounded-full bg-secondary/60 border border-border/50 text-secondary-foreground text-xs font-medium backdrop-blur-md">
                     {f}
                   </span>
                 ))}
               </div>
 
-              <Button
-                id="get-started-btn"
-                size="lg"
-                onClick={() => setShowNewProject(true)}
-                className="relative group gap-2 text-base px-8 h-14 rounded-full bg-foreground text-background hover:bg-foreground/90 shadow-xl shadow-primary/20 overflow-hidden transition-all hover:scale-105"
-              >
-                <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-                Get Started — It&apos;s Free
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </Button>
+              <div className="relative inline-block group">
+                <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-primary to-violet-600 opacity-30 blur-lg group-hover:opacity-60 transition duration-500"></div>
+                <Button
+                  size="lg"
+                  onClick={() => setShowNewProject(true)}
+                  className="relative gap-2 px-8 py-6 rounded-2xl text-base font-semibold shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95"
+                >
+                  <Plus className="w-5 h-5" />
+                  Create First Screenshot Set
+                </Button>
+              </div>
             </motion.div>
+
+            {/* Feature highlights */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 text-left border-t border-border/50 pt-10 max-w-4xl w-full">
+              <div className="p-5 rounded-2xl bg-card/50 border border-border/40 space-y-2">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
+                  <LayoutGrid className="w-4 h-4" />
+                </div>
+                <h3 className="font-semibold text-sm">Panorama Flows</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">Create continuous storytelling sets where backgrounds span seamlessly across multiple screens.</p>
+              </div>
+              <div className="p-5 rounded-2xl bg-card/50 border border-border/40 space-y-2">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
+                  <Globe className="w-4 h-4" />
+                </div>
+                <h3 className="font-semibold text-sm">i18n & Localization</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">Translate all captions across 30+ languages instantly with a single click.</p>
+              </div>
+              <div className="p-5 rounded-2xl bg-card/50 border border-border/40 space-y-2">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
+                  <Zap className="w-4 h-4" />
+                </div>
+                <h3 className="font-semibold text-sm">Instant Export</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">Export perfectly sized PNGs or zip packages ready for App Store Connect & Google Play Console.</p>
+              </div>
+            </div>
           </motion.div>
         ) : (
           <>
-            {/* ── Projects header + search + sort ── */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8">
-              <div className="flex-1">
+            {/* ── Dashboard controls ── */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+              <div>
                 <h1 className="text-2xl font-bold tracking-tight">Your Projects</h1>
-                <p className="text-muted-foreground text-sm mt-1">
-                  {filtered.length} of {projects.length} project{projects.length !== 1 ? "s" : ""}
+                <p className="text-muted-foreground text-sm mt-0.5">
+                  {projects.length} screenshot project{projects.length !== 1 ? "s" : ""}
                 </p>
               </div>
 
@@ -389,8 +461,8 @@ export default function DashboardPage() {
                   key={project.id}
                   project={project}
                   onOpen={(id) => router.push(`/editor/${id}`)}
-                  onDuplicate={handleDuplicate}
-                  onDelete={handleDelete}
+                  onDuplicate={promptDuplicate}
+                  onDelete={promptDelete}
                   deleting={deletingId === project.id}
                 />
               ))}
@@ -410,11 +482,23 @@ export default function DashboardPage() {
         )}
       </main>
 
+      <Footer />
+
       <NewProjectModal
         open={showNewProject}
         onClose={() => setShowNewProject(false)}
         onCreated={(id) => router.push(`/editor/${id}`)}
       />
+
+      {confirmModal && (
+        <ConfirmActionModal
+          open={!!confirmModal}
+          type={confirmModal.type}
+          projectName={confirmModal.projectName}
+          onClose={() => setConfirmModal(null)}
+          onConfirm={handleConfirmAction}
+        />
+      )}
     </div>
   );
 }
