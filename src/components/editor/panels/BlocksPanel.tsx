@@ -682,9 +682,14 @@ export function BlocksPanel() {
       return;
     }
 
-    const layersToAdd = preset.getLayers(screen.width, screen.height);
+    const rawLayers = preset.getLayers(screen.width, screen.height);
+    const groupId = `group-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const layersToAdd = rawLayers.length > 1
+      ? rawLayers.map((l) => ({ ...l, groupId }))
+      : rawLayers;
+
     addLayers(set.id, screen.id, layersToAdd);
-    toast.success(`Added ${preset.name} with editable text to canvas!`);
+    toast.success(`Added ${preset.name} to canvas!`);
   };
 
   return (

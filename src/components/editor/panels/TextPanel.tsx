@@ -16,13 +16,33 @@ const GOOGLE_FONTS = [
 ];
 
 // ── Text preset categories ─────────────────────────────────────────────────────
-const PRESET_CATEGORIES = [
+interface TextPresetItem {
+  label: string;
+  preview?: {
+    text: string;
+    fontSize: number;
+    fontWeight: number;
+    letterSpacing?: number;
+    lineHeight?: number;
+    uppercase?: boolean;
+    isMuted?: boolean;
+  };
+  customPreview?: React.ReactNode;
+  layer: Record<string, any>;
+}
+
+interface PresetCategory {
+  name: string;
+  presets: TextPresetItem[];
+}
+
+const PRESET_CATEGORIES: PresetCategory[] = [
   {
     name: "Headlines",
     presets: [
       {
         label: "Big Title",
-        preview: { text: "Big Title", fontSize: 28, fontWeight: 800, letterSpacing: -1.5 },
+        preview: { text: "Big Title", fontSize: 24, fontWeight: 800, letterSpacing: -1 },
         layer: {
           type: "text", content: "Your Big Title",
           fontSize: 140, fontWeight: 800, fontFamily: "Inter",
@@ -32,7 +52,7 @@ const PRESET_CATEGORIES = [
       },
       {
         label: "Display XL",
-        preview: { text: "DISPLAY", fontSize: 26, fontWeight: 900, letterSpacing: 2, uppercase: true },
+        preview: { text: "DISPLAY XL", fontSize: 22, fontWeight: 900, letterSpacing: 2, uppercase: true },
         layer: {
           type: "text", content: "DISPLAY",
           fontSize: 200, fontWeight: 900, fontFamily: "Inter",
@@ -42,7 +62,7 @@ const PRESET_CATEGORIES = [
       },
       {
         label: "Hero Split",
-        preview: { text: "Big\nHeadline", fontSize: 22, fontWeight: 800, lineHeight: 1.0 },
+        preview: { text: "Hero\nHeadline", fontSize: 20, fontWeight: 800, lineHeight: 1.05 },
         layer: {
           type: "text", content: "Big\nHeadline",
           fontSize: 160, fontWeight: 800, fontFamily: "Inter",
@@ -57,7 +77,7 @@ const PRESET_CATEGORIES = [
     presets: [
       {
         label: "Subtitle",
-        preview: { text: "One clear subtitle", fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,0.7)" },
+        preview: { text: "One clear subtitle for your app", fontSize: 13, fontWeight: 500, isMuted: true },
         layer: {
           type: "text", content: "One clear subtitle",
           fontSize: 60, fontWeight: 500, fontFamily: "Inter",
@@ -67,7 +87,7 @@ const PRESET_CATEGORIES = [
       },
       {
         label: "Description",
-        preview: { text: "Describe your app\nin two short lines", fontSize: 12, fontWeight: 400, color: "rgba(255,255,255,0.65)", lineHeight: 1.5 },
+        preview: { text: "Describe your key features\nin two short clear lines", fontSize: 12, fontWeight: 400, isMuted: true, lineHeight: 1.4 },
         layer: {
           type: "text", content: "Describe your app\nin two short lines",
           fontSize: 52, fontWeight: 400, fontFamily: "Inter",
@@ -77,7 +97,7 @@ const PRESET_CATEGORIES = [
       },
       {
         label: "Eyebrow",
-        preview: { text: "NEW FEATURE", fontSize: 10, fontWeight: 700, letterSpacing: 3, uppercase: true, color: "rgba(255,255,255,0.6)" },
+        preview: { text: "NEW FEATURE", fontSize: 10, fontWeight: 700, letterSpacing: 2.5, uppercase: true, isMuted: true },
         layer: {
           type: "text", content: "NEW FEATURE",
           fontSize: 36, fontWeight: 700, fontFamily: "Inter",
@@ -92,7 +112,7 @@ const PRESET_CATEGORIES = [
     presets: [
       {
         label: "Tagline",
-        preview: { text: "THE APP FOR EVERYONE", fontSize: 10, fontWeight: 600, letterSpacing: 3, uppercase: true },
+        preview: { text: "THE APP FOR EVERYONE", fontSize: 11, fontWeight: 600, letterSpacing: 2, uppercase: true },
         layer: {
           type: "text", content: "THE APP FOR EVERYONE",
           fontSize: 44, fontWeight: 600, fontFamily: "Inter",
@@ -101,7 +121,7 @@ const PRESET_CATEGORIES = [
         },
       },
       {
-        label: "Badge / Pill",
+        label: "Rating / Proof Pill",
         preview: { text: "★ 4.9 · 10M+ Downloads", fontSize: 11, fontWeight: 600 },
         layer: {
           type: "text", content: "★ 4.9  ·  10M+ Downloads",
@@ -111,8 +131,8 @@ const PRESET_CATEGORIES = [
         },
       },
       {
-        label: "Fine Print",
-        preview: { text: "Available on App Store & Google Play", fontSize: 10, fontWeight: 400, color: "rgba(255,255,255,0.5)" },
+        label: "Store Availability",
+        preview: { text: "Available on App Store & Google Play", fontSize: 10, fontWeight: 400, isMuted: true },
         layer: {
           type: "text", content: "Available on App Store & Google Play",
           fontSize: 38, fontWeight: 400, fontFamily: "Inter",
@@ -126,8 +146,12 @@ const PRESET_CATEGORIES = [
     name: "Styles",
     presets: [
       {
-        label: "Pill",
-        preview: { text: "Pill Badge", fontSize: 14, fontWeight: 700, color: "#ffffff", uppercase: true, letterSpacing: 2 },
+        label: "Pill Tag",
+        customPreview: (
+          <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-primary/15 border border-primary/30 text-primary text-[11px] font-bold tracking-wider uppercase">
+            NEW · FEATURE
+          </div>
+        ),
         layer: {
           type: "text", content: "NEW  ·  FEATURE",
           fontSize: 40, fontWeight: 700, fontFamily: "Inter",
@@ -137,8 +161,12 @@ const PRESET_CATEGORIES = [
         },
       },
       {
-        label: "Card",
-        preview: { text: "Text in Card", fontSize: 16, fontWeight: 600, color: "#111827" },
+        label: "Card Container",
+        customPreview: (
+          <div className="w-full px-3 py-2 rounded-xl bg-card border border-border/80 shadow-xs text-foreground text-xs font-semibold text-center">
+            Important Message Card
+          </div>
+        ),
         layer: {
           type: "text", content: "Important Message",
           fontSize: 70, fontWeight: 600, fontFamily: "Inter",
@@ -148,8 +176,12 @@ const PRESET_CATEGORIES = [
         },
       },
       {
-        label: "Highlight",
-        preview: { text: "Highlighted Text", fontSize: 16, fontWeight: 800, color: "#1a1a2e" },
+        label: "Highlight Badge",
+        customPreview: (
+          <div className="inline-flex items-center px-2.5 py-1 rounded-md bg-amber-400/25 border border-amber-400/50 text-amber-800 dark:text-amber-300 text-xs font-bold">
+            Stand Out!
+          </div>
+        ),
         layer: {
           type: "text", content: "Stand Out!",
           fontSize: 90, fontWeight: 800, fontFamily: "Inter",
@@ -159,8 +191,18 @@ const PRESET_CATEGORIES = [
         },
       },
       {
-        label: "Outline",
-        preview: { text: "OUTLINE", fontSize: 20, fontWeight: 900, color: "transparent", uppercase: true },
+        label: "Outline Headline",
+        customPreview: (
+          <div
+            className="text-lg font-black uppercase tracking-wider text-foreground"
+            style={{
+              WebkitTextStroke: "1px currentColor",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            OUTLINE
+          </div>
+        ),
         layer: {
           type: "text", content: "OUTLINE",
           fontSize: 160, fontWeight: 900, fontFamily: "Inter",
@@ -170,8 +212,12 @@ const PRESET_CATEGORIES = [
         },
       },
       {
-        label: "Glow",
-        preview: { text: "Glowing", fontSize: 18, fontWeight: 700, color: "#ffffff" },
+        label: "Neon Glow",
+        customPreview: (
+          <div className="text-sm font-bold text-violet-600 dark:text-violet-400 drop-shadow-[0_0_10px_rgba(139,92,246,0.6)]">
+            Glowing Title
+          </div>
+        ),
         layer: {
           type: "text", content: "Glowing Title",
           fontSize: 120, fontWeight: 700, fontFamily: "Inter",
@@ -291,7 +337,7 @@ export function TextPanel() {
   const category = PRESET_CATEGORIES.find((c) => c.name === activeCategory) ?? PRESET_CATEGORIES[0];
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0 overflow-hidden">
       {/* Font selector — shown when text layer is active */}
       {hasTextLayer && <FontRow />}
 
@@ -305,7 +351,7 @@ export function TextPanel() {
             className={cn(
               "shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-medium transition-all",
               activeCategory === cat.name
-                ? "bg-primary text-primary-foreground"
+                ? "bg-primary text-primary-foreground font-semibold"
                 : "bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary"
             )}
           >
@@ -316,49 +362,49 @@ export function TextPanel() {
 
       <p className="px-4 text-[10px] text-muted-foreground mb-1">Click to add to active screen</p>
 
-      <ScrollArea className="flex-1">
-        <div className="px-3 pb-4 space-y-2">
-          {category.presets.map((preset) => {
-            const p = preset.preview as {
-              text: string;
-              fontSize: number;
-              fontWeight: number;
-              letterSpacing?: number;
-              lineHeight?: number;
-              uppercase?: boolean;
-              color?: string;
-            };
-            return (
-              <button
-                key={preset.label}
-                type="button"
-                onClick={() => handleAdd(preset)}
-                className="w-full text-left px-4 py-3.5 rounded-xl bg-secondary/50 hover:bg-secondary hover:ring-1 hover:ring-primary/30 transition-all group relative overflow-hidden"
-              >
-                {/* Preview text */}
+      <ScrollArea className="flex-1 min-h-0 overflow-hidden">
+        <div className="px-3 pb-16 space-y-2">
+          {category.presets.map((preset) => (
+            <button
+              key={preset.label}
+              type="button"
+              onClick={() => handleAdd(preset)}
+              className="w-full text-left px-4 py-3.5 rounded-xl bg-secondary/50 hover:bg-secondary/90 border border-border/50 hover:border-primary/40 hover:ring-1 hover:ring-primary/30 transition-all group relative overflow-hidden cursor-pointer"
+            >
+              {/* Custom Preview or theme-adaptive text preview */}
+              {preset.customPreview ? (
+                <div className="w-full flex items-center justify-start py-0.5">
+                  {preset.customPreview}
+                </div>
+              ) : preset.preview ? (
                 <div
-                  className="text-foreground group-hover:text-white leading-tight truncate"
+                  className={cn(
+                    "leading-tight truncate transition-colors",
+                    preset.preview.isMuted
+                      ? "text-muted-foreground group-hover:text-foreground"
+                      : "text-foreground group-hover:text-primary"
+                  )}
                   style={{
-                    fontSize: p.fontSize,
-                    fontWeight: p.fontWeight,
-                    letterSpacing: p.letterSpacing ?? 0,
-                    lineHeight: p.lineHeight ?? 1.2,
-                    textTransform: p.uppercase ? "uppercase" : "none",
-                    color: p.color ?? "inherit",
+                    fontSize: preset.preview.fontSize,
+                    fontWeight: preset.preview.fontWeight,
+                    letterSpacing: preset.preview.letterSpacing ?? 0,
+                    lineHeight: preset.preview.lineHeight ?? 1.2,
+                    textTransform: preset.preview.uppercase ? "uppercase" : "none",
                     whiteSpace: "pre",
                   }}
                 >
-                  {p.text}
+                  {preset.preview.text}
                 </div>
-                {/* Label */}
-                <p className="text-[10px] text-muted-foreground mt-1.5 group-hover:text-primary/70 transition-colors">
-                  {preset.label}
-                </p>
-                {/* Hover gradient */}
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-xl" />
-              </button>
-            );
-          })}
+              ) : null}
+
+              {/* Label */}
+              <p className="text-[10px] font-medium text-muted-foreground mt-1.5 group-hover:text-primary transition-colors">
+                {preset.label}
+              </p>
+              {/* Hover gradient */}
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-xl" />
+            </button>
+          ))}
         </div>
       </ScrollArea>
     </div>

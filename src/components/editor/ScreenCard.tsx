@@ -119,6 +119,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
     layerId: string;
     startX: number; startY: number;
     origX: number; origY: number;
+    groupItems?: { id: string; origX: number; origY: number }[];
   } | null>(null);
 
   // ── Draw ───────────────────────────────────────────────────────────────────
@@ -927,7 +928,6 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           // Icon area (left side)
           const iconSize  = bh * 0.52;
           const iconX     = bx + bh * 0.32;
-          const iconY     = by + (bh - iconSize) / 2;
           ctx.fillStyle   = "#ffffff";
           ctx.font        = `${iconSize}px serif`;
           ctx.textAlign   = "center";
@@ -968,11 +968,11 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           // Gold stars + rating text
           ctx.font = `700 ${bh * 0.42}px "Inter", sans-serif`;
           ctx.fillStyle = "#F59E0B";
-          ctx.fillText("★★★★★", bx + bw * 0.32, by + bh / 2 + 1);
+          ctx.fillText(sl.subtext || "★★★★★", bx + bw * 0.32, by + bh / 2 + 1);
 
           ctx.font = `600 ${bh * 0.35}px "Inter", sans-serif`;
           ctx.fillStyle = "#FFFFFF";
-          ctx.fillText("4.9 (100k+)", bx + bw * 0.74, by + bh / 2);
+          ctx.fillText(sl.text || "4.9 (100k+)", bx + bw * 0.74, by + bh / 2);
 
         } else if (sl.shape === "award-badge") {
           const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
@@ -991,11 +991,11 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.font = `${bh * 0.5}px serif`;
-          ctx.fillText("🏆", bx + bh * 0.45, by + bh / 2);
+          ctx.fillText(sl.subtext || "🏆", bx + bh * 0.45, by + bh / 2);
 
           ctx.font = `700 ${bh * 0.34}px "Inter", sans-serif`;
           ctx.fillStyle = "#FBBF24";
-          ctx.fillText("#1 App of the Day", bx + bw * 0.58, by + bh / 2);
+          ctx.fillText(sl.text || "#1 App of the Day", bx + bw * 0.58, by + bh / 2);
 
         } else if (sl.shape === "users-badge") {
           const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
@@ -1014,11 +1014,11 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.font = `${bh * 0.45}px serif`;
-          ctx.fillText("👥", bx + bh * 0.45, by + bh / 2);
+          ctx.fillText(sl.subtext || "👥", bx + bh * 0.45, by + bh / 2);
 
           ctx.font = `700 ${bh * 0.34}px "Inter", sans-serif`;
           ctx.fillStyle = "#10B981";
-          ctx.fillText("1,000,000+ Users", bx + bw * 0.58, by + bh / 2);
+          ctx.fillText(sl.text || "1,000,000+ Users", bx + bw * 0.58, by + bh / 2);
 
         } else if (sl.shape === "security-badge") {
           const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
@@ -1037,11 +1037,11 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.font = `${bh * 0.45}px serif`;
-          ctx.fillText("🔒", bx + bh * 0.45, by + bh / 2);
+          ctx.fillText(sl.subtext || "🔒", bx + bh * 0.45, by + bh / 2);
 
           ctx.font = `700 ${bh * 0.34}px "Inter", sans-serif`;
           ctx.fillStyle = "#3B82F6";
-          ctx.fillText("100% Private & Secure", bx + bw * 0.58, by + bh / 2);
+          ctx.fillText(sl.text || "100% Private & Secure", bx + bw * 0.58, by + bh / 2);
 
         } else if (sl.shape === "notification-badge") {
           const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
@@ -1067,11 +1067,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           // Header
           ctx.font = `700 ${bh * 0.18}px "Inter", sans-serif`;
           ctx.fillStyle = "#1e293b";
-          ctx.fillText("SnapFrame", bx + 64, by + bh * 0.32);
-
-          ctx.font = `400 ${bh * 0.15}px "Inter", sans-serif`;
-          ctx.fillStyle = "#64748b";
-          ctx.fillText("now", bx + bw - 60, by + bh * 0.32);
+          ctx.fillText(sl.subtext || "SnapFrame · now", bx + 64, by + bh * 0.32);
 
           // Body message
           ctx.font = `500 ${bh * 0.2}px "Inter", sans-serif`;
@@ -1274,7 +1270,19 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
       }
       const layer = screen.layers.find((l) => l.id === hit);
       if (layer && !layer.locked) {
-        dragRef.current = { layerId: hit, startX: x, startY: y, origX: layer.x, origY: layer.y };
+        const gid = (layer as any).groupId;
+        const groupLayers = gid
+          ? screen.layers.filter((l) => (l as any).groupId === gid && !l.locked)
+          : [layer];
+
+        dragRef.current = {
+          layerId: hit,
+          startX: x,
+          startY: y,
+          origX: layer.x,
+          origY: layer.y,
+          groupItems: groupLayers.map((l) => ({ id: l.id, origX: l.x, origY: l.y })),
+        };
       }
     } else {
       // Clicked on empty background of screen -> clear layer selection
@@ -1300,7 +1308,8 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
       const SNAP_THRESHOLD = 30;
 
       if (Math.abs(layerCenterX - screenCenterX) < SNAP_THRESHOLD) {
-        targetX = Math.round(screenCenterX - layer.width / 2);
+        const snapDiff = Math.round(screenCenterX - layer.width / 2) - targetX;
+        targetX += snapDiff;
         snappedX = true;
       }
 
@@ -1308,17 +1317,30 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
       const layerCenterY = targetY + layer.height / 2;
       const screenCenterY = screen.height / 2;
       if (Math.abs(layerCenterY - screenCenterY) < SNAP_THRESHOLD) {
-        targetY = Math.round(screenCenterY - layer.height / 2);
+        const snapDiff = Math.round(screenCenterY - layer.height / 2) - targetY;
+        targetY += snapDiff;
         snappedY = true;
       }
     }
 
     setSnapGuides({ x: snappedX, y: snappedY });
 
-    updateLayer(screenSet.id, screen.id, dragRef.current.layerId, {
-      x: Math.round(targetX),
-      y: Math.round(targetY),
-    } as Parameters<typeof updateLayer>[3]);
+    const finalDeltaX = targetX - dragRef.current.origX;
+    const finalDeltaY = targetY - dragRef.current.origY;
+
+    if (dragRef.current.groupItems && dragRef.current.groupItems.length > 1) {
+      dragRef.current.groupItems.forEach((item) => {
+        updateLayer(screenSet.id, screen.id, item.id, {
+          x: Math.round(item.origX + finalDeltaX),
+          y: Math.round(item.origY + finalDeltaY),
+        } as Parameters<typeof updateLayer>[3]);
+      });
+    } else {
+      updateLayer(screenSet.id, screen.id, dragRef.current.layerId, {
+        x: Math.round(targetX),
+        y: Math.round(targetY),
+      } as Parameters<typeof updateLayer>[3]);
+    }
   };
 
   const handleMouseUp = () => { 

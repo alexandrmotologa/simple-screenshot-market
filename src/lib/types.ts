@@ -236,6 +236,12 @@ export interface ShapeLayer {
   rotation: number;
   opacity: number;
   cornerRadius?: number;
+  /** Primary custom text for badges, notification banners, search bars, cards */
+  text?: string;
+  /** Secondary custom text or subtitle / app name */
+  subtext?: string;
+  /** Optional group ID to link multiple layers together during move/drag */
+  groupId?: string;
   shadow?: {
     blur: number;
     spread: number;
