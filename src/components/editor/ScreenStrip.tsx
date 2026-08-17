@@ -126,13 +126,13 @@ export function ScreenStrip() {
               })}
 
               {/* Add Screen Button */}
-              {ss.screens.length < 10 && (
+              {ss.screens.length < 12 && (
                 <button
-                  id={`add-screen-${ss.id}`}
+                  id={`add-screen-strip-${ss.id}`}
                   type="button"
                   title="Add Screen"
                   onClick={() => addScreen(ss.id)}
-                  className="w-[42px] h-[82px] rounded-xl border-2 border-dashed border-border/80 hover:border-primary/60 hover:bg-primary/5 flex items-center justify-center text-muted-foreground hover:text-primary transition-all shrink-0 shadow-2xs"
+                  className="w-[42px] h-[82px] rounded-xl border-2 border-dashed border-border/80 hover:border-primary/60 hover:bg-primary/5 flex items-center justify-center text-muted-foreground hover:text-primary transition-all shrink-0 shadow-2xs cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
