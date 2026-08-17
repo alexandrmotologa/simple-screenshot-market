@@ -965,11 +965,8 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         } else if (sl.shape === "appstore-badge" || sl.shape === "googleplay-badge") {
           const isApple = sl.shape === "appstore-badge";
           const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
-        } else if (sl.shape === "appstore-badge" || sl.shape === "googleplay-badge") {
-          const isApple = sl.shape === "appstore-badge";
-          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
           const maxR = Math.min(bw, bh) / 2;
-          const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : bh * 0.22;
+          const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : Math.min(bh * 0.22, maxR);
 
           // Background pill
           ctx.beginPath();
@@ -983,28 +980,29 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           }
 
           // Icon area (left side)
-          const iconSize  = bh * 0.48;
+          const iconSize  = bh * 0.52;
           const iconX     = bx + bh * 0.36;
           if (isApple) {
-            drawAppleLogo(ctx, iconX, by + bh / 2, iconSize, "#ffffff");
+            drawAppleLogo(ctx, iconX, by + bh / 2, iconSize, "#FFFFFF");
           } else {
             drawGooglePlayLogo(ctx, iconX, by + bh / 2, iconSize);
           }
 
-          // Labels
-          const labelX = bx + bw * 0.58;
+          // Labels (Left-aligned next to icon)
+          const labelX = iconX + iconSize * 0.78;
           const topLabel = sl.subtext || (isApple ? "Download on the" : "GET IT ON");
           const botLabel = sl.text || (isApple ? "App Store" : "Google Play");
-          ctx.textAlign = "center";
+
+          ctx.textAlign = "left";
           ctx.textBaseline = "middle";
 
-          ctx.font = `400 ${bh * 0.22}px "Inter", sans-serif`;
+          ctx.font = `500 ${bh * 0.19}px "Inter", sans-serif`;
           ctx.fillStyle = "rgba(255,255,255,0.85)";
-          ctx.fillText(topLabel, labelX, by + bh * 0.33);
+          ctx.fillText(topLabel, labelX, by + bh * 0.34);
 
-          ctx.font = `700 ${bh * 0.35}px "Inter", sans-serif`;
-          ctx.fillStyle = "#ffffff";
-          ctx.fillText(botLabel, labelX, by + bh * 0.65);
+          ctx.font = `700 ${bh * 0.34}px "Inter", sans-serif`;
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillText(botLabel, labelX, by + bh * 0.68);
 
         } else if (sl.shape === "rating-badge") {
           const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
@@ -1107,11 +1105,12 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         } else if (sl.shape === "notification-badge") {
           const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
           const maxR = Math.min(bw, bh) / 2;
-          const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : Math.min(28, maxR);
+          const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : Math.min(36, maxR);
 
+          // Card shadow / backdrop
           ctx.beginPath();
           ctx.roundRect(bx, by, bw, bh, br);
-          ctx.fillStyle = sl.fill ?? "rgba(255,255,255,0.92)";
+          ctx.fillStyle = sl.fill ?? "rgba(255,255,255,0.96)";
           ctx.fill();
           if (sl.stroke && sl.strokeWidth) {
             ctx.strokeStyle = sl.stroke;
@@ -1119,22 +1118,40 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             ctx.stroke();
           }
 
+          // Left App Icon (Rounded squircle container)
+          const iconSize = bh * 0.62;
+          const iconX = bx + bh * 0.18;
+          const iconY = by + (bh - iconSize) / 2;
+          const iconR = iconSize * 0.24;
+
+          ctx.beginPath();
+          ctx.roundRect(iconX, iconY, iconSize, iconSize, iconR);
+          const iconGrad = ctx.createLinearGradient(iconX, iconY, iconX + iconSize, iconY + iconSize);
+          iconGrad.addColorStop(0, "#6366F1");
+          iconGrad.addColorStop(1, "#8B5CF6");
+          ctx.fillStyle = iconGrad;
+          ctx.fill();
+
+          // Icon emoji / glyph inside
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = `${iconSize * 0.52}px serif`;
+          ctx.fillText("⚡", iconX + iconSize / 2, iconY + iconSize / 2 + 1);
+
+          // Header line (App Name · time)
+          const textLeft = iconX + iconSize + bh * 0.18;
+          const maxTextW = bw - (textLeft - bx) - bh * 0.18;
+
           ctx.textAlign = "left";
           ctx.textBaseline = "middle";
+          ctx.font = `600 ${bh * 0.16}px "Inter", sans-serif`;
+          ctx.fillStyle = "#64748B";
+          ctx.fillText(sl.subtext || "SnapFrame · now", textLeft, by + bh * 0.33);
 
-          // Icon
-          ctx.font = `${bh * 0.3}px serif`;
-          ctx.fillText("⚡", bx + 24, by + bh * 0.35);
-
-          // Header
-          ctx.font = `700 ${bh * 0.18}px "Inter", sans-serif`;
-          ctx.fillStyle = "#1e293b";
-          ctx.fillText(sl.subtext || "SnapFrame · now", bx + 64, by + bh * 0.32);
-
-          // Body message
-          ctx.font = `500 ${bh * 0.2}px "Inter", sans-serif`;
-          ctx.fillStyle = "#334155";
-          ctx.fillText(sl.text || "Workout completed! +250 XP earned 🎉", bx + 24, by + bh * 0.7);
+          // Main Message line
+          ctx.font = `700 ${bh * 0.20}px "Inter", sans-serif`;
+          ctx.fillStyle = "#0F172A";
+          ctx.fillText(sl.text || "Workout completed! +250 XP earned 🎉", textLeft, by + bh * 0.67);
 
         } else if (sl.shape === "search-badge") {
           const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
@@ -1151,14 +1168,23 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             ctx.stroke();
           }
 
-          ctx.textAlign = "left";
+          // Search Icon (Left)
+          ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.font = `${bh * 0.38}px serif`;
-          ctx.fillText("🔍", bx + 24, by + bh / 2);
+          ctx.fillText("🔍", bx + bh * 0.42, by + bh / 2);
 
-          ctx.font = `500 ${bh * 0.32}px "Inter", sans-serif`;
-          ctx.fillStyle = "rgba(255,255,255,0.75)";
-          ctx.fillText(sl.text || "Search songs, artists, albums...", bx + 70, by + bh / 2);
+          // Placeholder Text (Left aligned after icon)
+          ctx.textAlign = "left";
+          ctx.textBaseline = "middle";
+          ctx.font = `500 ${bh * 0.30}px "Inter", sans-serif`;
+          ctx.fillStyle = "rgba(255,255,255,0.85)";
+          ctx.fillText(sl.text || "Search songs, artists, albums...", bx + bh * 0.85, by + bh / 2);
+
+          // Mic icon (Right)
+          ctx.textAlign = "center";
+          ctx.font = `${bh * 0.32}px serif`;
+          ctx.fillText("🎙️", bx + bw - bh * 0.42, by + bh / 2);
 
         } else if (sl.shape === "sale-badge") {
           const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
@@ -1175,11 +1201,18 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             ctx.stroke();
           }
 
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.font = `700 ${bh * 0.36}px "Inter", sans-serif`;
-          ctx.fillStyle = "#FFFFFF";
-          ctx.fillText(sl.text || "🏷️ 50% OFF · Early Bird Special", bx + bw / 2, by + bh / 2);
+          drawAutoFitText(
+            ctx,
+            sl.text || "🏷️ 50% OFF · Early Bird Special",
+            bx + bw / 2,
+            by + bh / 2,
+            bw * 0.88,
+            bh * 0.36,
+            700,
+            '"Inter", sans-serif',
+            "#FFFFFF",
+            "center"
+          );
 
         } else if (sl.shape === "trial-badge") {
           const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
@@ -1196,11 +1229,18 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             ctx.stroke();
           }
 
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.font = `700 ${bh * 0.36}px "Inter", sans-serif`;
-          ctx.fillStyle = "#FFFFFF";
-          ctx.fillText(sl.text || "🚀 Try Free for 7 Days · No Card", bx + bw / 2, by + bh / 2);
+          drawAutoFitText(
+            ctx,
+            sl.text || "🚀 Try Free for 7 Days · No Card",
+            bx + bw / 2,
+            by + bh / 2,
+            bw * 0.88,
+            bh * 0.36,
+            700,
+            '"Inter", sans-serif',
+            "#FFFFFF",
+            "center"
+          );
 
         } else if (sl.shape === "checklist-badge") {
           const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
@@ -1217,11 +1257,18 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             ctx.stroke();
           }
 
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.font = `600 ${bh * 0.34}px "Inter", sans-serif`;
-          ctx.fillStyle = "#F8FAFC";
-          ctx.fillText(sl.text || "✓ Ad-Free  ·  ✓ Offline Mode  ·  ✓ 4K Export", bx + bw / 2, by + bh / 2);
+          drawAutoFitText(
+            ctx,
+            sl.text || "✓ Ad-Free  ·  ✓ Offline  ·  ✓ 4K",
+            bx + bw / 2,
+            by + bh / 2,
+            bw * 0.88,
+            bh * 0.34,
+            600,
+            '"Inter", sans-serif',
+            "#F8FAFC",
+            "center"
+          );
 
         } else if (sl.shape === "ranking-badge") {
           const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
@@ -1238,11 +1285,18 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             ctx.stroke();
           }
 
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.font = `700 ${bh * 0.36}px "Inter", sans-serif`;
-          ctx.fillStyle = "#FFFFFF";
-          ctx.fillText(sl.text || "🏅 #1 Top Free App", bx + bw / 2, by + bh / 2);
+          drawAutoFitText(
+            ctx,
+            sl.text || "🏅 #1 Top Free App",
+            bx + bw / 2,
+            by + bh / 2,
+            bw * 0.88,
+            bh * 0.36,
+            700,
+            '"Inter", sans-serif',
+            "#FFFFFF",
+            "center"
+          );
 
         } else if (sl.shape === "pro-tag" || sl.shape === "new-tag") {
           const isPro = sl.shape === "pro-tag";
@@ -1260,11 +1314,18 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             ctx.stroke();
           }
 
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.font = `700 ${bh * 0.42}px "Inter", sans-serif`;
-          ctx.fillStyle = "#FFFFFF";
-          ctx.fillText(sl.text || (isPro ? "⚡ PRO FEATURE" : "✨ NEW"), bx + bw / 2, by + bh / 2);
+          drawAutoFitText(
+            ctx,
+            sl.text || (isPro ? "⚡ PRO FEATURE" : "✨ NEW"),
+            bx + bw / 2,
+            by + bh / 2,
+            bw * 0.88,
+            bh * 0.42,
+            700,
+            '"Inter", sans-serif',
+            "#FFFFFF",
+            "center"
+          );
 
         } else if (sl.shape === "press-badge") {
           const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
@@ -1281,15 +1342,24 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             ctx.stroke();
           }
 
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.font = `500 ${bh * 0.16}px "Inter", sans-serif`;
+          const quoteFontSize = bh * 0.16;
+          ctx.font = `500 ${quoteFontSize}px "Inter", sans-serif`;
           ctx.fillStyle = "#FFFFFF";
-          ctx.fillText(sl.text || '"The cleanest and fastest screenshot generator on mobile."', bx + bw / 2, by + bh * 0.38);
+          drawWrappedText(
+            ctx,
+            sl.text || '"The cleanest and fastest screenshot generator on mobile."',
+            bx + bw / 2,
+            by + bh * 0.40,
+            bw * 0.88,
+            quoteFontSize * 1.3,
+            "center"
+          );
 
           ctx.font = `700 ${bh * 0.14}px "Inter", sans-serif`;
           ctx.fillStyle = "#34D399";
-          ctx.fillText(sl.subtext || "— TechCrunch", bx + bw / 2, by + bh * 0.72);
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(sl.subtext || "— TechCrunch", bx + bw / 2, by + bh * 0.78);
 
         } else if (sl.shape === "testimonial-badge") {
           const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
@@ -1306,22 +1376,33 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             ctx.stroke();
           }
 
+          // Stars
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          // Stars
           ctx.font = `700 ${bh * 0.16}px "Inter", sans-serif`;
           ctx.fillStyle = "#FBBF24";
-          ctx.fillText("★★★★★", bx + bw / 2, by + bh * 0.22);
+          ctx.fillText("★★★★★", bx + bw / 2, by + bh * 0.20);
 
           // Quote
-          ctx.font = `600 ${bh * 0.13}px "Inter", sans-serif`;
+          const quoteFontSize = bh * 0.13;
+          ctx.font = `600 ${quoteFontSize}px "Inter", sans-serif`;
           ctx.fillStyle = "#FFFFFF";
-          ctx.fillText(sl.text || '"Boosted our App Store conversion rate by +40% in just 1 week!"', bx + bw / 2, by + bh * 0.5);
+          drawWrappedText(
+            ctx,
+            sl.text || '"Boosted our App Store conversion rate by +40% in just 1 week!"',
+            bx + bw / 2,
+            by + bh * 0.52,
+            bw * 0.88,
+            quoteFontSize * 1.3,
+            "center"
+          );
 
           // Author
           ctx.font = `500 ${bh * 0.11}px "Inter", sans-serif`;
           ctx.fillStyle = "#94A3B8";
-          ctx.fillText(sl.subtext || "Alex Morgan · Lead iOS Developer", bx + bw / 2, by + bh * 0.78);
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(sl.subtext || "Alex Morgan · Lead iOS Developer", bx + bw / 2, by + bh * 0.82);
 
         } else if (sl.shape === "live-counter-badge") {
           const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
@@ -1348,11 +1429,12 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           const isGlass = sl.shape === "glass-card";
           const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
           const maxR = Math.min(bw, bh) / 2;
-          const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : Math.min(36, maxR);
+          const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : Math.min(40, maxR);
 
+          // Card Background
           ctx.beginPath();
           ctx.roundRect(bx, by, bw, bh, br);
-          ctx.fillStyle = sl.fill ?? (isGlass ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.82)");
+          ctx.fillStyle = sl.fill ?? (isGlass ? "rgba(255,255,255,0.14)" : "rgba(10,14,23,0.90)");
           ctx.fill();
           if (sl.stroke && sl.strokeWidth) {
             ctx.strokeStyle = sl.stroke;
@@ -1360,18 +1442,52 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             ctx.stroke();
           }
 
+          // Top Accent Pill / Badge
+          const pillW = bw * 0.32;
+          const pillH = bh * 0.12;
+          const pillX = bx + (bw - pillW) / 2;
+          const pillY = by + bh * 0.12;
+          ctx.beginPath();
+          ctx.roundRect(pillX, pillY, pillW, pillH, pillH / 2);
+          ctx.fillStyle = isGlass ? "rgba(255,255,255,0.20)" : "rgba(99,102,241,0.25)";
+          ctx.fill();
+          ctx.strokeStyle = isGlass ? "rgba(255,255,255,0.40)" : "rgba(99,102,241,0.50)";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
+          ctx.font = `700 ${pillH * 0.52}px "Inter", sans-serif`;
+          ctx.fillStyle = isGlass ? "#FFFFFF" : "#818CF8";
+          ctx.fillText(isGlass ? "✨ HIGHLIGHT" : "⚡ PRO FEATURE", pillX + pillW / 2, pillY + pillH / 2 + 1);
 
           // Heading
-          ctx.font = `700 ${bh * 0.15}px "Inter", sans-serif`;
+          const headingFontSize = bh * 0.15;
+          ctx.font = `700 ${headingFontSize}px "Inter", sans-serif`;
           ctx.fillStyle = "#FFFFFF";
-          ctx.fillText(sl.text || (isGlass ? "Ultra Fast & Intuitive" : "Pro Performance"), bx + bw / 2, by + bh * 0.35);
+          drawWrappedText(
+            ctx,
+            sl.text || (isGlass ? "Ultra Fast & Intuitive" : "Pro Performance"),
+            bx + bw / 2,
+            by + bh * 0.44,
+            bw * 0.84,
+            headingFontSize * 1.25,
+            "center"
+          );
 
           // Subtitle
-          ctx.font = `500 ${bh * 0.09}px "Inter", sans-serif`;
-          ctx.fillStyle = isGlass ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.70)";
-          ctx.fillText(sl.subtext || (isGlass ? "Everything you need right at your fingertips with zero complexity." : "Engineered for power users who demand lightning speed and precision."), bx + bw / 2, by + bh * 0.65);
+          const subFontSize = bh * 0.09;
+          ctx.font = `500 ${subFontSize}px "Inter", sans-serif`;
+          ctx.fillStyle = isGlass ? "rgba(255,255,255,0.85)" : "rgba(148,163,184,0.90)";
+          drawWrappedText(
+            ctx,
+            sl.subtext || (isGlass ? "Designed for speed, simplicity, and ease of use." : "Engineered for power users who demand lightning speed."),
+            bx + bw / 2,
+            by + bh * 0.74,
+            bw * 0.84,
+            subFontSize * 1.35,
+            "center"
+          );
 
         } else if (sl.shape === "glow-orb") {
           const cx = sl.x + sl.width / 2;
@@ -2365,3 +2481,70 @@ function drawPlaceholder(
   ctx.textBaseline = "top";
   ctx.fillText("Click or drop image here", x + w / 2, instrY);
 }
+
+// ── Multi-line word-wrapped text drawer ────────────────────────────────────────
+function drawWrappedText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number,
+  align: CanvasTextAlign = "center"
+) {
+  const words = (text || "").split(" ");
+  const lines: string[] = [];
+  let currentLine = "";
+
+  for (let i = 0; i < words.length; i++) {
+    const testLine = currentLine ? `${currentLine} ${words[i]}` : words[i];
+    const metrics = ctx.measureText(testLine);
+    if (metrics.width > maxWidth && currentLine) {
+      lines.push(currentLine);
+      currentLine = words[i];
+    } else {
+      currentLine = testLine;
+    }
+  }
+  if (currentLine) lines.push(currentLine);
+
+  ctx.textAlign = align;
+  ctx.textBaseline = "middle";
+
+  const totalHeight = lines.length * lineHeight;
+  const startY = y - totalHeight / 2 + lineHeight / 2;
+
+  lines.forEach((line, index) => {
+    ctx.fillText(line, x, startY + index * lineHeight);
+  });
+}
+
+// ── Single-line auto-fitting text drawer (never overflows container) ───────────
+function drawAutoFitText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  baseFontSize: number,
+  fontWeight: number | string = 700,
+  fontFamily: string = '"Inter", sans-serif',
+  color: string = "#FFFFFF",
+  align: CanvasTextAlign = "center"
+) {
+  let fontSize = baseFontSize;
+  ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+  const measured = ctx.measureText(text).width;
+  if (measured > maxWidth && maxWidth > 0) {
+    fontSize = Math.max(10, fontSize * (maxWidth / measured));
+    ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+  }
+  ctx.fillStyle = color;
+  ctx.textAlign = align;
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, x, y);
+}
+
+
+
+

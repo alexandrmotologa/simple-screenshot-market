@@ -26,7 +26,8 @@ const SOCIAL_PROOF_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 620, h = 110;
+      const w = Math.round(sw * 0.78);
+      const h = Math.round(sw * 0.16);
       return [{
         type: "shape",
         shape: "rating-badge",
@@ -34,8 +35,8 @@ const SOCIAL_PROOF_PRESETS: BlockPreset[] = [
         subtext: "★★★★★",
         fill: "rgba(15,23,42,0.92)",
         stroke: "rgba(245,158,11,0.5)",
-        strokeWidth: 3,
-        cornerRadius: 55,
+        strokeWidth: 4,
+        cornerRadius: Math.round(h / 2),
         x: Math.round((sw - w) / 2),
         y: Math.round((sh - h) / 2),
         width: w,
@@ -56,7 +57,8 @@ const SOCIAL_PROOF_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 580, h = 110;
+      const w = Math.round(sw * 0.76);
+      const h = Math.round(sw * 0.16);
       return [{
         type: "shape",
         shape: "award-badge",
@@ -64,8 +66,8 @@ const SOCIAL_PROOF_PRESETS: BlockPreset[] = [
         subtext: "🏆",
         fill: "#1e1b4b",
         stroke: "rgba(251,191,36,0.6)",
-        strokeWidth: 3,
-        cornerRadius: 55,
+        strokeWidth: 4,
+        cornerRadius: Math.round(h / 2),
         x: Math.round((sw - w) / 2),
         y: Math.round((sh - h) / 2),
         width: w,
@@ -86,7 +88,8 @@ const SOCIAL_PROOF_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 620, h = 110;
+      const w = Math.round(sw * 0.78);
+      const h = Math.round(sw * 0.16);
       return [{
         type: "shape",
         shape: "users-badge",
@@ -94,8 +97,8 @@ const SOCIAL_PROOF_PRESETS: BlockPreset[] = [
         subtext: "👥",
         fill: "rgba(6,78,59,0.85)",
         stroke: "rgba(16,185,129,0.6)",
-        strokeWidth: 3,
-        cornerRadius: 55,
+        strokeWidth: 4,
+        cornerRadius: Math.round(h / 2),
         x: Math.round((sw - w) / 2),
         y: Math.round((sh - h) / 2),
         width: w,
@@ -116,7 +119,8 @@ const SOCIAL_PROOF_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 640, h = 110;
+      const w = Math.round(sw * 0.80);
+      const h = Math.round(sw * 0.16);
       return [{
         type: "shape",
         shape: "security-badge",
@@ -124,8 +128,8 @@ const SOCIAL_PROOF_PRESETS: BlockPreset[] = [
         subtext: "🔒",
         fill: "rgba(30,58,138,0.85)",
         stroke: "rgba(59,130,246,0.6)",
-        strokeWidth: 3,
-        cornerRadius: 55,
+        strokeWidth: 4,
+        cornerRadius: Math.round(h / 2),
         x: Math.round((sw - w) / 2),
         y: Math.round((sh - h) / 2),
         width: w,
@@ -156,16 +160,17 @@ const UI_WIDGET_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 920, h = 210;
+      const w = Math.round(sw * 0.88);
+      const h = Math.round(sw * 0.20);
       return [{
         type: "shape",
         shape: "notification-badge",
-        text: "Workout completed! +250 XP earned 🎉",
+        text: "Workout complete! +250 XP earned 🎉",
         subtext: "SnapFrame · now",
-        fill: "rgba(255,255,255,0.95)",
+        fill: "rgba(255,255,255,0.96)",
         stroke: "rgba(255,255,255,0.4)",
-        strokeWidth: 2,
-        cornerRadius: 32,
+        strokeWidth: 3,
+        cornerRadius: Math.round(sw * 0.035),
         x: Math.round((sw - w) / 2),
         y: Math.round((sh - h) / 2),
         width: w,
@@ -185,7 +190,8 @@ const UI_WIDGET_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 840, h = 120;
+      const w = Math.round(sw * 0.86);
+      const h = Math.round(sw * 0.13);
       return [{
         type: "shape",
         shape: "search-badge",
@@ -193,8 +199,8 @@ const UI_WIDGET_PRESETS: BlockPreset[] = [
         subtext: "🔍",
         fill: "rgba(255,255,255,0.18)",
         stroke: "rgba(255,255,255,0.35)",
-        strokeWidth: 2,
-        cornerRadius: 60,
+        strokeWidth: 3,
+        cornerRadius: Math.round(h / 2),
         x: Math.round((sw - w) / 2),
         y: Math.round((sh - h) / 2),
         width: w,
@@ -218,7 +224,8 @@ const UI_WIDGET_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 750, h = 750;
+      const w = Math.round(sw * 0.95);
+      const h = Math.round(sw * 0.95);
       return [{
         type: "shape",
         shape: "glow-orb",
@@ -249,7 +256,8 @@ const UI_WIDGET_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 750, h = 750;
+      const w = Math.round(sw * 0.95);
+      const h = Math.round(sw * 0.95);
       return [{
         type: "shape",
         shape: "glow-orb",
@@ -278,20 +286,21 @@ const CONTAINER_PRESETS: BlockPreset[] = [
         style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.2)" }}
       >
         <div className="text-[10px] font-bold text-white leading-tight">Ultra Fast & Intuitive</div>
-        <div className="text-[8.5px] text-white/60 leading-tight truncate">Everything you need right here.</div>
+        <div className="text-[8.5px] text-white/60 leading-tight truncate">Designed for speed & simplicity.</div>
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 960, h = 380;
+      const w = Math.round(sw * 0.88);
+      const h = Math.round(sw * 0.38);
       return [{
         type: "shape",
         shape: "glass-card",
         text: "Ultra Fast & Intuitive",
-        subtext: "Everything you need right at your fingertips with zero complexity.",
-        fill: "rgba(255,255,255,0.12)",
+        subtext: "Designed for speed, simplicity, and ease of use.",
+        fill: "rgba(255,255,255,0.14)",
         stroke: "rgba(255,255,255,0.25)",
-        strokeWidth: 2,
-        cornerRadius: 36,
+        strokeWidth: 3,
+        cornerRadius: Math.round(sw * 0.04),
         x: Math.round((sw - w) / 2),
         y: Math.round((sh - h) / 2),
         width: w,
@@ -309,20 +318,21 @@ const CONTAINER_PRESETS: BlockPreset[] = [
         className="w-full h-16 rounded-xl flex flex-col justify-center px-3 gap-0.5 bg-black/80 border border-white/10"
       >
         <div className="text-[10px] font-bold text-white leading-tight">Pro Performance</div>
-        <div className="text-[8.5px] text-white/60 leading-tight truncate">Engineered for speed & power.</div>
+        <div className="text-[8.5px] text-white/60 leading-tight truncate">Engineered for power users.</div>
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 960, h = 380;
+      const w = Math.round(sw * 0.88);
+      const h = Math.round(sw * 0.38);
       return [{
         type: "shape",
         shape: "dark-card",
         text: "Pro Performance",
-        subtext: "Engineered for power users who demand lightning speed and precision.",
-        fill: "rgba(0,0,0,0.82)",
+        subtext: "Engineered for power users who demand lightning speed.",
+        fill: "rgba(10,14,23,0.90)",
         stroke: "rgba(255,255,255,0.15)",
-        strokeWidth: 2,
-        cornerRadius: 36,
+        strokeWidth: 3,
+        cornerRadius: Math.round(sw * 0.04),
         x: Math.round((sw - w) / 2),
         y: Math.round((sh - h) / 2),
         width: w,
@@ -343,15 +353,16 @@ const CONTAINER_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 400, h = 90;
+      const w = Math.round(sw * 0.52);
+      const h = Math.round(sw * 0.14);
       return [{
         type: "shape",
         shape: "pro-tag",
         text: "⚡ PRO FEATURE",
         fill: "#6366F1",
         stroke: "rgba(255,255,255,0.3)",
-        strokeWidth: 2,
-        cornerRadius: 45,
+        strokeWidth: 3,
+        cornerRadius: Math.round(h / 2),
         x: Math.round((sw - w) / 2),
         y: Math.round((sh - h) / 2),
         width: w,
@@ -372,15 +383,16 @@ const CONTAINER_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 280, h = 90;
+      const w = Math.round(sw * 0.42);
+      const h = Math.round(sw * 0.14);
       return [{
         type: "shape",
         shape: "new-tag",
         text: "✨ NEW",
         fill: "#10B981",
         stroke: "rgba(255,255,255,0.3)",
-        strokeWidth: 2,
-        cornerRadius: 45,
+        strokeWidth: 3,
+        cornerRadius: Math.round(h / 2),
         x: Math.round((sw - w) / 2),
         y: Math.round((sh - h) / 2),
         width: w,
@@ -397,14 +409,15 @@ const CONTAINER_PRESETS: BlockPreset[] = [
       <div className="w-16 h-2 rounded-full bg-indigo-500 shadow-xs" />
     ),
     getLayers: (sw, sh) => {
-      const w = 260, h = 24;
+      const w = Math.round(sw * 0.40);
+      const h = Math.round(sw * 0.035);
       return [{
         type: "shape",
         shape: "rectangle",
         fill: "#6366F1",
         stroke: "transparent",
         strokeWidth: 0,
-        cornerRadius: 12,
+        cornerRadius: Math.round(h / 2),
         x: Math.round((sw - w) / 2),
         y: Math.round((sh - h) / 2),
         width: w,
@@ -428,10 +441,13 @@ const SHAPE_PRESETS: BlockPreset[] = [
         />
       </svg>
     ),
-    getLayers: (sw, sh) => [{
-      type: "shape", shape: "star", fill: "#FBBF24", stroke: "transparent", strokeWidth: 0, cornerRadius: 0,
-      width: 220, height: 220, x: Math.round((sw - 220) / 2), y: Math.round((sh - 220) / 2), rotation: 0, opacity: 1,
-    } as any],
+    getLayers: (sw, sh) => {
+      const size = Math.round(sw * 0.38);
+      return [{
+        type: "shape", shape: "star", fill: "#FBBF24", stroke: "transparent", strokeWidth: 0, cornerRadius: 0,
+        width: size, height: size, x: Math.round((sw - size) / 2), y: Math.round((sh - size) / 2), rotation: 0, opacity: 1,
+      } as any];
+    },
   },
   {
     id: "triangle",
@@ -441,10 +457,13 @@ const SHAPE_PRESETS: BlockPreset[] = [
         <polygon points="24,4 44,44 4,44" fill="#6366F1" />
       </svg>
     ),
-    getLayers: (sw, sh) => [{
-      type: "shape", shape: "triangle", fill: "#6366F1", stroke: "transparent", strokeWidth: 0, cornerRadius: 0,
-      width: 220, height: 220, x: Math.round((sw - 220) / 2), y: Math.round((sh - 220) / 2), rotation: 0, opacity: 1,
-    } as any],
+    getLayers: (sw, sh) => {
+      const size = Math.round(sw * 0.38);
+      return [{
+        type: "shape", shape: "triangle", fill: "#6366F1", stroke: "transparent", strokeWidth: 0, cornerRadius: 0,
+        width: size, height: size, x: Math.round((sw - size) / 2), y: Math.round((sh - size) / 2), rotation: 0, opacity: 1,
+      } as any];
+    },
   },
   {
     id: "hexagon",
@@ -457,10 +476,13 @@ const SHAPE_PRESETS: BlockPreset[] = [
         />
       </svg>
     ),
-    getLayers: (sw, sh) => [{
-      type: "shape", shape: "hexagon", fill: "#14B8A6", stroke: "transparent", strokeWidth: 0, cornerRadius: 0,
-      width: 220, height: 220, x: Math.round((sw - 220) / 2), y: Math.round((sh - 220) / 2), rotation: 0, opacity: 1,
-    } as any],
+    getLayers: (sw, sh) => {
+      const size = Math.round(sw * 0.38);
+      return [{
+        type: "shape", shape: "hexagon", fill: "#14B8A6", stroke: "transparent", strokeWidth: 0, cornerRadius: 0,
+        width: size, height: size, x: Math.round((sw - size) / 2), y: Math.round((sh - size) / 2), rotation: 0, opacity: 1,
+      } as any];
+    },
   },
   {
     id: "diamond",
@@ -470,10 +492,14 @@ const SHAPE_PRESETS: BlockPreset[] = [
         <polygon points="24,4 44,24 24,44 4,24" fill="#EC4899" />
       </svg>
     ),
-    getLayers: (sw, sh) => [{
-      type: "shape", shape: "diamond", fill: "#EC4899", stroke: "transparent", strokeWidth: 0, cornerRadius: 0,
-      width: 200, height: 240, x: Math.round((sw - 200) / 2), y: Math.round((sh - 240) / 2), rotation: 0, opacity: 1,
-    } as any],
+    getLayers: (sw, sh) => {
+      const sizeW = Math.round(sw * 0.34);
+      const sizeH = Math.round(sw * 0.40);
+      return [{
+        type: "shape", shape: "diamond", fill: "#EC4899", stroke: "transparent", strokeWidth: 0, cornerRadius: 0,
+        width: sizeW, height: sizeH, x: Math.round((sw - sizeW) / 2), y: Math.round((sh - sizeH) / 2), rotation: 0, opacity: 1,
+      } as any];
+    },
   },
   {
     id: "crescent",
@@ -483,10 +509,13 @@ const SHAPE_PRESETS: BlockPreset[] = [
         <path d="M 24 4 A 20 20 0 1 1 24 44 A 14 14 0 1 0 24 4 Z" fill="#F59E0B" />
       </svg>
     ),
-    getLayers: (sw, sh) => [{
-      type: "shape", shape: "crescent", fill: "#F59E0B", stroke: "transparent", strokeWidth: 0, cornerRadius: 0,
-      width: 220, height: 220, x: Math.round((sw - 220) / 2), y: Math.round((sh - 220) / 2), rotation: 0, opacity: 1,
-    } as any],
+    getLayers: (sw, sh) => {
+      const size = Math.round(sw * 0.38);
+      return [{
+        type: "shape", shape: "crescent", fill: "#F59E0B", stroke: "transparent", strokeWidth: 0, cornerRadius: 0,
+        width: size, height: size, x: Math.round((sw - size) / 2), y: Math.round((sh - size) / 2), rotation: 0, opacity: 1,
+      } as any];
+    },
   },
   {
     id: "arrowRight",
@@ -496,10 +525,14 @@ const SHAPE_PRESETS: BlockPreset[] = [
         <polygon points="0,6 29,6 29,0 48,10 29,20 29,14 0,14" fill="#6366F1" />
       </svg>
     ),
-    getLayers: (sw, sh) => [{
-      type: "shape", shape: "arrowRight", fill: "#6366F1", stroke: "transparent", strokeWidth: 0, cornerRadius: 0,
-      width: 320, height: 130, x: Math.round((sw - 320) / 2), y: Math.round((sh - 130) / 2), rotation: 0, opacity: 1,
-    } as any],
+    getLayers: (sw, sh) => {
+      const sizeW = Math.round(sw * 0.55);
+      const sizeH = Math.round(sw * 0.24);
+      return [{
+        type: "shape", shape: "arrowRight", fill: "#6366F1", stroke: "transparent", strokeWidth: 0, cornerRadius: 0,
+        width: sizeW, height: sizeH, x: Math.round((sw - sizeW) / 2), y: Math.round((sh - sizeH) / 2), rotation: 0, opacity: 1,
+      } as any];
+    },
   },
 ];
 
@@ -515,15 +548,16 @@ const OFFER_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 560, h = 110;
+      const w = Math.round(sw * 0.78);
+      const h = Math.round(sw * 0.16);
       return [{
         type: "shape",
         shape: "sale-badge",
         text: "🏷️ 50% OFF · Early Bird Special",
         fill: "#E11D48",
         stroke: "rgba(255,255,255,0.4)",
-        strokeWidth: 3,
-        cornerRadius: 55,
+        strokeWidth: 4,
+        cornerRadius: Math.round(h / 2),
         x: Math.round((sw - w) / 2),
         y: Math.round((sh - h) / 2),
         width: w,
@@ -544,15 +578,16 @@ const OFFER_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 600, h = 110;
+      const w = Math.round(sw * 0.80);
+      const h = Math.round(sw * 0.16);
       return [{
         type: "shape",
         shape: "trial-badge",
         text: "🚀 Try Free for 7 Days · No Card",
         fill: "#6366F1",
         stroke: "rgba(255,255,255,0.4)",
-        strokeWidth: 3,
-        cornerRadius: 55,
+        strokeWidth: 4,
+        cornerRadius: Math.round(h / 2),
         x: Math.round((sw - w) / 2),
         y: Math.round((sh - h) / 2),
         width: w,
@@ -572,15 +607,16 @@ const OFFER_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 720, h = 110;
+      const w = Math.round(sw * 0.90);
+      const h = Math.round(sw * 0.16);
       return [{
         type: "shape",
         shape: "checklist-badge",
         text: "✓ Ad-Free  ·  ✓ Offline Mode  ·  ✓ 4K Export",
         fill: "rgba(15,23,42,0.92)",
         stroke: "rgba(255,255,255,0.25)",
-        strokeWidth: 2,
-        cornerRadius: 55,
+        strokeWidth: 3,
+        cornerRadius: Math.round(h / 2),
         x: Math.round((sw - w) / 2),
         y: Math.round((sh - h) / 2),
         width: w,
@@ -603,7 +639,8 @@ const PRESS_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 900, h = 240;
+      const w = Math.round(sw * 0.92);
+      const h = Math.round(sw * 0.30);
       return [{
         type: "shape",
         shape: "press-badge",
@@ -611,8 +648,8 @@ const PRESS_PRESETS: BlockPreset[] = [
         subtext: "— TechCrunch",
         fill: "rgba(15,23,42,0.92)",
         stroke: "rgba(16,185,129,0.5)",
-        strokeWidth: 3,
-        cornerRadius: 32,
+        strokeWidth: 4,
+        cornerRadius: Math.round(sw * 0.035),
         x: Math.round((sw - w) / 2),
         y: Math.round((sh - h) / 2),
         width: w,
@@ -633,7 +670,8 @@ const PRESS_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 900, h = 280;
+      const w = Math.round(sw * 0.92);
+      const h = Math.round(sw * 0.34);
       return [{
         type: "shape",
         shape: "testimonial-badge",
@@ -641,8 +679,8 @@ const PRESS_PRESETS: BlockPreset[] = [
         subtext: "Alex Morgan · Lead iOS Developer",
         fill: "rgba(15,23,42,0.92)",
         stroke: "rgba(245,158,11,0.5)",
-        strokeWidth: 3,
-        cornerRadius: 36,
+        strokeWidth: 4,
+        cornerRadius: Math.round(sw * 0.035),
         x: Math.round((sw - w) / 2),
         y: Math.round((sh - h) / 2),
         width: w,
@@ -662,15 +700,16 @@ const PRESS_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 580, h = 110;
+      const w = Math.round(sw * 0.76);
+      const h = Math.round(sw * 0.16);
       return [{
         type: "shape",
         shape: "live-counter-badge",
         text: "🔥 2,500+ Downloads Today",
         fill: "rgba(67,20,7,0.92)",
         stroke: "rgba(249,115,22,0.6)",
-        strokeWidth: 3,
-        cornerRadius: 55,
+        strokeWidth: 4,
+        cornerRadius: Math.round(h / 2),
         x: Math.round((sw - w) / 2),
         y: Math.round((sh - h) / 2),
         width: w,
@@ -698,10 +737,26 @@ const BADGE_PRESETS: BlockPreset[] = [
         </div>
       </div>
     ),
-    getLayers: (sw, sh) => [{
-      type: "shape", shape: "appstore-badge", fill: "#000000", stroke: "rgba(255,255,255,0.3)", strokeWidth: 2, cornerRadius: 28,
-      width: 480, height: 140, x: Math.round((sw - 480) / 2), y: Math.round((sh - 140) / 2), rotation: 0, opacity: 1,
-    } as any],
+    getLayers: (sw, sh) => {
+      const w = Math.round(sw * 0.72);
+      const h = Math.round(sw * 0.21);
+      return [{
+        type: "shape",
+        shape: "appstore-badge",
+        text: "App Store",
+        subtext: "Download on the",
+        fill: "#000000",
+        stroke: "rgba(255,255,255,0.3)",
+        strokeWidth: 3,
+        cornerRadius: Math.round(sw * 0.04),
+        width: w,
+        height: h,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        rotation: 0,
+        opacity: 1,
+      } as any];
+    },
   },
   {
     id: "googleplay",
@@ -718,10 +773,26 @@ const BADGE_PRESETS: BlockPreset[] = [
         </div>
       </div>
     ),
-    getLayers: (sw, sh) => [{
-      type: "shape", shape: "googleplay-badge", fill: "#000000", stroke: "rgba(255,255,255,0.3)", strokeWidth: 2, cornerRadius: 28,
-      width: 480, height: 140, x: Math.round((sw - 480) / 2), y: Math.round((sh - 140) / 2), rotation: 0, opacity: 1,
-    } as any],
+    getLayers: (sw, sh) => {
+      const w = Math.round(sw * 0.72);
+      const h = Math.round(sw * 0.21);
+      return [{
+        type: "shape",
+        shape: "googleplay-badge",
+        text: "Google Play",
+        subtext: "GET IT ON",
+        fill: "#000000",
+        stroke: "rgba(255,255,255,0.3)",
+        strokeWidth: 3,
+        cornerRadius: Math.round(sw * 0.04),
+        width: w,
+        height: h,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        rotation: 0,
+        opacity: 1,
+      } as any];
+    },
   },
   {
     id: "rank-productivity",
@@ -739,32 +810,23 @@ const BADGE_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 580, h = 120;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "rounded-rectangle",
-          fill: "#172554",
-          stroke: "rgba(96,165,250,0.6)",
-          strokeWidth: 3,
-          cornerRadius: 30,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "🏅 #1 Top Free App",
-          fontSize: 42,
-          fontWeight: 700,
-          fontFamily: "Inter",
-          color: "#FFFFFF",
-          align: "center",
-          x, y: y + 32, width: w, height: 60,
-          rotation: 0, opacity: 1,
-        } as any,
-      ];
+      const w = Math.round(sw * 0.76);
+      const h = Math.round(sw * 0.18);
+      return [{
+        type: "shape",
+        shape: "ranking-badge",
+        text: "🏅 #1 Top Free App",
+        fill: "#172554",
+        stroke: "rgba(96,165,250,0.6)",
+        strokeWidth: 4,
+        cornerRadius: Math.round(sw * 0.035),
+        width: w,
+        height: h,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        rotation: 0,
+        opacity: 1,
+      } as any];
     },
   },
 ];
