@@ -232,16 +232,31 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
             const cl = layer as import("@/lib/types").CharacterLayer;
             if (cl.svgContent) {
               try {
-                const blob = new Blob([cl.svgContent], { type: "image/svg+xml" });
-                const blobUrl = URL.createObjectURL(blob);
+                let imgUrl = cl.svgContent;
+                let needsRevoke = false;
+
+                if (cl.svgContent.startsWith("<") || cl.svgContent.includes("<svg") || cl.svgContent.includes("<g")) {
+                  const fullSvg = cl.svgContent.startsWith("<svg")
+                    ? cl.svgContent
+                    : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500">${cl.svgContent}</svg>`;
+                  const blob = new Blob([fullSvg], { type: "image/svg+xml" });
+                  imgUrl = URL.createObjectURL(blob);
+                  needsRevoke = true;
+                } else if (cl.svgContent.startsWith("http://") || cl.svgContent.startsWith("https://")) {
+                  imgUrl = `/api/proxy-svg?url=${encodeURIComponent(cl.svgContent)}`;
+                }
+
                 const img = await new Promise<HTMLImageElement>((resolve, reject) => {
                   const i = new Image();
+                  i.crossOrigin = "anonymous";
                   i.onload = () => resolve(i);
                   i.onerror = reject;
-                  i.src = blobUrl;
+                  i.src = imgUrl;
                 });
                 ctx.drawImage(img, cl.x, cl.y, cl.width, cl.height);
-                URL.revokeObjectURL(blobUrl);
+                if (needsRevoke) {
+                  URL.revokeObjectURL(imgUrl);
+                }
               } catch { /* skip */ }
             }
           }

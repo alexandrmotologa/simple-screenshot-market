@@ -7,6 +7,7 @@ import { CharacterLayer } from "@/lib/types";
 import { nanoid } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "@/lib/store/toastStore";
 
 const CATEGORY_LABELS: Record<string, string> = {
   all: "All",
@@ -20,10 +21,10 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export function CharactersPanel() {
-  const { activeSetId, activeScreenId, addLayer } = useEditorStore();
+  const { getActiveSet, getActiveScreen, addLayer } = useEditorStore();
   
   const libraries = Array.from(new Set(CHARACTERS.map((c) => c.library || "Open Peeps")));
-  const [activeLibrary, setActiveLibrary] = useState<string>(libraries[0]);
+  const [activeLibrary, setActiveLibrary] = useState<string>(libraries[0] || "3D Mascots & Robots");
   
   const libraryCharacters = CHARACTERS.filter((c) => (c.library || "Open Peeps") === activeLibrary);
   
@@ -34,19 +35,29 @@ export function CharactersPanel() {
     filter === "all" ? libraryCharacters : libraryCharacters.filter((c) => c.category === filter);
 
   const handleAdd = async (char: Character) => {
-    if (!activeSetId || !activeScreenId) return;
+    const activeSet = getActiveSet();
+    const activeScreen = getActiveScreen();
+    if (!activeSet || !activeScreen) {
+      toast.error("Select a screen first to place character");
+      return;
+    }
+
     const pose = char.poses[0];
     if (!pose) return;
 
     let svgContent = getCharacterSvgString(char.id, pose.id);
 
     if (svgContent.startsWith("http")) {
+      const proxyUrl = `/api/proxy-svg?url=${encodeURIComponent(svgContent)}`;
       try {
-        const res = await fetch(svgContent);
-        svgContent = await res.text();
-      } catch (err) {
-        console.error("Failed to fetch character SVG", err);
-        return;
+        const res = await fetch(proxyUrl);
+        if (res.ok) {
+          svgContent = await res.text();
+        } else {
+          svgContent = proxyUrl;
+        }
+      } catch {
+        svgContent = proxyUrl;
       }
     }
 
@@ -56,21 +67,23 @@ export function CharactersPanel() {
       characterId: char.id,
       poseId: pose.id,
       svgContent,
-      x: 200,
-      y: 600,
+      x: Math.round(activeScreen.width / 2 - 140),
+      y: Math.round(activeScreen.height / 2 - 175),
       width: 280,
       height: 350,
       rotation: 0,
       opacity: 1,
     };
 
-    addLayer(activeSetId, activeScreenId, layer as import("@/lib/types").Layer);
+    addLayer(activeSet.id, activeScreen.id, layer as import("@/lib/types").Layer);
+    useEditorStore.getState().recordHistory();
+    toast.success(`Added ${char.name} to canvas!`);
   };
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Library tabs */}
-      <div className="flex gap-1 px-3 py-2 overflow-x-auto shrink-0 border-b border-border/30">
+      <div className="flex gap-1 px-3 py-2 overflow-x-auto shrink-0 border-b border-border/30 scrollbar-none">
         {libraries.map((lib) => (
           <button
             key={lib}
@@ -80,9 +93,9 @@ export function CharactersPanel() {
               setFilter("all");
             }}
             className={cn(
-              "shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all",
+              "shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer",
               activeLibrary === lib
-                ? "bg-primary text-primary-foreground"
+                ? "bg-primary text-primary-foreground shadow-xs"
                 : "bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary"
             )}
           >
@@ -92,7 +105,7 @@ export function CharactersPanel() {
       </div>
 
       {/* Category filter */}
-      <div className="px-3 pt-3 pb-2 shrink-0 border-b border-border/30">
+      <div className="px-3 pt-2.5 pb-2 shrink-0 border-b border-border/30">
         <div className="flex flex-wrap gap-1">
           {categories.map((cat) => (
             <button
@@ -100,9 +113,9 @@ export function CharactersPanel() {
               type="button"
               onClick={() => setFilter(cat)}
               className={cn(
-                "px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all",
+                "px-2 py-0.5 rounded-lg text-[10.5px] font-medium transition-all cursor-pointer",
                 filter === cat
-                  ? "bg-indigo-500 text-white"
+                  ? "bg-indigo-500 text-white shadow-2xs"
                   : "bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary"
               )}
             >
@@ -114,13 +127,14 @@ export function CharactersPanel() {
 
       {/* Character grid */}
       <ScrollArea className="flex-1 min-h-0">
-        <div className="p-3 grid grid-cols-2 gap-2">
+        <div className="p-3 grid grid-cols-2 gap-2.5">
           {filtered.map((char) => {
             const pose = char.poses[0];
             if (!pose) return null;
             const svgStr = getCharacterSvgString(char.id, pose.id);
-            const dataUrl = svgStr.startsWith("http") 
-              ? svgStr 
+            const directUrl = svgStr.startsWith("http") ? svgStr : null;
+            const previewUrl = directUrl
+              ? `/api/proxy-svg?url=${encodeURIComponent(directUrl)}`
               : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgStr)}`;
 
             return (
@@ -129,28 +143,34 @@ export function CharactersPanel() {
                 type="button"
                 onClick={() => handleAdd(char)}
                 className={cn(
-                  "group flex flex-col items-center gap-1.5 p-2 rounded-xl border border-border/40",
-                  "bg-secondary/30 hover:bg-secondary/60 hover:border-indigo-500/30 transition-all",
-                  "focus-visible:ring-2 focus-visible:ring-indigo-500"
+                  "group flex flex-col items-center gap-1.5 p-2 rounded-xl border border-border/40 cursor-pointer",
+                  "bg-secondary/30 hover:bg-secondary/70 hover:border-primary/40 transition-all hover:scale-[1.02]",
+                  "focus-visible:ring-2 focus-visible:ring-primary"
                 )}
                 title={`Add ${char.name} — ${char.description}`}
               >
                 {/* Character preview */}
-                <div className="w-full aspect-[4/5] rounded-lg bg-secondary/50 overflow-hidden flex items-center justify-center relative">
+                <div className="w-full aspect-[4/5] rounded-lg bg-background/50 border border-border/30 overflow-hidden flex items-center justify-center relative p-1.5">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={dataUrl}
+                    src={previewUrl}
                     alt={char.name}
+                    loading="lazy"
                     className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
+                    onError={(e) => {
+                      if (directUrl) {
+                        (e.target as HTMLImageElement).src = directUrl;
+                      }
+                    }}
                   />
                   {/* Hover overlay */}
-                  <div className="absolute inset-0 bg-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                    <span className="text-xs font-semibold text-indigo-300 bg-indigo-900/80 px-2 py-0.5 rounded-md">
+                  <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                    <span className="text-[11px] font-semibold text-primary-foreground bg-primary/90 px-2 py-0.5 rounded-md shadow-xs">
                       + Add
                     </span>
                   </div>
                 </div>
-                <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                <span className="text-[10.5px] font-medium text-muted-foreground group-hover:text-foreground transition-colors truncate max-w-full">
                   {char.name}
                 </span>
               </button>
@@ -159,9 +179,9 @@ export function CharactersPanel() {
         </div>
 
         {/* Info footer */}
-        <div className="px-3 pb-3">
+        <div className="px-3 pb-3 pt-2">
           <p className="text-[10px] text-muted-foreground text-center">
-            {activeLibrary} style · CC0 License · Click to add to canvas
+            {filtered.length} characters in {activeLibrary} · Vector SVG
           </p>
         </div>
       </ScrollArea>

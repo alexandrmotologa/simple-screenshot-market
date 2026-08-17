@@ -125,11 +125,25 @@ async function renderScreenToCanvas(
       const cl = layer as import("@/lib/types").CharacterLayer;
       if (cl.svgContent) {
         try {
-          const blob = new Blob([cl.svgContent], { type: "image/svg+xml" });
-          const url = URL.createObjectURL(blob);
-          const img = await loadImg(url);
+          let imgUrl = cl.svgContent;
+          let needsRevoke = false;
+
+          if (cl.svgContent.startsWith("<") || cl.svgContent.includes("<svg") || cl.svgContent.includes("<g")) {
+            const fullSvg = cl.svgContent.startsWith("<svg")
+              ? cl.svgContent
+              : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500">${cl.svgContent}</svg>`;
+            const blob = new Blob([fullSvg], { type: "image/svg+xml" });
+            imgUrl = URL.createObjectURL(blob);
+            needsRevoke = true;
+          } else if (cl.svgContent.startsWith("http://") || cl.svgContent.startsWith("https://")) {
+            imgUrl = `/api/proxy-svg?url=${encodeURIComponent(cl.svgContent)}`;
+          }
+
+          const img = await loadImg(imgUrl);
           ctx.drawImage(img, cl.x, cl.y, cl.width, cl.height);
-          URL.revokeObjectURL(url);
+          if (needsRevoke) {
+            URL.revokeObjectURL(imgUrl);
+          }
         } catch {/**/}
       }
     }

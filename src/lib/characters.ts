@@ -17,7 +17,7 @@ export interface CharacterPose {
 export interface Character {
   id: string;
   name: string;
-  library?: "Open Peeps" | "Avataaars" | "Doodles";
+  library?: string;
   category: "happy" | "thinking" | "celebrating" | "sitting" | "standing" | "waving" | "working";
   description: string;
   /** Base color (skin tone) */
@@ -542,6 +542,51 @@ const SEEDS = [
 const generatedCharacters: Character[] = [];
 
 SEEDS.forEach((seed, i) => {
+  // 3D Robots & Mascots (Bottts)
+  generatedCharacters.push({
+    id: `bottts-${seed.toLowerCase()}`,
+    name: `${seed} Bot`,
+    category: i % 2 === 0 ? "happy" : "celebrating",
+    description: "3D Robot Mascot",
+    library: "3D Mascots & Robots",
+    poses: [{
+      id: "bot",
+      name: "Robot",
+      svg: `https://api.dicebear.com/9.x/bottts/svg?seed=${seed}&textureChance=50`,
+      viewBox: "0 0 400 400"
+    }]
+  });
+
+  // 3D Fun Emojis
+  generatedCharacters.push({
+    id: `emoji-${seed.toLowerCase()}`,
+    name: `${seed} Emoji`,
+    category: "happy",
+    description: "3D Fun Emoji Character",
+    library: "3D Emojis",
+    poses: [{
+      id: "emoji",
+      name: "Emoji",
+      svg: `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${seed}`,
+      viewBox: "0 0 400 400"
+    }]
+  });
+
+  // Modern 3D Avatars (Lorelei)
+  generatedCharacters.push({
+    id: `lorelei-${seed.toLowerCase()}`,
+    name: seed,
+    category: i % 3 === 0 ? "happy" : i % 3 === 1 ? "thinking" : "standing",
+    description: "Modern Illustrated Avatar",
+    library: "3D & Modern Avatars",
+    poses: [{
+      id: "avatar",
+      name: "Avatar",
+      svg: `https://api.dicebear.com/9.x/lorelei/svg?seed=${seed}`,
+      viewBox: "0 0 400 400"
+    }]
+  });
+
   // Avataaars
   generatedCharacters.push({
     id: `avataaar-${seed.toLowerCase()}`,

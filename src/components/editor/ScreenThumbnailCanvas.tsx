@@ -289,11 +289,30 @@ export function ScreenThumbnailCanvas({
 
       // ── Image / Brand / Character / Flag Layer ──
       else if (layer.type === "image" || layer.type === "brand" || layer.type === "flag" || layer.type === "character") {
-        const il = layer as ImageLayer;
-        if (il.src) {
+        const anyLayer = layer as any;
+        let rawSrc = anyLayer.src || anyLayer.svgContent;
+        if (rawSrc) {
           try {
-            const img = await loadCachedImage(il.src);
-            ctx.drawImage(img, il.x, il.y, il.width, il.height);
+            let imgUrl = rawSrc;
+            let needsRevoke = false;
+
+            if (rawSrc.startsWith("<") || rawSrc.includes("<svg") || rawSrc.includes("<g")) {
+              const fullSvg = rawSrc.startsWith("<svg")
+                ? rawSrc
+                : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500">${rawSrc}</svg>`;
+              const blob = new Blob([fullSvg], { type: "image/svg+xml" });
+              imgUrl = URL.createObjectURL(blob);
+              needsRevoke = true;
+            } else if (rawSrc.startsWith("http://") || rawSrc.startsWith("https://")) {
+              imgUrl = `/api/proxy-svg?url=${encodeURIComponent(rawSrc)}`;
+            }
+
+            const img = await loadCachedImage(imgUrl);
+            ctx.drawImage(img, layer.x, layer.y, layer.width, layer.height);
+
+            if (needsRevoke) {
+              URL.revokeObjectURL(imgUrl);
+            }
           } catch {}
         }
       }
