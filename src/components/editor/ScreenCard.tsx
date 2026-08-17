@@ -47,6 +47,64 @@ function parseColorStr(ctx: CanvasRenderingContext2D, fill: string, x: number, y
   return fill;
 }
 
+function drawAppleLogo(ctx: CanvasRenderingContext2D, cx: number, cy: number, size: number, color: string) {
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.translate(cx, cy);
+  const s = size / 36;
+  ctx.scale(s, s);
+
+  // Leaf
+  ctx.beginPath();
+  ctx.moveTo(1, -12);
+  ctx.bezierCurveTo(2.2, -13.5, 3.5, -15.5, 3.2, -17.5);
+  ctx.bezierCurveTo(1.5, -17.4, -0.4, -16.3, -1.6, -14.8);
+  ctx.bezierCurveTo(-2.7, -13.4, -3.6, -11.4, -3.3, -9.4);
+  ctx.bezierCurveTo(-1.4, -9.3, 0.5, -10.5, 1, -12);
+  ctx.closePath();
+  ctx.fill();
+
+  // Apple Body
+  ctx.beginPath();
+  ctx.moveTo(3.3, -8.3);
+  ctx.bezierCurveTo(0.3, -8.3, -1.6, -6.6, -3.8, -6.6);
+  ctx.bezierCurveTo(-6.1, -6.6, -8.4, -8.3, -10.9, -8.3);
+  ctx.bezierCurveTo(-15.5, -8.3, -19.5, -4.3, -19.5, 3.8);
+  ctx.bezierCurveTo(-19.5, 8.8, -17.6, 13.9, -15.1, 17.5);
+  ctx.bezierCurveTo(-13.3, 20.2, -11.1, 23.2, -8.2, 23.1);
+  ctx.bezierCurveTo(-5.4, 23, -4.4, 21.2, -1.1, 21.2);
+  ctx.bezierCurveTo(2.1, 21.2, 3.1, 23, 6, 23.1);
+  ctx.bezierCurveTo(9, 23.2, 11, 20.4, 12.8, 17.7);
+  ctx.bezierCurveTo(14.9, 14.6, 15.7, 11.6, 15.8, 11.4);
+  ctx.bezierCurveTo(15.6, 11.3, 10.3, 9.3, 10.2, 3.2);
+  ctx.bezierCurveTo(10.1, -2, 14.4, -4.5, 14.6, -4.6);
+  ctx.bezierCurveTo(12.2, -8.1, 8.5, -8.3, 3.3, -8.3);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawGooglePlayLogo(ctx: CanvasRenderingContext2D, cx: number, cy: number, size: number) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const s = size / 32;
+  ctx.scale(s, s);
+
+  ctx.beginPath();
+  ctx.moveTo(-10, -14);
+  ctx.lineTo(14, 0);
+  ctx.lineTo(-10, 14);
+  ctx.closePath();
+
+  const g = ctx.createLinearGradient(-10, -14, 14, 14);
+  g.addColorStop(0, "#00C3FF");
+  g.addColorStop(0.5, "#00E676");
+  g.addColorStop(1, "#FFD600");
+  ctx.fillStyle = g;
+  ctx.fill();
+  ctx.restore();
+}
+
 export function ScreenCard({ screen, screenSet, index, hideScreenshots }: ScreenCardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [editingCaption, setEditingCaption] = useState(false);
@@ -907,6 +965,9 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         } else if (sl.shape === "appstore-badge" || sl.shape === "googleplay-badge") {
           const isApple = sl.shape === "appstore-badge";
           const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        } else if (sl.shape === "appstore-badge" || sl.shape === "googleplay-badge") {
+          const isApple = sl.shape === "appstore-badge";
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
           const maxR = Math.min(bw, bh) / 2;
           const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : bh * 0.22;
 
@@ -922,18 +983,18 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           }
 
           // Icon area (left side)
-          const iconSize  = bh * 0.52;
-          const iconX     = bx + bh * 0.32;
-          ctx.fillStyle   = "#ffffff";
-          ctx.font        = `${iconSize}px serif`;
-          ctx.textAlign   = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(isApple ? "" : "▶", iconX, by + bh / 2);
+          const iconSize  = bh * 0.48;
+          const iconX     = bx + bh * 0.36;
+          if (isApple) {
+            drawAppleLogo(ctx, iconX, by + bh / 2, iconSize, "#ffffff");
+          } else {
+            drawGooglePlayLogo(ctx, iconX, by + bh / 2, iconSize);
+          }
 
           // Labels
-          const labelX = bx + bw * 0.57;
-          const topLabel = isApple ? "Download on the" : "GET IT ON";
-          const botLabel = isApple ? "App Store" : "Google Play";
+          const labelX = bx + bw * 0.58;
+          const topLabel = sl.subtext || (isApple ? "Download on the" : "GET IT ON");
+          const botLabel = sl.text || (isApple ? "App Store" : "Google Play");
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
 

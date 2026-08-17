@@ -628,46 +628,360 @@ const SHAPE_PRESETS: BlockPreset[] = [
   },
 ];
 
+const OFFER_PRESETS: BlockPreset[] = [
+  {
+    id: "sale-50",
+    name: "50% OFF Launch Sale",
+    category: "Offers & CTAs",
+    preview: (
+      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-600/90 text-white border border-rose-400/40 shadow-xs">
+        <span className="text-xs">🏷️</span>
+        <span className="text-[11px] font-bold">50% OFF · Early Bird</span>
+      </div>
+    ),
+    getLayers: (sw, sh) => {
+      const w = 560, h = 110;
+      const x = Math.round((sw - w) / 2);
+      const y = Math.round((sh - h) / 2);
+      return [
+        {
+          type: "shape",
+          shape: "rounded-rectangle",
+          fill: "#E11D48",
+          stroke: "rgba(255,255,255,0.4)",
+          strokeWidth: 3,
+          cornerRadius: 55,
+          x, y, width: w, height: h,
+          rotation: 0, opacity: 1,
+        } as any,
+        {
+          type: "text",
+          content: "🏷️ 50% OFF · Early Bird Special",
+          fontSize: 38,
+          fontWeight: 700,
+          fontFamily: "Inter",
+          color: "#FFFFFF",
+          align: "center",
+          x, y: y + 28, width: w, height: 60,
+          rotation: 0, opacity: 1,
+        } as any,
+      ];
+    },
+  },
+  {
+    id: "trial-cta",
+    name: "Free Trial CTA",
+    category: "Offers & CTAs",
+    preview: (
+      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white border border-indigo-400/40 shadow-xs">
+        <span className="text-xs">🚀</span>
+        <span className="text-[11px] font-bold">Try Free for 7 Days</span>
+      </div>
+    ),
+    getLayers: (sw, sh) => {
+      const w = 600, h = 110;
+      const x = Math.round((sw - w) / 2);
+      const y = Math.round((sh - h) / 2);
+      return [
+        {
+          type: "shape",
+          shape: "rounded-rectangle",
+          fill: "#6366F1",
+          stroke: "rgba(255,255,255,0.4)",
+          strokeWidth: 3,
+          cornerRadius: 55,
+          x, y, width: w, height: h,
+          rotation: 0, opacity: 1,
+        } as any,
+        {
+          type: "text",
+          content: "🚀 Try Free for 7 Days · No Card",
+          fontSize: 38,
+          fontWeight: 700,
+          fontFamily: "Inter",
+          color: "#FFFFFF",
+          align: "center",
+          x, y: y + 28, width: w, height: 60,
+          rotation: 0, opacity: 1,
+        } as any,
+      ];
+    },
+  },
+  {
+    id: "features-checklist",
+    name: "Feature Checklist Pill",
+    category: "Offers & CTAs",
+    preview: (
+      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-700 text-slate-200 shadow-xs">
+        <span className="text-[10px] font-semibold">✓ Ad-Free · ✓ Offline · ✓ 4K</span>
+      </div>
+    ),
+    getLayers: (sw, sh) => {
+      const w = 720, h = 110;
+      const x = Math.round((sw - w) / 2);
+      const y = Math.round((sh - h) / 2);
+      return [
+        {
+          type: "shape",
+          shape: "rounded-rectangle",
+          fill: "rgba(15,23,42,0.92)",
+          stroke: "rgba(255,255,255,0.25)",
+          strokeWidth: 2,
+          cornerRadius: 55,
+          x, y, width: w, height: h,
+          rotation: 0, opacity: 1,
+        } as any,
+        {
+          type: "text",
+          content: "✓ Ad-Free  ·  ✓ Offline Mode  ·  ✓ 4K Export",
+          fontSize: 36,
+          fontWeight: 600,
+          fontFamily: "Inter",
+          color: "#F8FAFC",
+          align: "center",
+          x, y: y + 30, width: w, height: 60,
+          rotation: 0, opacity: 1,
+        } as any,
+      ];
+    },
+  },
+];
+
+const PRESS_PRESETS: BlockPreset[] = [
+  {
+    id: "press-quote",
+    name: "TechCrunch Press Quote",
+    preview: (
+      <div className="w-full p-2.5 rounded-xl bg-slate-900/90 border border-emerald-500/30 text-white">
+        <div className="text-[9.5px] font-medium italic text-slate-200">"The fastest screenshot editor on mobile."</div>
+        <div className="text-[9px] font-bold text-emerald-400 mt-1">— TechCrunch</div>
+      </div>
+    ),
+    getLayers: (sw, sh) => {
+      const w = 900, h = 260;
+      const x = Math.round((sw - w) / 2);
+      const y = Math.round((sh - h) / 2);
+      return [
+        {
+          type: "shape",
+          shape: "rounded-rectangle",
+          fill: "rgba(15,23,42,0.92)",
+          stroke: "rgba(16,185,129,0.5)",
+          strokeWidth: 3,
+          cornerRadius: 32,
+          x, y, width: w, height: h,
+          rotation: 0, opacity: 1,
+        } as any,
+        {
+          type: "text",
+          content: '"The cleanest and fastest screenshot generator on mobile."',
+          fontSize: 42,
+          fontWeight: 500,
+          fontFamily: "Inter",
+          color: "#FFFFFF",
+          align: "center",
+          x: x + 40, y: y + 45, width: w - 80, height: 100,
+          rotation: 0, opacity: 1,
+        } as any,
+        {
+          type: "text",
+          content: "— TechCrunch",
+          fontSize: 36,
+          fontWeight: 700,
+          fontFamily: "Inter",
+          color: "#34D399",
+          align: "center",
+          x: x + 40, y: y + 170, width: w - 80, height: 50,
+          rotation: 0, opacity: 1,
+        } as any,
+      ];
+    },
+  },
+  {
+    id: "user-review-card",
+    name: "5-Star User Testimonial",
+    preview: (
+      <div className="w-full p-2.5 rounded-xl bg-slate-900/90 border border-amber-500/30 text-white">
+        <div className="text-amber-400 text-xs font-bold mb-0.5">★★★★★</div>
+        <div className="text-[9.5px] font-medium text-slate-200">"Boosted our App Store conversion by +40%!"</div>
+        <div className="text-[8.5px] text-muted-foreground mt-0.5">@alex_dev</div>
+      </div>
+    ),
+    getLayers: (sw, sh) => {
+      const w = 900, h = 300;
+      const x = Math.round((sw - w) / 2);
+      const y = Math.round((sh - h) / 2);
+      return [
+        {
+          type: "shape",
+          shape: "rounded-rectangle",
+          fill: "rgba(15,23,42,0.92)",
+          stroke: "rgba(245,158,11,0.5)",
+          strokeWidth: 3,
+          cornerRadius: 36,
+          x, y, width: w, height: h,
+          rotation: 0, opacity: 1,
+        } as any,
+        {
+          type: "text",
+          content: "★★★★★",
+          fontSize: 48,
+          fontWeight: 700,
+          fontFamily: "Inter",
+          color: "#FBBF24",
+          align: "center",
+          x: x + 40, y: y + 35, width: w - 80, height: 50,
+          rotation: 0, opacity: 1,
+        } as any,
+        {
+          type: "text",
+          content: '"Boosted our App Store conversion rate by +40% in just 1 week!"',
+          fontSize: 40,
+          fontWeight: 600,
+          fontFamily: "Inter",
+          color: "#FFFFFF",
+          align: "center",
+          x: x + 40, y: y + 105, width: w - 80, height: 100,
+          rotation: 0, opacity: 1,
+        } as any,
+        {
+          type: "text",
+          content: "Alex Morgan · Lead iOS Developer",
+          fontSize: 32,
+          fontWeight: 500,
+          fontFamily: "Inter",
+          color: "#94A3B8",
+          align: "center",
+          x: x + 40, y: y + 225, width: w - 80, height: 40,
+          rotation: 0, opacity: 1,
+        } as any,
+      ];
+    },
+  },
+  {
+    id: "live-counter-pill",
+    name: "Live Daily Download Counter",
+    preview: (
+      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-950/80 border border-orange-500/40 text-orange-300 shadow-xs">
+        <span className="text-xs">🔥</span>
+        <span className="text-[11px] font-bold">2,500+ Today</span>
+      </div>
+    ),
+    getLayers: (sw, sh) => {
+      const w = 580, h = 110;
+      const x = Math.round((sw - w) / 2);
+      const y = Math.round((sh - h) / 2);
+      return [
+        {
+          type: "shape",
+          shape: "rounded-rectangle",
+          fill: "rgba(67,20,7,0.92)",
+          stroke: "rgba(249,115,22,0.6)",
+          strokeWidth: 3,
+          cornerRadius: 55,
+          x, y, width: w, height: h,
+          rotation: 0, opacity: 1,
+        } as any,
+        {
+          type: "text",
+          content: "🔥 2,500+ Downloads Today",
+          fontSize: 40,
+          fontWeight: 700,
+          fontFamily: "Inter",
+          color: "#FB923C",
+          align: "center",
+          x, y: y + 28, width: w, height: 60,
+          rotation: 0, opacity: 1,
+        } as any,
+      ];
+    },
+  },
+];
+
 const BADGE_PRESETS: BlockPreset[] = [
   {
     id: "appstore",
-    name: "App Store Badge",
+    name: "Apple App Store Badge",
     preview: (
       <div
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white text-[10px] font-semibold bg-black border border-white/20"
-        style={{ minWidth: 110 }}
+        className="flex items-center gap-2 px-3 py-2 rounded-xl text-white text-[10px] font-semibold bg-black border border-white/20 hover:border-primary/50 transition-colors shadow-xs"
+        style={{ minWidth: 120 }}
       >
-        <span className="text-base leading-none"><Apple className="w-4 h-4 fill-white" /></span>
-        <div>
-          <div className="text-[7.5px] opacity-75 font-normal">Download on the</div>
-          <div className="text-xs font-bold leading-tight">App Store</div>
+        <Apple className="w-5 h-5 fill-white shrink-0" />
+        <div className="text-left">
+          <div className="text-[8px] opacity-80 font-normal leading-none">Download on the</div>
+          <div className="text-[13px] font-bold leading-tight mt-0.5">App Store</div>
         </div>
       </div>
     ),
     getLayers: (sw, sh) => [{
-      type: "shape", shape: "appstore-badge", fill: "#000000", stroke: "rgba(255,255,255,0.25)", strokeWidth: 1.5, cornerRadius: 24,
+      type: "shape", shape: "appstore-badge", fill: "#000000", stroke: "rgba(255,255,255,0.3)", strokeWidth: 2, cornerRadius: 28,
       width: 480, height: 140, x: Math.round((sw - 480) / 2), y: Math.round((sh - 140) / 2), rotation: 0, opacity: 1,
     } as any],
   },
   {
     id: "googleplay",
-    name: "Google Play Badge",
+    name: "Google Play Store Badge",
     preview: (
       <div
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white text-[10px] font-semibold bg-black border border-white/20"
-        style={{ minWidth: 110 }}
+        className="flex items-center gap-2 px-3 py-2 rounded-xl text-white text-[10px] font-semibold bg-black border border-white/20 hover:border-primary/50 transition-colors shadow-xs"
+        style={{ minWidth: 120 }}
       >
-        <span className="text-base leading-none"><Play className="w-3.5 h-3.5 fill-white" /></span>
-        <div>
-          <div className="text-[7.5px] opacity-75 font-normal">GET IT ON</div>
-          <div className="text-xs font-bold leading-tight">Google Play</div>
+        <Play className="w-4 h-4 fill-white shrink-0 text-white" />
+        <div className="text-left">
+          <div className="text-[8px] opacity-80 font-normal leading-none">GET IT ON</div>
+          <div className="text-[13px] font-bold leading-tight mt-0.5">Google Play</div>
         </div>
       </div>
     ),
     getLayers: (sw, sh) => [{
-      type: "shape", shape: "googleplay-badge", fill: "#000000", stroke: "rgba(255,255,255,0.25)", strokeWidth: 1.5, cornerRadius: 24,
+      type: "shape", shape: "googleplay-badge", fill: "#000000", stroke: "rgba(255,255,255,0.3)", strokeWidth: 2, cornerRadius: 28,
       width: 480, height: 140, x: Math.round((sw - 480) / 2), y: Math.round((sh - 140) / 2), rotation: 0, opacity: 1,
     } as any],
+  },
+  {
+    id: "rank-productivity",
+    name: "#1 Top Free App Tag",
+    preview: (
+      <div
+        className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-white text-[10px] font-semibold bg-blue-950/80 border border-blue-400/40 shadow-xs"
+        style={{ minWidth: 120 }}
+      >
+        <span className="text-sm">🏅</span>
+        <div>
+          <div className="text-[8px] text-blue-300 font-medium">Ranked</div>
+          <div className="text-[11px] font-bold text-white">#1 Top Free App</div>
+        </div>
+      </div>
+    ),
+    getLayers: (sw, sh) => {
+      const w = 580, h = 120;
+      const x = Math.round((sw - w) / 2);
+      const y = Math.round((sh - h) / 2);
+      return [
+        {
+          type: "shape",
+          shape: "rounded-rectangle",
+          fill: "#172554",
+          stroke: "rgba(96,165,250,0.6)",
+          strokeWidth: 3,
+          cornerRadius: 30,
+          x, y, width: w, height: h,
+          rotation: 0, opacity: 1,
+        } as any,
+        {
+          type: "text",
+          content: "🏅 #1 Top Free App",
+          fontSize: 42,
+          fontWeight: 700,
+          fontFamily: "Inter",
+          color: "#FFFFFF",
+          align: "center",
+          x, y: y + 32, width: w, height: 60,
+          rotation: 0, opacity: 1,
+        } as any,
+      ];
+    },
   },
 ];
 
@@ -760,6 +1074,55 @@ export function BlocksPanel() {
                 <p className="text-[10px] font-medium text-muted-foreground group-hover:text-foreground">
                   {preset.name}
                 </p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Offers, Sales & CTAs */}
+        <div>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 px-1 flex items-center gap-1">
+            <span className="text-xs">🏷️</span>
+            Offers, Sales & CTAs
+          </p>
+          <div className="grid grid-cols-1 gap-2">
+            {OFFER_PRESETS.map((preset) => (
+              <button
+                key={preset.id}
+                onClick={() => handleAdd(preset)}
+                className="flex items-center justify-between p-2.5 rounded-xl bg-secondary/50 hover:bg-secondary border border-border/40 hover:border-primary/40 transition-all group cursor-pointer"
+              >
+                <div className="shrink-0">{preset.preview}</div>
+                <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground">
+                  + Add
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Press Mentions & User Testimonials */}
+        <div>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 px-1 flex items-center gap-1">
+            <span className="text-xs">💬</span>
+            Press & Testimonials
+          </p>
+          <div className="grid grid-cols-1 gap-2">
+            {PRESS_PRESETS.map((preset) => (
+              <button
+                key={preset.id}
+                onClick={() => handleAdd(preset)}
+                className="flex flex-col gap-1.5 p-2.5 rounded-xl bg-secondary/50 hover:bg-secondary border border-border/40 hover:border-primary/40 transition-all group cursor-pointer text-left"
+              >
+                <div className="w-full">{preset.preview}</div>
+                <div className="flex items-center justify-between w-full pt-1">
+                  <span className="text-[10px] font-medium text-muted-foreground group-hover:text-foreground">
+                    {preset.name}
+                  </span>
+                  <span className="text-[10.5px] font-semibold text-primary">
+                    + Add
+                  </span>
+                </div>
               </button>
             ))}
           </div>
