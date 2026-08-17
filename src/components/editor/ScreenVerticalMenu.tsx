@@ -20,6 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { Screen, ScreenSet, ScreenshotLayer, TextLayer, Background, GradientDirection } from "@/lib/types";
 import { nanoid, cn } from "@/lib/utils";
+import { ColorInput } from "@/components/ui/color-input";
 
 interface ScreenVerticalMenuProps {
   screen: Screen;
@@ -605,10 +606,10 @@ export function ScreenVerticalMenu({ screen, screenSet }: ScreenVerticalMenuProp
                   {/* Custom color input */}
                   <div className="flex items-center gap-2 pt-1 border-t border-border/40">
                     <span className="text-[11px] text-muted-foreground">Custom:</span>
-                    <input
-                      type="color"
+                    <ColorInput
                       value={currentBg.type === "solid" ? currentBg.color || "#000000" : "#0b1120"}
-                      onChange={(e) => handleSetSolid(e.target.value)}
+                      onColorChange={handleSetSolid}
+                      onColorCommit={handleSetSolid}
                       className="w-7 h-7 rounded border border-border cursor-pointer bg-transparent"
                     />
                     <input

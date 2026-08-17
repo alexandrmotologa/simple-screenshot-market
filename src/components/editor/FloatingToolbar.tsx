@@ -25,6 +25,7 @@ import {
   MoveHorizontal, MoveVertical, RefreshCw, Type, Palette, Check
 } from "lucide-react";
 import { cn, loadGoogleFont, nanoid } from "@/lib/utils";
+import { ColorInput } from "@/components/ui/color-input";
 
 // ── Google Fonts list for dropdown ────────────────────────────────────────────
 const FONT_FAMILIES = [
@@ -421,12 +422,10 @@ function ScreenContextToolbar({
                 </div>
                 <div className="flex items-center gap-2 pt-1 border-t border-border/40">
                   <span className="text-[11px] text-muted-foreground">Custom:</span>
-                  <input
-                    type="color"
+                  <ColorInput
                     value={currentBg.type === "solid" ? currentBg.color || "#000000" : "#0b1120"}
-                    onChange={(e) => {
-                      updateScreenBackground(screenSet.id, screen.id, { type: "solid", color: e.target.value });
-                      useEditorStore.getState().recordHistory();
+                    onColorChange={(color) => {
+                      updateScreenBackground(screenSet.id, screen.id, { type: "solid", color });
                     }}
                     className="w-7 h-7 rounded border border-border cursor-pointer bg-transparent"
                   />
@@ -435,7 +434,6 @@ function ScreenContextToolbar({
                     value={currentBg.type === "solid" ? currentBg.color || "#000000" : ""}
                     onChange={(e) => {
                       updateScreenBackground(screenSet.id, screen.id, { type: "solid", color: e.target.value });
-                      useEditorStore.getState().recordHistory();
                     }}
                     placeholder="#0b1120"
                     className="flex-1 h-7 px-2 text-xs font-mono bg-secondary rounded border border-border/60 outline-none uppercase"
@@ -690,10 +688,9 @@ export function FloatingToolbar() {
                     <div className="flex flex-col gap-2">
                       <span className="text-xs text-muted-foreground font-medium">Shadow Color</span>
                       <label className="w-8 h-8 rounded-md cursor-pointer ring-1 ring-border overflow-hidden block hover:ring-foreground transition-all shadow-sm">
-                        <input
-                          type="color"
+                        <ColorInput
                           value={sl.shadow.color.startsWith("rgba") ? "#000000" : sl.shadow.color}
-                          onChange={(e) => update({ shadow: { ...sl.shadow!, color: e.target.value } } as Partial<ScreenshotLayer>)}
+                          onColorChange={(color) => update({ shadow: { ...sl.shadow!, color } } as Partial<ScreenshotLayer>)}
                           className="opacity-0 w-0 h-0 absolute"
                         />
                         <div className="w-full h-full" style={{ background: sl.shadow.color }} />
@@ -755,10 +752,9 @@ export function FloatingToolbar() {
                   <div className="flex flex-col gap-5 border-t pt-4">
                     <div className="flex flex-col gap-2 items-center justify-center">
                       <label className="w-16 h-10 rounded-md cursor-pointer ring-1 ring-border overflow-hidden block hover:ring-foreground transition-all shadow-sm relative group">
-                        <input
-                          type="color"
+                        <ColorInput
                           value={sl.focusOverlay.overlayColor?.slice(0, 7) || "#9b87f5"}
-                          onChange={(e) => update({ focusOverlay: { ...sl.focusOverlay!, overlayColor: e.target.value + "40" } } as Partial<ScreenshotLayer>)}
+                          onColorChange={(color) => update({ focusOverlay: { ...sl.focusOverlay!, overlayColor: color + "40" } } as Partial<ScreenshotLayer>)}
                           className="opacity-0 w-0 h-0 absolute"
                         />
                         <div className="w-full h-full flex items-center justify-center bg-checkerboard">
@@ -797,10 +793,9 @@ export function FloatingToolbar() {
                       <div className="flex-1 flex flex-col gap-2">
                         <span className="text-xs text-muted-foreground font-medium">Border Color</span>
                         <label className="h-8 rounded-md cursor-pointer ring-1 ring-border overflow-hidden block hover:ring-foreground transition-all shadow-sm">
-                          <input
-                            type="color"
+                          <ColorInput
                             value={sl.focusOverlay.borderColor}
-                            onChange={(e) => update({ focusOverlay: { ...sl.focusOverlay!, borderColor: e.target.value } } as Partial<ScreenshotLayer>)}
+                            onColorChange={(color) => update({ focusOverlay: { ...sl.focusOverlay!, borderColor: color } } as Partial<ScreenshotLayer>)}
                             className="opacity-0 w-0 h-0 absolute"
                           />
                           <div className="w-full h-full" style={{ background: sl.focusOverlay.borderColor }} />
@@ -896,7 +891,7 @@ export function FloatingToolbar() {
                 style={{ color: tl.color }}
               >
                 <label className="w-5 h-5 rounded cursor-pointer ring-1 ring-black/20 dark:ring-white/20 overflow-hidden shrink-0 block">
-                  <input type="color" value={tl.color.startsWith("rgba") ? "#ffffff" : tl.color} onChange={(e) => update({ color: e.target.value } as Partial<TextLayer>)} className="opacity-0 w-0 h-0" />
+                  <ColorInput value={tl.color.startsWith("rgba") ? "#ffffff" : tl.color} onColorChange={(color) => update({ color } as Partial<TextLayer>)} className="opacity-0 w-0 h-0" />
                   <div className="w-full h-full" style={{ background: tl.gradientColor ? `linear-gradient(to right, ${tl.gradientColor[0]}, ${tl.gradientColor[1]})` : tl.color }} />
                 </label>
               </TooltipTrigger>
@@ -930,11 +925,11 @@ export function FloatingToolbar() {
             {tl.gradientColor && (
               <div className="flex items-center gap-0.5 shrink-0">
                 <label className="w-5 h-5 rounded cursor-pointer ring-1 ring-border overflow-hidden block" title="Gradient start color">
-                  <input type="color" value={tl.gradientColor[0]} onChange={(e) => update({ gradientColor: [e.target.value, tl.gradientColor![1], tl.gradientColor![2]] } as Partial<TextLayer>)} className="opacity-0 w-0 h-0" />
+                  <ColorInput value={tl.gradientColor[0]} onColorChange={(color) => update({ gradientColor: [color, tl.gradientColor![1], tl.gradientColor![2]] } as Partial<TextLayer>)} className="opacity-0 w-0 h-0" />
                   <div className="w-full h-full" style={{ background: tl.gradientColor[0] }} />
                 </label>
                 <label className="w-5 h-5 rounded cursor-pointer ring-1 ring-border overflow-hidden block" title="Gradient end color">
-                  <input type="color" value={tl.gradientColor[1]} onChange={(e) => update({ gradientColor: [tl.gradientColor![0], e.target.value, tl.gradientColor![2]] } as Partial<TextLayer>)} className="opacity-0 w-0 h-0" />
+                  <ColorInput value={tl.gradientColor[1]} onColorChange={(color) => update({ gradientColor: [tl.gradientColor![0], color, tl.gradientColor![2]] } as Partial<TextLayer>)} className="opacity-0 w-0 h-0" />
                   <div className="w-full h-full" style={{ background: tl.gradientColor[1] }} />
                 </label>
                 <button
@@ -1014,7 +1009,7 @@ export function FloatingToolbar() {
                 className="h-7 w-7 rounded hover:bg-secondary flex items-center justify-center transition-colors"
               >
                 <label className="w-6 h-6 rounded-lg cursor-pointer ring-1 ring-border overflow-hidden shrink-0 block">
-                  <input type="color" value={sh.fill} onChange={(e) => update({ fill: e.target.value } as Partial<ShapeLayer>)} className="opacity-0 w-0 h-0" />
+                  <ColorInput value={sh.fill} onColorChange={(color) => update({ fill: color } as Partial<ShapeLayer>)} className="opacity-0 w-0 h-0" />
                   <div className="w-full h-full" style={{ background: sh.fill }} />
                 </label>
               </TooltipTrigger>
@@ -1027,7 +1022,7 @@ export function FloatingToolbar() {
                 className="h-7 w-7 rounded hover:bg-secondary flex items-center justify-center transition-colors relative"
               >
                 <label className="w-6 h-6 rounded-lg cursor-pointer ring-1 ring-border overflow-hidden shrink-0 block flex items-center justify-center bg-transparent border-2 border-foreground/50">
-                  <input type="color" value={sh.stroke || "#000000"} onChange={(e) => update({ stroke: e.target.value, strokeWidth: sh.strokeWidth || 4 } as Partial<ShapeLayer>)} className="opacity-0 w-0 h-0 absolute" />
+                  <ColorInput value={sh.stroke || "#000000"} onColorChange={(color) => update({ stroke: color, strokeWidth: sh.strokeWidth || 4 } as Partial<ShapeLayer>)} className="opacity-0 w-0 h-0 absolute" />
                 </label>
               </TooltipTrigger>
               <TooltipContent>Stroke color</TooltipContent>

@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { GradientDirection } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { ColorInput } from "@/components/ui/color-input";
 
 const PRESET_COLORS = [
   // Neutrals
@@ -113,13 +114,11 @@ export function BackgroundPanel() {
               <Label className="text-xs text-muted-foreground mb-2 block">Custom color</Label>
               <div className="flex items-center gap-3">
                 <label className="w-10 h-10 rounded-xl cursor-pointer ring-1 ring-border overflow-hidden">
-                  <input
-                    type="color"
+                  <ColorInput
                     value={bg?.type === "solid" ? bg.color ?? "#ffffff" : "#ffffff"}
-                    onChange={(e) =>
-                      applyBg({ type: "solid", color: e.target.value })
+                    onColorChange={(color) =>
+                      applyBg({ type: "solid", color })
                     }
-                    onBlur={() => useEditorStore.getState().recordHistory()}
                     className="opacity-0 w-0 h-0"
                   />
                   <div
@@ -219,11 +218,15 @@ export function BackgroundPanel() {
                   {bg.gradient?.stops.map((stop, i) => (
                     <label key={i} className="flex flex-col items-center gap-1">
                       <div className="w-8 h-8 rounded-lg overflow-hidden ring-1 ring-border cursor-pointer">
-                        <input type="color" value={stop.color} className="opacity-0 w-0 h-0" onChange={(e) => {
-                          const newStops = [...(bg.gradient?.stops ?? [])];
-                          newStops[i] = { ...newStops[i], color: e.target.value };
-                          applyBg({ type: "gradient", gradient: { ...bg.gradient!, stops: newStops } });
-                        }} onBlur={() => useEditorStore.getState().recordHistory()} />
+                        <ColorInput
+                          value={stop.color}
+                          className="opacity-0 w-0 h-0"
+                          onColorChange={(color) => {
+                            const newStops = [...(bg.gradient?.stops ?? [])];
+                            newStops[i] = { ...newStops[i], color };
+                            applyBg({ type: "gradient", gradient: { ...bg.gradient!, stops: newStops } });
+                          }}
+                        />
                         <div className="w-full h-full" style={{ background: stop.color }} />
                       </div>
                       <span className="text-[9px] text-muted-foreground">{i === 0 ? "Start" : "End"}</span>
@@ -285,17 +288,15 @@ export function BackgroundPanel() {
                   ] as const).map(({ key, label }) => (
                     <label key={key} className="flex items-center gap-2 cursor-pointer">
                       <div className="w-7 h-7 rounded-lg overflow-hidden ring-1 ring-border shrink-0">
-                        <input
-                          type="color"
+                        <ColorInput
                           value={(bg.mesh! as unknown as Record<string, string>)[key] ?? "#000000"}
                           className="opacity-0 w-0 h-0"
-                          onChange={(e) =>
+                          onColorChange={(color) =>
                             applyBg({
                               type: "mesh",
-                              mesh: { ...bg.mesh!, [key]: e.target.value },
+                              mesh: { ...bg.mesh!, [key]: color },
                             })
                           }
-                          onBlur={() => useEditorStore.getState().recordHistory()}
                         />
                         <div
                           className="w-full h-full"

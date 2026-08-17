@@ -955,12 +955,12 @@ export const CORE_TEMPLATES: Template[] = [
 
   // ── Template 32 (Neon Cyber) ────────────────────────────────────────────────
   {
-    id: "template-32",
-    name: "Template 32",
-    description: "Deep space aesthetic with bright neon glowing lines (10 Screens)",
+    id: "neon-cyberpunk",
+    name: "Neon Cyberpunk",
+    description: "Deep space dark theme with vibrant neon glow accents & high-contrast cyberpunk typography (10 Screens)",
     category: "Technology",
     layout: "screenshot-float",
-    tags: ["neon", "cyber", "glow", "dark", "futuristic", "template 32"],
+    tags: ["neon", "cyber", "cyberpunk", "glow", "dark", "futuristic", "technology"],
     previewColor: "#06b6d4",
     previewGradient: ["#020617", "#000000"],
     screens: [
@@ -2120,6 +2120,720 @@ export const COMMUNITY_TEMPLATES: Template[] = [
             fontSize: 46, fontWeight: 600, align: "center", color: "#130f1e", lineHeight: 1.3
           }) as any,
           screenshotWithFrame(129, 720, 1032, 2140, "Launch Screen") as any,
+        ],
+      },
+    ],
+  },
+
+  // ── 1. UXpro Royal Indigo Bold (6 Screens) ──────────────────────────────────
+  {
+    id: "community-uxpro-indigo-bold",
+    name: "Royal Indigo Bold",
+    description: "Bold high-impact indigo design with logo badge, zigzag mockup offsets & Manrope typography (6 Screens)",
+    category: "Community",
+    layout: "screenshot-bottom",
+    tags: ["community", "indigo", "bold", "minimal", "uxpro", "6 screens", "app store", "google play"],
+    previewColor: "#4300ff",
+    previewGradient: ["#4300ff", "#2d00aa"],
+    screens: [
+      {
+        name: "1 • App Hero",
+        background: { type: "solid", color: "#4300ff" },
+        layers: [
+          shapeLayer("circle", Math.round(W * 0.08), 120, 160, 160, "#2d00aa") as any,
+          shapeLayer("circle", Math.round(W * 0.08) + 40, 160, 80, 80, "#ffffff") as any,
+          textLayer("Add your App\ntitle here", Math.round(W * 0.08), 320, Math.round(W * 0.84), 320, {
+            fontFamily: "Manrope", fontSize: 130, fontWeight: 700, align: "left", color: "#ffffff", lineHeight: 1.15, letterSpacing: -3
+          }) as any,
+          screenshotWithFrame(107, 720, 1076, 2240, "App Title") as any,
+        ],
+      },
+      {
+        name: "2 • Feature Offset 1",
+        background: { type: "solid", color: "#4300ff" },
+        layers: [
+          textLayer("Add your App\nfeature here.", Math.round(W * 0.08), 140, Math.round(W * 0.84), 280, {
+            fontFamily: "Manrope", fontSize: 120, fontWeight: 700, align: "left", color: "#ffffff", lineHeight: 1.15, letterSpacing: -3
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.08), 440, Math.round(W * 0.84), 160, {
+            fontFamily: "Manrope", fontSize: 46, fontWeight: 500, align: "left", color: "rgba(255, 255, 255, 0.82)", lineHeight: 1.35
+          }) as any,
+          screenshotWithFrame(107, 920, 1076, 2240, "Feature 1") as any,
+        ],
+      },
+      {
+        name: "3 • Feature Focus 2",
+        background: { type: "solid", color: "#4300ff" },
+        layers: [
+          textLayer("Add your App\nfeature here.", Math.round(W * 0.08), 140, Math.round(W * 0.84), 280, {
+            fontFamily: "Manrope", fontSize: 120, fontWeight: 700, align: "left", color: "#ffffff", lineHeight: 1.15, letterSpacing: -3
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.08), 440, Math.round(W * 0.84), 160, {
+            fontFamily: "Manrope", fontSize: 46, fontWeight: 500, align: "left", color: "rgba(255, 255, 255, 0.82)", lineHeight: 1.35
+          }) as any,
+          screenshotWithFrame(107, 720, 1076, 2240, "Feature 2") as any,
+        ],
+      },
+      {
+        name: "4 • Feature Offset 3",
+        background: { type: "solid", color: "#4300ff" },
+        layers: [
+          textLayer("Add your App\nfeature here.", Math.round(W * 0.08), 140, Math.round(W * 0.84), 280, {
+            fontFamily: "Manrope", fontSize: 120, fontWeight: 700, align: "left", color: "#ffffff", lineHeight: 1.15, letterSpacing: -3
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.08), 440, Math.round(W * 0.84), 160, {
+            fontFamily: "Manrope", fontSize: 46, fontWeight: 500, align: "left", color: "rgba(255, 255, 255, 0.82)", lineHeight: 1.35
+          }) as any,
+          screenshotWithFrame(107, 920, 1076, 2240, "Feature 3") as any,
+        ],
+      },
+      {
+        name: "5 • Feature Focus 4",
+        background: { type: "solid", color: "#4300ff" },
+        layers: [
+          textLayer("Add your App\nfeature here.", Math.round(W * 0.08), 140, Math.round(W * 0.84), 280, {
+            fontFamily: "Manrope", fontSize: 120, fontWeight: 700, align: "left", color: "#ffffff", lineHeight: 1.15, letterSpacing: -3
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.08), 440, Math.round(W * 0.84), 160, {
+            fontFamily: "Manrope", fontSize: 46, fontWeight: 500, align: "left", color: "rgba(255, 255, 255, 0.82)", lineHeight: 1.35
+          }) as any,
+          screenshotWithFrame(107, 720, 1076, 2240, "Feature 4") as any,
+        ],
+      },
+      {
+        name: "6 • Feature Offset 5",
+        background: { type: "solid", color: "#4300ff" },
+        layers: [
+          textLayer("Add your App\nfeature here.", Math.round(W * 0.08), 140, Math.round(W * 0.84), 280, {
+            fontFamily: "Manrope", fontSize: 120, fontWeight: 700, align: "left", color: "#ffffff", lineHeight: 1.15, letterSpacing: -3
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.08), 440, Math.round(W * 0.84), 160, {
+            fontFamily: "Manrope", fontSize: 46, fontWeight: 500, align: "left", color: "rgba(255, 255, 255, 0.82)", lineHeight: 1.35
+          }) as any,
+          screenshotWithFrame(107, 920, 1076, 2240, "Feature 5") as any,
+        ],
+      },
+    ],
+  },
+
+  // ── 2. UXpro Vivid Spectrum Flow (6 Screens) ────────────────────────────────
+  {
+    id: "community-uxpro-spectrum-color",
+    name: "Vivid Spectrum Flow",
+    description: "Vibrant color progression across every screen: Lavender, Electric Blue, Amber, Coral, Mint & Teal (6 Screens)",
+    category: "Community",
+    layout: "screenshot-bottom",
+    tags: ["community", "spectrum", "colorful", "gradient", "uxpro", "6 screens", "app store", "google play"],
+    previewColor: "#805cf5",
+    previewGradient: ["#805cf5", "#0067eb"],
+    screens: [
+      {
+        name: "1 • Lavender",
+        background: { type: "solid", color: "#805cf5" },
+        layers: [
+          textLayer("Add your App\nfeature here.", Math.round(W * 0.08), 160, Math.round(W * 0.84), 300, {
+            fontFamily: "Manrope", fontSize: 120, fontWeight: 700, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -3
+          }) as any,
+          screenshotWithFrame(167, 620, 956, 1993, "Feature 1") as any,
+        ],
+      },
+      {
+        name: "2 • Electric Blue",
+        background: { type: "solid", color: "#0067eb" },
+        layers: [
+          textLayer("Add your App\nfeature here.", Math.round(W * 0.08), 160, Math.round(W * 0.84), 300, {
+            fontFamily: "Manrope", fontSize: 120, fontWeight: 700, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -3
+          }) as any,
+          screenshotWithFrame(167, 820, 956, 1993, "Feature 2") as any,
+        ],
+      },
+      {
+        name: "3 • Amber Gold",
+        background: { type: "solid", color: "#f7930d" },
+        layers: [
+          textLayer("Add your App\nfeature here.", Math.round(W * 0.08), 160, Math.round(W * 0.84), 300, {
+            fontFamily: "Manrope", fontSize: 120, fontWeight: 700, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -3
+          }) as any,
+          screenshotWithFrame(167, 620, 956, 1993, "Feature 3") as any,
+        ],
+      },
+      {
+        name: "4 • Coral Crimson",
+        background: { type: "solid", color: "#ee4040" },
+        layers: [
+          textLayer("Add your App\nfeature here.", Math.round(W * 0.08), 160, Math.round(W * 0.84), 300, {
+            fontFamily: "Manrope", fontSize: 120, fontWeight: 700, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -3
+          }) as any,
+          screenshotWithFrame(167, 820, 956, 1993, "Feature 4") as any,
+        ],
+      },
+      {
+        name: "5 • Emerald Mint",
+        background: { type: "solid", color: "#09be67" },
+        layers: [
+          textLayer("Add your App\nfeature here.", Math.round(W * 0.08), 160, Math.round(W * 0.84), 300, {
+            fontFamily: "Manrope", fontSize: 120, fontWeight: 700, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -3
+          }) as any,
+          screenshotWithFrame(167, 620, 956, 1993, "Feature 5") as any,
+        ],
+      },
+      {
+        name: "6 • Cyan Teal",
+        background: { type: "solid", color: "#09b3be" },
+        layers: [
+          textLayer("Add your App\nfeature here.", Math.round(W * 0.08), 160, Math.round(W * 0.84), 300, {
+            fontFamily: "Manrope", fontSize: 120, fontWeight: 700, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -3
+          }) as any,
+          screenshotWithFrame(167, 820, 956, 1993, "Feature 6") as any,
+        ],
+      },
+    ],
+  },
+
+  // ── 3. Fabled Glow Obsidian (8 Screens) ─────────────────────────────────────
+  {
+    id: "community-fabled-radial-glow",
+    name: "Glow Obsidian Showcase",
+    description: "Sleek dark obsidian backdrop with radiant colored ambient glows & dual tilted hero mockups (8 Screens)",
+    category: "Community",
+    layout: "screenshot-bottom",
+    tags: ["community", "obsidian", "dark", "neon", "glow", "fabled", "8 screens", "app store", "google play"],
+    previewColor: "#121212",
+    previewGradient: ["#121212", "#06b6d4"],
+    screens: [
+      {
+        name: "1 • Dual Tilted Hero",
+        background: { type: "solid", color: "#121212" },
+        layers: [
+          shapeLayer("circle", 200, 900, 890, 890, "rgba(6, 182, 212, 0.16)") as any,
+          textLayer("This can be a\nlong text about\nyour product", Math.round(W * 0.08), 140, Math.round(W * 0.84), 360, {
+            fontSize: 98, fontWeight: 900, align: "left", color: "#ffffff", lineHeight: 1.1, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(Math.round(-W * 0.12), 680, Math.round(W * 0.72), 1700, "Left Mockup", -7) as any,
+          screenshotWithFrame(Math.round(W * 0.38), 620, Math.round(W * 0.76), 1800, "Right Hero Mockup", 6) as any,
+        ],
+      },
+      {
+        name: "2 • Violet Ambient",
+        background: { type: "solid", color: "#121212" },
+        layers: [
+          shapeLayer("circle", 240, 950, 800, 800, "rgba(139, 92, 246, 0.18)") as any,
+          shapeLayer("circle", Math.round(W * 0.5) - 20, 120, 40, 40, "#10b981") as any,
+          textLayer("Heading Text", Math.round(W * 0.08), 180, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 800, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          textLayer("Experience blazing performance and intuitive workflow everywhere", Math.round(W * 0.1), 360, Math.round(W * 0.8), 120, {
+            fontSize: 44, fontWeight: 400, align: "center", color: "rgba(255, 255, 255, 0.7)", lineHeight: 1.35
+          }) as any,
+          screenshotWithFrame(129, 620, 1032, 2170, "Violet Showcase") as any,
+        ],
+      },
+      {
+        name: "3 • Emerald Ambient",
+        background: { type: "solid", color: "#121212" },
+        layers: [
+          shapeLayer("circle", 240, 950, 800, 800, "rgba(16, 185, 129, 0.18)") as any,
+          screenshotWithFrame(129, 450, 1032, 2340, "Emerald Mockup") as any,
+        ],
+      },
+      {
+        name: "4 • Crimson Ambient",
+        background: { type: "solid", color: "#121212" },
+        layers: [
+          shapeLayer("circle", 240, 950, 800, 800, "rgba(244, 63, 94, 0.18)") as any,
+          shapeLayer("circle", Math.round(W * 0.5) - 20, 120, 40, 40, "#10b981") as any,
+          textLayer("Your Text Here", Math.round(W * 0.08), 180, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 800, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          textLayer("Crafted for power users who demand high precision and style", Math.round(W * 0.1), 360, Math.round(W * 0.8), 120, {
+            fontSize: 44, fontWeight: 400, align: "center", color: "rgba(255, 255, 255, 0.7)", lineHeight: 1.35
+          }) as any,
+          screenshotWithFrame(129, 620, 1032, 2170, "Crimson Showcase") as any,
+        ],
+      },
+      {
+        name: "5 • Dual Amber Offset",
+        background: { type: "solid", color: "#121212" },
+        layers: [
+          shapeLayer("circle", 240, 950, 800, 800, "rgba(245, 158, 11, 0.18)") as any,
+          shapeLayer("circle", Math.round(W * 0.5) - 20, 120, 40, 40, "#10b981") as any,
+          textLayer("Your Text Here", Math.round(W * 0.08), 180, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 800, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(Math.round(W * 0.32), 600, Math.round(W * 0.72), 1700, "Back Phone") as any,
+          screenshotWithFrame(Math.round(-W * 0.04), 780, Math.round(W * 0.72), 1700, "Front Phone") as any,
+        ],
+      },
+      {
+        name: "6 • Dual Angled Blue",
+        background: { type: "solid", color: "#121212" },
+        layers: [
+          shapeLayer("circle", 240, 950, 800, 800, "rgba(59, 130, 246, 0.18)") as any,
+          shapeLayer("circle", Math.round(W * 0.5) - 20, 120, 40, 40, "#10b981") as any,
+          textLayer("Your Text Here", Math.round(W * 0.08), 180, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 800, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(Math.round(-W * 0.15), 620, Math.round(W * 0.72), 1700, "Left Tilt", -8) as any,
+          screenshotWithFrame(Math.round(W * 0.42), 620, Math.round(W * 0.72), 1700, "Right Tilt", 8) as any,
+        ],
+      },
+      {
+        name: "7 • Pink Ambient",
+        background: { type: "solid", color: "#121212" },
+        layers: [
+          shapeLayer("circle", 240, 950, 800, 800, "rgba(236, 72, 153, 0.18)") as any,
+          shapeLayer("circle", Math.round(W * 0.5) - 20, 120, 40, 40, "#10b981") as any,
+          textLayer("Your Text Here", Math.round(W * 0.08), 180, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 800, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(129, 620, 1032, 2170, "Pink Showcase") as any,
+        ],
+      },
+      {
+        name: "8 • Violet Ambient",
+        background: { type: "solid", color: "#121212" },
+        layers: [
+          shapeLayer("circle", 240, 950, 800, 800, "rgba(168, 85, 247, 0.18)") as any,
+          shapeLayer("circle", Math.round(W * 0.5) - 20, 120, 40, 40, "#10b981") as any,
+          textLayer("Your Text Here", Math.round(W * 0.08), 180, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 800, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(129, 620, 1032, 2170, "Violet Showcase") as any,
+        ],
+      },
+    ],
+  },
+
+  // ── 4. Fabled Aurora Royal Violet (8 Screens) ───────────────────────────────
+  {
+    id: "community-fabled-violet-aurora",
+    name: "Aurora Royal Violet",
+    description: "Lush purple to indigo gradient with clean straight mockups, dual layered showcase & trust badges (8 Screens)",
+    category: "Community",
+    layout: "screenshot-bottom",
+    tags: ["community", "violet", "purple", "aurora", "gradient", "fabled", "8 screens", "app store", "google play"],
+    previewColor: "#3730a3",
+    previewGradient: ["#3730a3", "#1e1b4b"],
+    screens: [
+      {
+        name: "1 • Heading & Badge",
+        background: { type: "gradient", gradient: { direction: "to-b", stops: [{ color: "#3730a3", position: 0 }, { color: "#1e1b4b", position: 100 }] } },
+        layers: [
+          shapeLayer("circle", Math.round(W * 0.5) - 20, 120, 40, 40, "#fbbf24") as any,
+          textLayer("PLACE HEADING", Math.round(W * 0.08), 180, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 900, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: 1
+          }) as any,
+          textLayer("Designed to streamline your daily routine seamlessly", Math.round(W * 0.1), 360, Math.round(W * 0.8), 120, {
+            fontSize: 44, fontWeight: 400, align: "center", color: "rgba(255, 255, 255, 0.75)", lineHeight: 1.35
+          }) as any,
+          screenshotWithFrame(129, 600, 1032, 2196, "Main Screen") as any,
+        ],
+      },
+      {
+        name: "2 • Offset Screen",
+        background: { type: "gradient", gradient: { direction: "to-b", stops: [{ color: "#3730a3", position: 0 }, { color: "#1e1b4b", position: 100 }] } },
+        layers: [
+          shapeLayer("circle", Math.round(W * 0.5) - 20, 120, 40, 40, "#fbbf24") as any,
+          textLayer("PLACE HEADING", Math.round(W * 0.08), 180, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 900, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: 1
+          }) as any,
+          textLayer("Unlock actionable insights in real-time with smart analytics", Math.round(W * 0.1), 360, Math.round(W * 0.8), 120, {
+            fontSize: 44, fontWeight: 400, align: "center", color: "rgba(255, 255, 255, 0.75)", lineHeight: 1.35
+          }) as any,
+          screenshotWithFrame(129, 820, 1032, 2196, "Offset Screen") as any,
+        ],
+      },
+      {
+        name: "3 • Dual Straight Mockup",
+        background: { type: "gradient", gradient: { direction: "to-b", stops: [{ color: "#3730a3", position: 0 }, { color: "#1e1b4b", position: 100 }] } },
+        layers: [
+          shapeLayer("circle", Math.round(W * 0.5) - 20, 120, 40, 40, "#fbbf24") as any,
+          textLayer("PLACE HEADING", Math.round(W * 0.08), 180, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 900, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: 1
+          }) as any,
+          screenshotWithFrame(Math.round(-W * 0.08), 560, Math.round(W * 0.78), 1850, "Back Phone") as any,
+          screenshotWithFrame(Math.round(W * 0.32), 760, Math.round(W * 0.76), 1800, "Front Phone") as any,
+        ],
+      },
+      {
+        name: "4 • Clean Full Showcase",
+        background: { type: "gradient", gradient: { direction: "to-b", stops: [{ color: "#3730a3", position: 0 }, { color: "#1e1b4b", position: 100 }] } },
+        layers: [
+          screenshotWithFrame(129, 400, 1032, 2396, "Full Showcase") as any,
+        ],
+      },
+      {
+        name: "5 • Center Showcase",
+        background: { type: "gradient", gradient: { direction: "to-b", stops: [{ color: "#3730a3", position: 0 }, { color: "#1e1b4b", position: 100 }] } },
+        layers: [
+          shapeLayer("circle", Math.round(W * 0.5) - 20, 120, 40, 40, "#fbbf24") as any,
+          textLayer("PLACE HEADING", Math.round(W * 0.08), 180, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 900, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: 1
+          }) as any,
+          screenshotWithFrame(129, 600, 1032, 2196, "Screen 5") as any,
+        ],
+      },
+      {
+        name: "6 • Bottom Bleed",
+        background: { type: "gradient", gradient: { direction: "to-b", stops: [{ color: "#3730a3", position: 0 }, { color: "#1e1b4b", position: 100 }] } },
+        layers: [
+          shapeLayer("circle", Math.round(W * 0.5) - 20, 120, 40, 40, "#fbbf24") as any,
+          textLayer("PLACE HEADING", Math.round(W * 0.08), 180, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 900, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: 1
+          }) as any,
+          screenshotWithFrame(129, 820, 1032, 2196, "Screen 6") as any,
+        ],
+      },
+      {
+        name: "7 • Dual Left Front",
+        background: { type: "gradient", gradient: { direction: "to-b", stops: [{ color: "#3730a3", position: 0 }, { color: "#1e1b4b", position: 100 }] } },
+        layers: [
+          shapeLayer("circle", Math.round(W * 0.5) - 20, 120, 40, 40, "#fbbf24") as any,
+          textLayer("PLACE HEADING", Math.round(W * 0.08), 180, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 900, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: 1
+          }) as any,
+          screenshotWithFrame(Math.round(W * 0.32), 560, Math.round(W * 0.78), 1850, "Back Phone") as any,
+          screenshotWithFrame(Math.round(-W * 0.08), 760, Math.round(W * 0.76), 1800, "Front Phone") as any,
+        ],
+      },
+      {
+        name: "8 • Trust & Awards",
+        background: { type: "gradient", gradient: { direction: "to-b", stops: [{ color: "#3730a3", position: 0 }, { color: "#1e1b4b", position: 100 }] } },
+        layers: [
+          textLayer("PLACE HEADING", Math.round(W * 0.08), 140, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 900, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: 1
+          }) as any,
+          screenshotWithFrame(129, 440, 1032, 1850, "Final Screen") as any,
+          shapeLayer("rounded-rectangle", Math.round(W * 0.18), 2400, Math.round(W * 0.64), 90, "rgba(255, 255, 255, 0.15)", { stroke: "rgba(255, 255, 255, 0.3)", strokeWidth: 2, cornerRadius: 45 }) as any,
+          textLayer("🏆 Loved by over 10 Million Users", Math.round(W * 0.18), 2420, Math.round(W * 0.64), 60, {
+            fontSize: 38, fontWeight: 700, align: "center", color: "#ffffff"
+          }) as any,
+        ],
+      },
+    ],
+  },
+
+  // ── 5. Fabled Lime Volt & Electric Dark (8 Screens) ─────────────────────────
+  {
+    id: "community-fabled-lime-neon",
+    name: "Lime Volt & Electric Dark",
+    description: "High-voltage lime green to bright yellow gradients on deep ink dark canvas with angled dynamic phones (8 Screens)",
+    category: "Community",
+    layout: "screenshot-bottom",
+    tags: ["community", "lime", "volt", "electric", "yellow", "fabled", "8 screens", "app store", "google play"],
+    previewColor: "#a3e635",
+    previewGradient: ["#a3e635", "#eab308"],
+    screens: [
+      {
+        name: "1 • Lime Header",
+        background: { type: "gradient", gradient: { direction: "to-b", stops: [{ color: "#a3e635", position: 0 }, { color: "#eab308", position: 100 }] } },
+        layers: [
+          shapeLayer("circle", Math.round(W * 0.5) - 20, 120, 40, 40, "#000000") as any,
+          textLayer("Place your heading", Math.round(W * 0.08), 180, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 900, align: "center", color: "#000000", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          textLayer("Lightning-fast tools engineered for the modern creator", Math.round(W * 0.1), 360, Math.round(W * 0.8), 120, {
+            fontSize: 44, fontWeight: 600, align: "center", color: "rgba(0, 0, 0, 0.75)", lineHeight: 1.35
+          }) as any,
+          screenshotWithFrame(129, 600, 1032, 2196, "App Screen 1") as any,
+        ],
+      },
+      {
+        name: "2 • Offset Screen",
+        background: { type: "gradient", gradient: { direction: "to-b", stops: [{ color: "#a3e635", position: 0 }, { color: "#eab308", position: 100 }] } },
+        layers: [
+          textLayer("Place your heading", Math.round(W * 0.08), 160, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 900, align: "center", color: "#000000", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(129, 820, 1032, 2196, "Offset Screen") as any,
+        ],
+      },
+      {
+        name: "3 • Feature Grid Cards",
+        background: { type: "gradient", gradient: { direction: "to-b", stops: [{ color: "#a3e635", position: 0 }, { color: "#eab308", position: 100 }] } },
+        layers: [
+          textLayer("Place your heading", Math.round(W * 0.08), 140, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 900, align: "center", color: "#000000", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          shapeLayer("rounded-rectangle", Math.round(W * 0.08), 340, 260, 200, "#000000", { cornerRadius: 28 }) as any,
+          shapeLayer("rounded-rectangle", Math.round(W * 0.08) + 290, 340, 260, 200, "#000000", { cornerRadius: 28 }) as any,
+          shapeLayer("rounded-rectangle", Math.round(W * 0.08) + 580, 340, 260, 200, "#000000", { cornerRadius: 28 }) as any,
+          screenshotWithFrame(129, 680, 1032, 2116, "Screen 3") as any,
+        ],
+      },
+      {
+        name: "4 • Trust Badge",
+        background: { type: "gradient", gradient: { direction: "to-b", stops: [{ color: "#a3e635", position: 0 }, { color: "#eab308", position: 100 }] } },
+        layers: [
+          textLayer("Some Random Text here", Math.round(W * 0.08), 140, Math.round(W * 0.84), 160, {
+            fontSize: 96, fontWeight: 900, align: "center", color: "#000000", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          shapeLayer("rounded-rectangle", Math.round(W * 0.2), 340, Math.round(W * 0.6), 80, "#000000", { cornerRadius: 40 }) as any,
+          textLayer("🌿 10 Million Active Users", Math.round(W * 0.2), 358, Math.round(W * 0.6), 50, {
+            fontSize: 36, fontWeight: 700, align: "center", color: "#a3e635"
+          }) as any,
+          screenshotWithFrame(129, 580, 1032, 2216, "Screen 4") as any,
+        ],
+      },
+      {
+        name: "5 • Left Tilted Phone",
+        background: { type: "gradient", gradient: { direction: "to-b", stops: [{ color: "#a3e635", position: 0 }, { color: "#eab308", position: 100 }] } },
+        layers: [
+          textLayer("Place your heading", Math.round(W * 0.08), 160, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 900, align: "center", color: "#000000", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(129, 620, 1032, 2176, "Left Angle Phone", -7) as any,
+        ],
+      },
+      {
+        name: "6 • Right Tilted Phone",
+        background: { type: "gradient", gradient: { direction: "to-b", stops: [{ color: "#a3e635", position: 0 }, { color: "#eab308", position: 100 }] } },
+        layers: [
+          textLayer("Place your heading", Math.round(W * 0.08), 160, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 900, align: "center", color: "#000000", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(129, 620, 1032, 2176, "Right Angle Phone", 7) as any,
+        ],
+      },
+      {
+        name: "7 • Clean Showcase",
+        background: { type: "gradient", gradient: { direction: "to-b", stops: [{ color: "#a3e635", position: 0 }, { color: "#eab308", position: 100 }] } },
+        layers: [
+          screenshotWithFrame(129, 380, 1032, 2416, "Clean Showcase") as any,
+        ],
+      },
+      {
+        name: "8 • Dual Angled Finale",
+        background: { type: "gradient", gradient: { direction: "to-b", stops: [{ color: "#a3e635", position: 0 }, { color: "#eab308", position: 100 }] } },
+        layers: [
+          textLayer("This can be a\nlong text about\nyour product", Math.round(W * 0.08), 140, Math.round(W * 0.84), 360, {
+            fontSize: 98, fontWeight: 900, align: "left", color: "#000000", lineHeight: 1.1, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(Math.round(-W * 0.12), 680, Math.round(W * 0.72), 1700, "Left Mockup", -7) as any,
+          screenshotWithFrame(Math.round(W * 0.38), 620, Math.round(W * 0.76), 1800, "Right Hero Mockup", 6) as any,
+        ],
+      },
+    ],
+  },
+
+  // ── 6. Fabled Midnight Neon Stepped Flow (8 Screens) ────────────────────────
+  {
+    id: "community-fabled-stepped-flow",
+    name: "Midnight Neon Stepped Flow",
+    description: "Dark neon screens with numbered step pills (1-4), soft ambient base glows & dual angled mockups (8 Screens)",
+    category: "Community",
+    layout: "screenshot-bottom",
+    tags: ["community", "steps", "numbered", "flow", "neon", "fabled", "8 screens", "app store", "google play"],
+    previewColor: "#0d0f17",
+    previewGradient: ["#0d0f17", "#8b5cf6"],
+    screens: [
+      {
+        name: "1 • Intro Dual Hero",
+        background: { type: "solid", color: "#0d0f17" },
+        layers: [
+          shapeLayer("circle", 200, 1800, 890, 890, "rgba(139, 92, 246, 0.2)") as any,
+          textLayer("This can be a\nlong text about\nyour product", Math.round(W * 0.08), 140, Math.round(W * 0.84), 360, {
+            fontSize: 98, fontWeight: 900, align: "left", color: "#ffffff", lineHeight: 1.1, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(Math.round(-W * 0.08), 680, Math.round(W * 0.76), 1800, "Left Mockup") as any,
+          screenshotWithFrame(Math.round(W * 0.32), 520, Math.round(W * 0.76), 1800, "Right Mockup") as any,
+        ],
+      },
+      {
+        name: "2 • Step 1",
+        background: { type: "solid", color: "#0d0f17" },
+        layers: [
+          shapeLayer("circle", 200, 1900, 890, 890, "rgba(236, 72, 153, 0.2)") as any,
+          shapeLayer("circle", Math.round(W * 0.5) - 30, 120, 60, 60, "#ec4899") as any,
+          textLayer("1", Math.round(W * 0.5) - 30, 130, 60, 60, { fontSize: 36, fontWeight: 900, align: "center", color: "#ffffff" }) as any,
+          textLayer("Your text will be\nplaced here!", Math.round(W * 0.08), 210, Math.round(W * 0.84), 220, {
+            fontSize: 96, fontWeight: 800, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(129, 620, 1032, 2176, "Step 1 Mockup") as any,
+        ],
+      },
+      {
+        name: "3 • Step 2",
+        background: { type: "solid", color: "#0d0f17" },
+        layers: [
+          shapeLayer("circle", 200, 1900, 890, 890, "rgba(6, 182, 212, 0.2)") as any,
+          shapeLayer("circle", Math.round(W * 0.5) - 30, 120, 60, 60, "#06b6d4") as any,
+          textLayer("2", Math.round(W * 0.5) - 30, 130, 60, 60, { fontSize: 36, fontWeight: 900, align: "center", color: "#ffffff" }) as any,
+          textLayer("Your text will be\nplaced here!", Math.round(W * 0.08), 210, Math.round(W * 0.84), 220, {
+            fontSize: 96, fontWeight: 800, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(129, 620, 1032, 2176, "Step 2 Mockup") as any,
+        ],
+      },
+      {
+        name: "4 • Step 3",
+        background: { type: "solid", color: "#0d0f17" },
+        layers: [
+          shapeLayer("circle", 200, 1900, 890, 890, "rgba(16, 185, 129, 0.2)") as any,
+          shapeLayer("circle", Math.round(W * 0.5) - 30, 120, 60, 60, "#10b981") as any,
+          textLayer("3", Math.round(W * 0.5) - 30, 130, 60, 60, { fontSize: 36, fontWeight: 900, align: "center", color: "#ffffff" }) as any,
+          textLayer("Your text will be\nplaced here!", Math.round(W * 0.08), 210, Math.round(W * 0.84), 220, {
+            fontSize: 96, fontWeight: 800, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(129, 620, 1032, 2176, "Step 3 Mockup") as any,
+        ],
+      },
+      {
+        name: "5 • Step 4",
+        background: { type: "solid", color: "#0d0f17" },
+        layers: [
+          shapeLayer("circle", 200, 1900, 890, 890, "rgba(245, 158, 11, 0.2)") as any,
+          shapeLayer("circle", Math.round(W * 0.5) - 30, 120, 60, 60, "#f59e0b") as any,
+          textLayer("4", Math.round(W * 0.5) - 30, 130, 60, 60, { fontSize: 36, fontWeight: 900, align: "center", color: "#ffffff" }) as any,
+          textLayer("Replace this text\nwith yours", Math.round(W * 0.08), 210, Math.round(W * 0.84), 220, {
+            fontSize: 96, fontWeight: 800, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(129, 620, 1032, 2176, "Step 4 Mockup") as any,
+        ],
+      },
+      {
+        name: "6 • Security Heading",
+        background: { type: "solid", color: "#0d0f17" },
+        layers: [
+          shapeLayer("circle", 200, 1900, 890, 890, "rgba(139, 92, 246, 0.2)") as any,
+          textLayer("Heading", Math.round(W * 0.08), 160, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 800, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(129, 620, 1032, 2176, "Security Mockup") as any,
+        ],
+      },
+      {
+        name: "7 • Analytics Heading",
+        background: { type: "solid", color: "#0d0f17" },
+        layers: [
+          shapeLayer("circle", 200, 1900, 890, 890, "rgba(59, 130, 246, 0.2)") as any,
+          textLayer("Heading", Math.round(W * 0.08), 160, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 800, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(129, 620, 1032, 2176, "Analytics Mockup") as any,
+        ],
+      },
+      {
+        name: "8 • Finale Dual Tilted",
+        background: { type: "solid", color: "#0d0f17" },
+        layers: [
+          shapeLayer("circle", 200, 1800, 890, 890, "rgba(139, 92, 246, 0.2)") as any,
+          textLayer("This can be a\nlong text about\nyour product", Math.round(W * 0.08), 140, Math.round(W * 0.84), 360, {
+            fontSize: 98, fontWeight: 900, align: "left", color: "#ffffff", lineHeight: 1.1, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(Math.round(-W * 0.12), 680, Math.round(W * 0.72), 1700, "Left Mockup", -7) as any,
+          screenshotWithFrame(Math.round(W * 0.38), 620, Math.round(W * 0.76), 1800, "Right Hero Mockup", 6) as any,
+        ],
+      },
+    ],
+  },
+
+  // ── 7. Fabled Vivid Multi-Palette Studio (8 Screens) ────────────────────────
+  {
+    id: "community-fabled-vivid-palette",
+    name: "Vivid Multi-Palette Studio",
+    description: "Distinct colorful backgrounds per screen: Cyan, Violet, Sunset, Emerald, Indigo, Obsidian, Forest & Blue (8 Screens)",
+    category: "Community",
+    layout: "screenshot-bottom",
+    tags: ["community", "vivid", "palette", "multicolor", "colorful", "fabled", "8 screens", "app store", "google play"],
+    previewColor: "#06b6d4",
+    previewGradient: ["#06b6d4", "#8b5cf6"],
+    screens: [
+      {
+        name: "1 • Cyan Teal",
+        background: { type: "solid", color: "#06b6d4" },
+        layers: [
+          shapeLayer("circle", Math.round(W * 0.5) - 20, 120, 40, 40, "#10b981") as any,
+          textLayer("Place your heading", Math.round(W * 0.08), 180, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 900, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          textLayer("Everything you need to manage your mobile workflow effortlessly", Math.round(W * 0.1), 360, Math.round(W * 0.8), 120, {
+            fontSize: 44, fontWeight: 500, align: "center", color: "rgba(255, 255, 255, 0.88)", lineHeight: 1.35
+          }) as any,
+          screenshotWithFrame(129, 600, 1032, 2196, "Cyan Mockup") as any,
+        ],
+      },
+      {
+        name: "2 • Violet Purple",
+        background: { type: "solid", color: "#8b5cf6" },
+        layers: [
+          textLayer("Place your heading", Math.round(W * 0.08), 160, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 900, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(129, 820, 1032, 2196, "Violet Offset") as any,
+        ],
+      },
+      {
+        name: "3 • Sunset Rose",
+        background: { type: "gradient", gradient: { direction: "to-br", stops: [{ color: "#f97316", position: 0 }, { color: "#ec4899", position: 100 }] } },
+        layers: [
+          screenshotWithFrame(129, 400, 1032, 2396, "Sunset Showcase") as any,
+        ],
+      },
+      {
+        name: "4 • Emerald Green",
+        background: { type: "solid", color: "#10b981" },
+        layers: [
+          shapeLayer("circle", Math.round(W * 0.5) - 20, 120, 40, 40, "#ffffff") as any,
+          textLayer("Place your heading", Math.round(W * 0.08), 180, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 900, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(Math.round(-W * 0.08), 600, Math.round(W * 0.74), 1800, "Left Phone") as any,
+          screenshotWithFrame(Math.round(W * 0.34), 600, Math.round(W * 0.74), 1800, "Right Phone") as any,
+        ],
+      },
+      {
+        name: "5 • Royal Indigo",
+        background: { type: "solid", color: "#6366f1" },
+        layers: [
+          shapeLayer("circle", Math.round(W * 0.5) - 20, 120, 40, 40, "#ffffff") as any,
+          textLayer("Place your heading", Math.round(W * 0.08), 180, Math.round(W * 0.84), 160, {
+            fontSize: 104, fontWeight: 900, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: -2
+          }) as any,
+          screenshotWithFrame(Math.round(W * 0.32), 560, Math.round(W * 0.76), 1800, "Back Phone") as any,
+          screenshotWithFrame(Math.round(-W * 0.08), 760, Math.round(W * 0.76), 1800, "Front Phone") as any,
+        ],
+      },
+      {
+        name: "6 • Deep Obsidian",
+        background: { type: "solid", color: "#0f172a" },
+        layers: [
+          textLayer("RANDOM TEXT", Math.round(W * 0.08), 160, Math.round(W * 0.84), 140, {
+            fontSize: 90, fontWeight: 900, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: 2
+          }) as any,
+          screenshotWithFrame(129, 440, 1032, 1850, "Obsidian Screen") as any,
+          textLayer("RANDOM TEXT", Math.round(W * 0.08), 2440, Math.round(W * 0.84), 140, {
+            fontSize: 70, fontWeight: 700, align: "center", color: "rgba(255, 255, 255, 0.6)", lineHeight: 1.15, letterSpacing: 2
+          }) as any,
+        ],
+      },
+      {
+        name: "7 • Dark Forest",
+        background: { type: "solid", color: "#064e3b" },
+        layers: [
+          textLayer("RANDOM TEXT", Math.round(W * 0.08), 160, Math.round(W * 0.84), 140, {
+            fontSize: 90, fontWeight: 900, align: "center", color: "#ffffff", lineHeight: 1.15, letterSpacing: 2
+          }) as any,
+          screenshotWithFrame(129, 440, 1032, 1850, "Forest Screen") as any,
+          textLayer("RANDOM TEXT", Math.round(W * 0.08), 2440, Math.round(W * 0.84), 140, {
+            fontSize: 70, fontWeight: 700, align: "center", color: "rgba(255, 255, 255, 0.6)", lineHeight: 1.15, letterSpacing: 2
+          }) as any,
+        ],
+      },
+      {
+        name: "8 • Royal Blue Award",
+        background: { type: "solid", color: "#1d4ed8" },
+        layers: [
+          shapeLayer("rounded-rectangle", Math.round(W * 0.38), 120, Math.round(W * 0.24), 60, "rgba(255, 255, 255, 0.2)", { cornerRadius: 30 }) as any,
+          textLayer("LOGO", Math.round(W * 0.38), 132, Math.round(W * 0.24), 40, {
+            fontSize: 28, fontWeight: 800, align: "center", color: "#ffffff", letterSpacing: 2
+          }) as any,
+          shapeLayer("rounded-rectangle", Math.round(W * 0.2), 220, Math.round(W * 0.6), 80, "rgba(255, 255, 255, 0.15)", { cornerRadius: 40 }) as any,
+          textLayer("🏆 10 Million People", Math.round(W * 0.2), 238, Math.round(W * 0.6), 50, {
+            fontSize: 36, fontWeight: 700, align: "center", color: "#ffffff"
+          }) as any,
+          screenshotWithFrame(Math.round(-W * 0.08), 440, Math.round(W * 0.74), 1850, "Left Mockup") as any,
+          screenshotWithFrame(Math.round(W * 0.34), 440, Math.round(W * 0.74), 1850, "Right Mockup") as any,
         ],
       },
     ],

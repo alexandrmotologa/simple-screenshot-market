@@ -4,6 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Paintbrush } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ColorInput } from "@/components/ui/color-input";
 
 interface Props {
   currentBackground: Background;
@@ -70,10 +71,10 @@ export function AdvancedBackgroundPicker({ currentBackground, onSelect }: Props)
                 style={{ backgroundColor: currentBackground.type === "solid" ? currentBackground.color : "#ffffff" }}
                 title="Pick a custom color"
               >
-                <input
-                  type="color"
+                <ColorInput
                   value={currentBackground.type === "solid" ? currentBackground.color : "#ffffff"}
-                  onChange={(e) => onSelect({ type: "solid", color: e.target.value })}
+                  onColorChange={(color) => onSelect({ type: "solid", color })}
+                  onColorCommit={(color) => onSelect({ type: "solid", color })}
                   className="absolute inset-0 w-[200%] h-[200%] -translate-x-1/4 -translate-y-1/4 cursor-pointer opacity-0"
                 />
               </div>

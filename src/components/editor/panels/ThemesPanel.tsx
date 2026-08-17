@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ColorInput } from "@/components/ui/color-input";
 
 const POPULAR_PALETTES = [
   { name: "iOS Indigo", bg: "#4F46E5", fg: "#FFFFFF" },
@@ -356,10 +357,9 @@ export function ThemesPanel() {
                 </Label>
                 <div className="flex items-center gap-2">
                   <label className="relative w-9 h-9 rounded-lg border border-border/80 cursor-pointer overflow-hidden shrink-0 shadow-xs">
-                    <input
-                      type="color"
+                    <ColorInput
                       value={customBg.startsWith("#") && customBg.length === 7 ? customBg : "#0B1020"}
-                      onChange={(e) => setCustomBg(e.target.value)}
+                      onColorChange={(color) => setCustomBg(color)}
                       className="opacity-0 w-0 h-0 absolute"
                     />
                     <div className="w-full h-full" style={{ backgroundColor: customBg }} />
@@ -379,10 +379,9 @@ export function ThemesPanel() {
                     <Label className="text-[10px] text-muted-foreground">Color 1 (Start)</Label>
                     <div className="flex items-center gap-1.5">
                       <label className="relative w-7 h-7 rounded-md border border-border/80 cursor-pointer overflow-hidden shrink-0">
-                        <input
-                          type="color"
+                        <ColorInput
                           value={customGradStop1}
-                          onChange={(e) => setCustomGradStop1(e.target.value)}
+                          onColorChange={(color) => setCustomGradStop1(color)}
                           className="opacity-0 w-0 h-0 absolute"
                         />
                         <div
@@ -402,10 +401,9 @@ export function ThemesPanel() {
                     <Label className="text-[10px] text-muted-foreground">Color 2 (End)</Label>
                     <div className="flex items-center gap-1.5">
                       <label className="relative w-7 h-7 rounded-md border border-border/80 cursor-pointer overflow-hidden shrink-0">
-                        <input
-                          type="color"
+                        <ColorInput
                           value={customGradStop2}
-                          onChange={(e) => setCustomGradStop2(e.target.value)}
+                          onColorChange={(color) => setCustomGradStop2(color)}
                           className="opacity-0 w-0 h-0 absolute"
                         />
                         <div
@@ -478,10 +476,9 @@ export function ThemesPanel() {
 
               <div className="flex items-center gap-2">
                 <label className="relative w-9 h-9 rounded-lg border border-border/80 cursor-pointer overflow-hidden shrink-0 shadow-xs">
-                  <input
-                    type="color"
+                  <ColorInput
                     value={customFg.startsWith("#") && customFg.length === 7 ? customFg : "#FFFFFF"}
-                    onChange={(e) => setCustomFg(e.target.value)}
+                    onColorChange={(color) => setCustomFg(color)}
                     className="opacity-0 w-0 h-0 absolute"
                   />
                   <div className="w-full h-full" style={{ backgroundColor: customFg }} />

@@ -15,6 +15,7 @@ import { SlideLayout } from "@/lib/types";
 import { LAYOUT_LABEL, LAYOUT_HINT } from "@/lib/themes";
 import { applyLayoutToScreen } from "@/lib/layoutEngine";
 import { AdvancedBackgroundPicker } from "@/components/editor/AdvancedBackgroundPicker";
+import { ColorInput } from "@/components/ui/color-input";
 
 const FONT_FAMILIES = [
   "Inter",
@@ -375,10 +376,9 @@ function TextProperties({
       <div className="space-y-1">
         <Label className="text-xs text-muted-foreground">Color</Label>
         <div className="flex gap-2">
-          <input
-            type="color"
+          <ColorInput
             value={layer.color}
-            onChange={(e) => onUpdate({ color: e.target.value })}
+            onColorChange={(color) => onUpdate({ color })}
             className="w-10 h-8 rounded-lg cursor-pointer bg-transparent border-0"
           />
           <Input
@@ -421,10 +421,9 @@ function ShapeProperties({
       <div className="space-y-1">
         <Label className="text-xs text-muted-foreground">Fill Color</Label>
         <div className="flex gap-2">
-          <input
-            type="color"
+          <ColorInput
             value={layer.fill}
-            onChange={(e) => onUpdate({ fill: e.target.value })}
+            onColorChange={(fill) => onUpdate({ fill })}
             className="w-10 h-8 rounded-lg cursor-pointer bg-transparent border-0"
           />
           <Input
@@ -487,10 +486,9 @@ function BackgroundProperties({
         <div className="space-y-1">
           <Label className="text-xs text-muted-foreground">Color</Label>
           <div className="flex gap-2">
-            <input
-              type="color"
+            <ColorInput
               value={background.color ?? "#6366f1"}
-              onChange={(e) => onUpdate({ color: e.target.value })}
+              onColorChange={(color) => onUpdate({ color })}
               className="w-10 h-8 rounded-lg cursor-pointer bg-transparent border-0"
             />
             <Input
@@ -533,12 +531,11 @@ function BackgroundProperties({
             <Label className="text-xs text-muted-foreground">Color Stops</Label>
             {background.gradient.stops.map((stop, i) => (
               <div key={i} className="flex gap-2 items-center">
-                <input
-                  type="color"
+                <ColorInput
                   value={stop.color}
-                  onChange={(e) => {
+                  onColorChange={(color) => {
                     const stops = [...background.gradient!.stops];
-                    stops[i] = { ...stops[i], color: e.target.value };
+                    stops[i] = { ...stops[i], color };
                     onUpdate({ gradient: { ...background.gradient!, stops } });
                   }}
                   className="w-8 h-8 rounded cursor-pointer bg-transparent border-0 shrink-0"
@@ -669,10 +666,9 @@ function ScreenshotProperties({ layer, onUpdate }: { layer: import("@/lib/types"
           <div className="space-y-1.5">
             <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Border Color</Label>
             <div className="flex gap-2">
-              <Input
-                type="color"
+              <ColorInput
                 value={overlay.borderColor}
-                onChange={(e) => updateOverlay({ borderColor: e.target.value })}
+                onColorChange={(color) => updateOverlay({ borderColor: color })}
                 className="w-8 h-8 p-0 border-0 rounded-md overflow-hidden cursor-pointer shrink-0"
               />
               <Input

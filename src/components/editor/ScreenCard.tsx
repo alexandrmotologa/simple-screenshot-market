@@ -1489,8 +1489,8 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         })()}
         </div>
 
-        {/* Vertical Screen Context Menu (1-3 Mockups + Background) */}
-        {isActiveScreen && (
+        {/* Vertical Screen Context Menu (1-3 Mockups + Background) - only visible when the screen/frame itself is selected, NOT when a layer inside is selected */}
+        {isActiveScreen && !activeLayerId && (!selectedLayerIds || selectedLayerIds.length === 0) && (
           <ScreenVerticalMenu screen={screen} screenSet={screenSet} />
         )}
       </div>
