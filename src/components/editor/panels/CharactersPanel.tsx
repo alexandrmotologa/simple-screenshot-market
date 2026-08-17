@@ -102,10 +102,19 @@ function HorizontalScrollRow({
   );
 }
 
+const ORDERED_LIBRARIES = [
+  "3D Mascots & Robots",
+  "3D Emojis",
+  "3D & Modern Avatars",
+  "Avataaars",
+  "Open Peeps",
+  "Doodles & Sketches",
+];
+
 export function CharactersPanel() {
   const { getActiveSet, getActiveScreen, addLayer } = useEditorStore();
 
-  const libraries = Array.from(new Set(CHARACTERS.map((c) => c.library || "Open Peeps")));
+  const libraries = ORDERED_LIBRARIES.filter((lib) => CHARACTERS.some((c) => c.library === lib));
   const [activeLibrary, setActiveLibrary] = useState<string>(libraries[0] || "3D Mascots & Robots");
 
   const libraryCharacters = CHARACTERS.filter((c) => (c.library || "Open Peeps") === activeLibrary);

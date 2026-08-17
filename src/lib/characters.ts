@@ -370,6 +370,7 @@ const BASE_CHARACTERS: Character[] = [
     id: "alex",
     name: "Alex",
     category: "happy",
+    library: "Open Peeps",
     description: "Friendly and approachable",
     poses: [
       {
@@ -384,6 +385,7 @@ const BASE_CHARACTERS: Character[] = [
     id: "maya",
     name: "Maya",
     category: "waving",
+    library: "Open Peeps",
     description: "Cheerful and energetic",
     poses: [
       {
@@ -398,6 +400,7 @@ const BASE_CHARACTERS: Character[] = [
     id: "dev",
     name: "Dev",
     category: "working",
+    library: "Open Peeps",
     description: "Focused developer at laptop",
     poses: [
       {
@@ -412,6 +415,7 @@ const BASE_CHARACTERS: Character[] = [
     id: "celebrate",
     name: "Celebrate",
     category: "celebrating",
+    library: "Open Peeps",
     description: "Victory pose with confetti",
     poses: [
       {
@@ -426,6 +430,7 @@ const BASE_CHARACTERS: Character[] = [
     id: "thinker",
     name: "Thinker",
     category: "thinking",
+    library: "Open Peeps",
     description: "Deep in thought",
     poses: [
       {
@@ -440,6 +445,7 @@ const BASE_CHARACTERS: Character[] = [
     id: "undraw-tech",
     name: "Modern Tech",
     category: "working",
+    library: "Open Peeps",
     description: "Flat unDraw style illustration",
     poses: [
       {
@@ -454,6 +460,7 @@ const BASE_CHARACTERS: Character[] = [
     id: "humaaan-casual",
     name: "Casual",
     category: "standing",
+    library: "Open Peeps",
     description: "Humaaans style illustration",
     poses: [
       {
@@ -465,23 +472,9 @@ const BASE_CHARACTERS: Character[] = [
     ],
   },
   {
-    id: "saly-3d",
-    name: "3D Avatar",
-    category: "standing",
-    description: "Saly 3D style avatar",
-    poses: [
-      {
-        id: "standing",
-        name: "Standing",
-        svg: SALY_3D_STYLE,
-        viewBox: "0 0 400 500",
-      },
-    ],
-  },
-  {
     id: "avataaar-happy",
     name: "Happy Portrait",
-    category: "standing",
+    category: "happy",
     description: "Avataaars style portrait",
     library: "Avataaars",
     poses: [
@@ -513,7 +506,7 @@ const BASE_CHARACTERS: Character[] = [
     name: "Waving Doodle",
     category: "waving",
     description: "Hand-drawn doodle style",
-    library: "Doodles",
+    library: "Doodles & Sketches",
     poses: [
       {
         id: "waving",
@@ -525,109 +518,135 @@ const BASE_CHARACTERS: Character[] = [
   },
 ];
 
-// Generate many more characters dynamically
-const SEEDS = [
-  "Felix", "Anita", "Jasper", "Oliver", "Max", "Mia", "Leo", "Lily", "Zoe", "Sam",
-  "Chloe", "Noah", "Emma", "Liam", "Ava", "Lucas", "Sophie", "Mason", "Isabella", "Ethan",
-  "Aiden", "Grace", "Logan", "Aria", "Jackson", "Evelyn", "Caleb", "Harper", "Ryan", "Ella",
-  "Luke", "Abigail", "Jack", "Amelia", "Owen", "Emily", "Gabriel", "Elizabeth", "William", "Sofia",
-  "James", "Benjamin", "Henry", "Alexander", "Michael", "Daniel", "Matthew", "Samuel", "David", "Joseph",
-  "Charlotte", "Amelia", "Harper", "Evelyn", "Abigail", "Emily", "Elizabeth", "Mila", "Ella", "Avery",
-  "Eleanor", "Madison", "Scarlett", "Victoria", "Aria", "Grace", "Chloe", "Camila", "Penelope", "Riley",
-  "Layla", "Lillian", "Nora", "Zoey", "Mila", "Aubrey", "Hannah", "Lily", "Addison", "Eleanor",
-  "Natalie", "Luna", "Savannah", "Brooklyn", "Leah", "Zoe", "Stella", "Hazel", "Ellie", "Paisley",
-  "Audrey", "Skylar", "Violet", "Claire", "Bella", "Aurora", "Lucy", "Anna", "Samantha", "Caroline"
-];
-
 const generatedCharacters: Character[] = [];
 
-SEEDS.forEach((seed, i) => {
-  // 3D Robots & Mascots (Bottts)
+// 1. 3D Robots & Mascots (Bottts)
+const ROBOT_NAMES = [
+  "Optimus", "Bumblebee", "Titan", "Bolt", "Sparky", "Vortex", "Aura", "Nexus",
+  "Echo", "Quantum", "Pulse", "Astro", "Zenith", "Cosmo", "Gizmo", "Volt",
+  "Cyber", "Omega", "Atlas", "Vector", "Circuit", "Helix", "Nova", "Shadow"
+];
+ROBOT_NAMES.forEach((name, i) => {
   generatedCharacters.push({
-    id: `bottts-${seed.toLowerCase()}`,
-    name: `${seed} Bot`,
-    category: i % 2 === 0 ? "happy" : "celebrating",
+    id: `bottts-${name.toLowerCase()}`,
+    name: `${name} Bot`,
+    category: i % 3 === 0 ? "happy" : i % 3 === 1 ? "celebrating" : "working",
     description: "3D Robot Mascot",
     library: "3D Mascots & Robots",
     poses: [{
       id: "bot",
       name: "Robot",
-      svg: `https://api.dicebear.com/9.x/bottts/svg?seed=${seed}&textureChance=50`,
+      svg: `https://api.dicebear.com/9.x/bottts/svg?seed=${name}&textureChance=100`,
       viewBox: "0 0 400 400"
     }]
   });
+});
 
-  // 3D Fun Emojis
+// 2. 3D Emojis & Expressions (Fun Emoji)
+const EMOJI_NAMES = [
+  "Joy", "Cool", "Surprise", "Love", "Wink", "Smile", "Party", "Rocket",
+  "Star", "Fire", "Magic", "Glow", "Cheer", "Sun", "Dream", "Laugh",
+  "Hero", "Cute", "Sparkle", "Zest", "Sunny", "Bliss", "Vibe", "Charm"
+];
+EMOJI_NAMES.forEach((name, i) => {
   generatedCharacters.push({
-    id: `emoji-${seed.toLowerCase()}`,
-    name: `${seed} Emoji`,
-    category: "happy",
+    id: `emoji-${name.toLowerCase()}`,
+    name: `${name} Emoji`,
+    category: i % 2 === 0 ? "happy" : "celebrating",
     description: "3D Fun Emoji Character",
     library: "3D Emojis",
     poses: [{
       id: "emoji",
       name: "Emoji",
-      svg: `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${seed}`,
+      svg: `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${name}`,
       viewBox: "0 0 400 400"
     }]
   });
+});
 
-  // Modern 3D Avatars (Lorelei)
+// 3. 3D & Modern Avatars (Lorelei)
+const AVATAR_NAMES = [
+  "Mia", "Leo", "Sophia", "Lucas", "Emma", "Oliver", "Ava", "Ethan",
+  "Isabella", "Liam", "Amelia", "Noah", "Harper", "Aiden", "Evelyn", "Jack",
+  "Scarlett", "Henry", "Ella", "Benjamin", "Charlotte", "Mason", "Chloe", "Logan"
+];
+AVATAR_NAMES.forEach((name, i) => {
   generatedCharacters.push({
-    id: `lorelei-${seed.toLowerCase()}`,
-    name: seed,
-    category: i % 3 === 0 ? "happy" : i % 3 === 1 ? "thinking" : "standing",
+    id: `lorelei-${name.toLowerCase()}`,
+    name,
+    category: i % 4 === 0 ? "happy" : i % 4 === 1 ? "thinking" : i % 4 === 2 ? "standing" : "waving",
     description: "Modern Illustrated Avatar",
     library: "3D & Modern Avatars",
     poses: [{
       id: "avatar",
       name: "Avatar",
-      svg: `https://api.dicebear.com/9.x/lorelei/svg?seed=${seed}`,
+      svg: `https://api.dicebear.com/9.x/lorelei/svg?seed=${name}`,
       viewBox: "0 0 400 400"
     }]
   });
+});
 
-  // Avataaars
+// 4. Avataaars
+const AVATAAAR_NAMES = [
+  "Alex", "Sam", "Jordan", "Taylor", "Morgan", "Riley", "Casey", "Cameron",
+  "Dakota", "Reese", "Avery", "Quinn", "Skyler", "Jamie", "Rowan", "Kendall",
+  "Payton", "Sage", "River", "Finley", "Hayden", "Emerson", "Peyton", "Adrian"
+];
+AVATAAAR_NAMES.forEach((name, i) => {
   generatedCharacters.push({
-    id: `avataaar-${seed.toLowerCase()}`,
-    name: seed,
+    id: `avataaar-${name.toLowerCase()}`,
+    name,
     category: i % 3 === 0 ? "happy" : i % 3 === 1 ? "thinking" : "standing",
     description: "Avataaars style portrait",
     library: "Avataaars",
     poses: [{
       id: "portrait",
       name: "Portrait",
-      svg: `https://api.dicebear.com/9.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffdfbf,ffd5dc`,
+      svg: `https://api.dicebear.com/9.x/avataaars/svg?seed=${name}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffdfbf,ffd5dc`,
       viewBox: "0 0 400 400"
     }]
   });
+});
 
-  // Open Peeps
+// 5. Open Peeps
+const PEEPS_NAMES = [
+  "Felix", "Jasper", "Max", "Finn", "Milo", "Kai", "Nico", "Theo",
+  "Ezra", "Silas", "Atticus", "Miles", "August", "Jonah", "Jude", "Declan",
+  "Sawyer", "Emmett", "Rowen", "Arthur", "Oscar", "Felix", "Hugo", "Arlo"
+];
+PEEPS_NAMES.forEach((name, i) => {
   generatedCharacters.push({
-    id: `open-peeps-${seed.toLowerCase()}`,
-    name: seed,
-    category: i % 3 === 0 ? "standing" : i % 3 === 1 ? "sitting" : "waving",
+    id: `open-peeps-${name.toLowerCase()}-${i}`,
+    name,
+    category: i % 4 === 0 ? "standing" : i % 4 === 1 ? "sitting" : i % 4 === 2 ? "waving" : "happy",
     description: "Hand-drawn Open Peeps style",
     library: "Open Peeps",
     poses: [{
       id: "peep",
       name: "Peep",
-      svg: `https://api.dicebear.com/9.x/open-peeps/svg?seed=${seed}`,
+      svg: `https://api.dicebear.com/9.x/open-peeps/svg?seed=${name}`,
       viewBox: "0 0 400 500"
     }]
   });
+});
 
-  // Micah (Doodles)
+// 6. Doodles & Sketches (Micah)
+const DOODLE_NAMES = [
+  "Aura", "Nova", "Pixel", "Prism", "Blaze", "Shadow", "Comet", "Orion",
+  "Zen", "Vibe", "Matrix", "Echo", "Rhythm", "Solar", "Lunar", "Cosmos",
+  "Flora", "Drift", "Spark", "Wave", "Flash", "Aero", "Glitch", "Pulse"
+];
+DOODLE_NAMES.forEach((name, i) => {
   generatedCharacters.push({
-    id: `doodle-${seed.toLowerCase()}`,
-    name: seed,
-    category: "happy",
+    id: `doodle-${name.toLowerCase()}`,
+    name,
+    category: i % 3 === 0 ? "happy" : i % 3 === 1 ? "celebrating" : "waving",
     description: "Modern vibrant doodle",
-    library: "Doodles",
+    library: "Doodles & Sketches",
     poses: [{
       id: "doodle",
       name: "Doodle",
-      svg: `https://api.dicebear.com/9.x/micah/svg?seed=${seed}&backgroundColor=f8f9fa,e9ecef,dee2e6`,
+      svg: `https://api.dicebear.com/9.x/micah/svg?seed=${name}&backgroundColor=f8f9fa,e9ecef,dee2e6`,
       viewBox: "0 0 400 400"
     }]
   });
