@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import {
   Layers, Type, Image as ImageIcon, Square, Flag,
   Cpu, Upload, Grid3X3, X, Palette, Smile, Globe, User,
-  Smartphone, LayoutList, LayoutTemplate
+  Smartphone, LayoutList
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LayersPanel } from "@/components/editor/panels/LayersPanel";
@@ -20,13 +20,11 @@ import { CharactersPanel } from "@/components/editor/panels/CharactersPanel";
 import { PlatformsPanel } from "@/components/editor/panels/PlatformsPanel";
 import { ThemesPanel } from "@/components/editor/panels/ThemesPanel";
 import { StoreListingPanel } from "@/components/editor/panels/StoreListingPanel";
-import { TemplatesPanel } from "@/components/editor/panels/TemplatesPanel";
 import { cn } from "@/lib/utils";
 
-type PanelId = "templates" | "themes" | "platforms" | "layers" | "text" | "background" | "flags" | "brands" | "assets" | "blocks" | "stickers" | "languages" | "characters" | "store_listing" | null;
+type PanelId = "themes" | "platforms" | "layers" | "text" | "background" | "flags" | "brands" | "assets" | "blocks" | "stickers" | "languages" | "characters" | "store_listing" | null;
 
 const SIDEBAR_TOOLS: { id: PanelId; icon: React.ElementType; label: string }[] = [
-  { id: "templates", icon: LayoutTemplate, label: "Templates" },
   { id: "themes", icon: Palette, label: "Color Themes" },
   { id: "platforms", icon: Smartphone, label: "Platforms" },
   { id: "store_listing", icon: LayoutList, label: "Store Listing" },
@@ -43,7 +41,6 @@ const SIDEBAR_TOOLS: { id: PanelId; icon: React.ElementType; label: string }[] =
 ];
 
 const PANEL_TITLES: Record<NonNullable<PanelId>, string> = {
-  templates: "Templates",
   themes: "Color Themes",
   platforms: "Platforms",
   layers: "Layers",
@@ -61,7 +58,6 @@ const PANEL_TITLES: Record<NonNullable<PanelId>, string> = {
 
 function renderPanel(panel: NonNullable<PanelId>) {
   switch (panel) {
-    case "templates": return <TemplatesPanel />;
     case "themes": return <ThemesPanel />;
     case "platforms": return <PlatformsPanel />;
     case "layers": return <LayersPanel />;
