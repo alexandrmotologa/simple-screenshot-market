@@ -44,9 +44,9 @@ export function ScreenStrip() {
                   "flex items-center gap-1.5 text-[10px] font-semibold tracking-wide px-2.5 py-1 rounded-lg cursor-pointer transition-all border shadow-xs",
                   isSetActive
                     ? isIOS
-                      ? "bg-blue-500/15 text-blue-400 border-blue-500/40 ring-1 ring-blue-500/30"
-                      : "bg-emerald-500/15 text-emerald-400 border-emerald-500/40 ring-1 ring-emerald-500/30"
-                    : "bg-secondary/60 text-muted-foreground hover:text-foreground border-border/50 hover:bg-secondary"
+                      ? "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/40 ring-1 ring-blue-500/30"
+                      : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/40 ring-1 ring-emerald-500/30"
+                    : "bg-secondary text-muted-foreground hover:text-foreground border-border/50 hover:bg-secondary/80"
                 )}
                 onClick={() => {
                   setActiveSet(ss.id);
@@ -64,8 +64,8 @@ export function ScreenStrip() {
                   className={cn(
                     "text-[9px] font-mono font-bold px-1.5 py-0.2 rounded ml-0.5",
                     ss.screens.length >= 10
-                      ? "bg-amber-500/25 text-amber-300 border border-amber-500/30"
-                      : "bg-black/25 text-foreground/80"
+                      ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40"
+                      : "bg-background/80 dark:bg-black/40 text-foreground border border-border/40"
                   )}
                 >
                   {ss.screens.length}/10
@@ -104,8 +104,8 @@ export function ScreenStrip() {
                     </div>
 
                     {/* Glassmorphic Screen Number Badge */}
-                    <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center bg-black/60 backdrop-blur-xs py-0.5 pointer-events-none">
-                      <span className="text-[9px] text-white/90 font-semibold font-mono">
+                    <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center bg-background/85 dark:bg-black/75 backdrop-blur-xs py-0.5 pointer-events-none border-t border-border/30">
+                      <span className="text-[9px] text-foreground dark:text-white/95 font-bold font-mono">
                         {idx + 1}
                       </span>
                     </div>

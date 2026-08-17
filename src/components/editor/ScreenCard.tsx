@@ -1215,11 +1215,11 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           }}
         >
           {/* Header: index + caption editable + delete */}
-      <div className="flex items-center gap-1.5">
-        <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground transition-colors" title="Drag to reorder screen">
+      <div className="flex items-center gap-1.5 px-0.5">
+        <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing text-muted-foreground/60 hover:text-foreground transition-colors" title="Drag to reorder screen">
           <GripHorizontal className="w-3.5 h-3.5" />
         </div>
-        <span className="text-[10px] text-muted-foreground font-mono w-4 shrink-0">{index + 1}</span>
+        <span className="text-[11px] text-foreground/80 font-mono font-semibold w-4 shrink-0">{index + 1}</span>
 
         {/* Caption — editable inline */}
         {editingCaption ? (
@@ -1232,7 +1232,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
               if (e.key === "Enter") { e.preventDefault(); saveCaption(); }
               if (e.key === "Escape") { setEditingCaption(false); setCaptionDraft(screen.caption ?? ""); }
             }}
-            className="flex-1 text-[10px] font-medium bg-transparent border-0 border-b border-primary/50 outline-none text-foreground/80 py-0 px-0.5 min-w-0"
+            className="flex-1 text-[11px] font-medium bg-transparent border-0 border-b border-primary/60 outline-none text-foreground py-0 px-0.5 min-w-0"
             placeholder="Add caption…"
             autoFocus
             onClick={(e) => e.stopPropagation()}
@@ -1246,10 +1246,10 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
               setEditingCaption(true);
               setTimeout(() => captionRef.current?.focus(), 0);
             }}
-            className="flex-1 text-left text-[10px] text-muted-foreground/60 hover:text-muted-foreground truncate transition-colors px-0.5 py-0"
+            className="flex-1 text-left text-[11px] text-muted-foreground hover:text-foreground font-medium truncate transition-colors px-0.5 py-0"
             title="Click to edit caption"
           >
-            {screen.caption || <span className="italic opacity-50">Caption…</span>}
+            {screen.caption || <span className="italic opacity-60">Caption…</span>}
           </button>
         )}
 
@@ -1476,7 +1476,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
       </div>
 
       {/* Screen name */}
-      <p className="text-[10px] text-center text-muted-foreground/50 truncate">{screen.name}</p>
+      <p className="text-[11px] text-center text-muted-foreground font-medium truncate mt-0.5">{screen.name}</p>
         </div>
       )}
     </Draggable>

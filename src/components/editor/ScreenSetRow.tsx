@@ -151,9 +151,9 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
   const isIOS = screenSet.store === "ios";
   const storeLabel = isIOS ? APP_STORE_LABEL : GOOGLE_PLAY_LABEL;
   const storeColor = isIOS
-    ? "bg-blue-500/15 text-blue-400 ring-1 ring-blue-500/40"
-    : "bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/40";
-  const storeColorInactive = "bg-secondary/70 text-muted-foreground hover:text-foreground";
+    ? "bg-blue-500/15 text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/40 font-semibold"
+    : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/40 font-semibold";
+  const storeColorInactive = "bg-secondary text-muted-foreground hover:text-foreground border border-border/50";
 
   return (
     <div className="space-y-2.5">
@@ -183,8 +183,8 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
             className={cn(
               "px-1.5 py-0.2 rounded-md text-[10px] font-mono font-bold tracking-tight ml-0.5",
               screenSet.screens.length >= 10
-                ? "bg-amber-500/25 text-amber-300 border border-amber-500/30"
-                : "bg-black/20 text-foreground/80"
+                ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40"
+                : "bg-background/80 dark:bg-black/40 text-foreground border border-border/40"
             )}
           >
             {screenSet.screens.length}/10

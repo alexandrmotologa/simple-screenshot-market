@@ -82,38 +82,36 @@ function shapeLayer(
 
 // ─── TEMPLATES ─────────────────────────────────────────────────────────────────
 
-export const DEFAULT_TEMPLATES: Template[] = [
+export const BLANK_TEMPLATE: Template = {
+  id: "blank",
+  name: "Blank",
+  description: "Start from scratch (5 empty screens)",
+  category: "Basic",
+  layout: "text-only",
+  tags: ["blank", "empty", "custom"],
+  previewColor: "#1e1b4b",
+  previewGradient: ["#6366f1", "#8b5cf6"],
+  screens: Array.from({ length: 5 }).map((_, i) => ({
+    name: `Screen ${i + 1}`,
+    background: {
+      type: "gradient",
+      gradient: { direction: "to-br", stops: [{ color: "#6366f1", position: 0 }, { color: "#8b5cf6", position: 100 }] },
+    },
+    layers: [
+      { ...screenshotWithFrame(129, 699, 1032, 1957) } as any
+    ],
+  })),
+};
 
-  // ── 1. Blank ────────────────────────────────────────────────────────────────
+export const CORE_TEMPLATES: Template[] = [
+  // ── Template 28 (Deep Dark) ─────────────────────────────────────────────────
   {
-    id: "blank",
-    name: "Blank",
-    description: "Start from scratch (5 empty screens)",
-    category: "Basic",
-    layout: "text-only",
-    tags: ["blank", "empty", "custom"],
-    previewColor: "#1e1b4b",
-    previewGradient: ["#6366f1", "#8b5cf6"],
-    screens: Array.from({ length: 5 }).map((_, i) => ({
-      name: `Screen ${i + 1}`,
-      background: {
-        type: "gradient",
-        gradient: { direction: "to-br", stops: [{ color: "#6366f1", position: 0 }, { color: "#8b5cf6", position: 100 }] },
-      },
-      layers: [
-        { ...screenshotWithFrame(129, 699, 1032, 1957) } as any
-      ],
-    })),
-  },
-
-  // ── 2. Premium Dark ─────────────────────────────────────────────────────────
-  {
-    id: "premium-dark",
-    name: "Premium Dark",
+    id: "template-28",
+    name: "Template 28",
     description: "Deep elegant tones with premium 3D glows (10 Screens)",
     category: "Modern",
     layout: "screenshot-bottom",
-    tags: ["dark", "premium", "modern", "glow"],
+    tags: ["dark", "premium", "modern", "glow", "template 28"],
     previewColor: "#0f172a",
     previewGradient: ["#1e293b", "#020617"],
     screens: [
@@ -335,14 +333,14 @@ export const DEFAULT_TEMPLATES: Template[] = [
     ],
   },
 
-  // ── 3. Minimal Light ────────────────────────────────────────────────────────
+  // ── Template 29 (Minimal Light) ─────────────────────────────────────────────
   {
-    id: "minimal-light",
-    name: "Minimal Light",
+    id: "template-29",
+    name: "Template 29",
     description: "Clean, high-contrast, airy design (10 Screens)",
     category: "Classic",
     layout: "screenshot-top",
-    tags: ["light", "clean", "white", "minimal"],
+    tags: ["light", "clean", "white", "minimal", "template 29"],
     previewColor: "#f8fafc",
     previewGradient: ["#ffffff", "#e2e8f0"],
     screens: [
@@ -497,14 +495,14 @@ export const DEFAULT_TEMPLATES: Template[] = [
     ],
   },
 
-  // ── 4. Vibrant Playful ──────────────────────────────────────────────────────
+  // ── Template 30 (Vibrant Playful) ───────────────────────────────────────────
   {
-    id: "vibrant-playful",
-    name: "Vibrant Playful",
+    id: "template-30",
+    name: "Template 30",
     description: "Fun geometric shapes with energetic gradients (10 Screens)",
     category: "Social",
     layout: "screenshot-float",
-    tags: ["fun", "vibrant", "shapes", "colorful"],
+    tags: ["fun", "vibrant", "shapes", "colorful", "template 30"],
     previewColor: "#fb923c",
     previewGradient: ["#f43f5e", "#f59e0b"],
     screens: [
@@ -692,14 +690,14 @@ export const DEFAULT_TEMPLATES: Template[] = [
     ],
   },
 
-  // ── 5. Professional Blue ────────────────────────────────────────────────────
+  // ── Template 31 (Professional Blue) ─────────────────────────────────────────
   {
-    id: "professional-blue",
-    name: "Professional Blue",
+    id: "template-31",
+    name: "Template 31",
     description: "Sleek, trusted blue tones perfect for business/finance (10 Screens)",
     category: "Finance",
     layout: "screenshot-bottom",
-    tags: ["blue", "corporate", "finance", "business"],
+    tags: ["blue", "corporate", "finance", "business", "template 31"],
     previewColor: "#2563eb",
     previewGradient: ["#1e3a8a", "#2563eb"],
     screens: [
@@ -900,14 +898,14 @@ export const DEFAULT_TEMPLATES: Template[] = [
     ],
   },
 
-  // ── 6. Neon Cyber ───────────────────────────────────────────────────────────
+  // ── Template 32 (Neon Cyber) ────────────────────────────────────────────────
   {
-    id: "neon-cyber",
-    name: "Neon Cyber",
+    id: "template-32",
+    name: "Template 32",
     description: "Deep space aesthetic with bright neon glowing lines (10 Screens)",
     category: "Technology",
     layout: "screenshot-float",
-    tags: ["neon", "cyber", "glow", "dark", "futuristic"],
+    tags: ["neon", "cyber", "glow", "dark", "futuristic", "template 32"],
     previewColor: "#06b6d4",
     previewGradient: ["#020617", "#000000"],
     screens: [
@@ -1085,14 +1083,14 @@ export const DEFAULT_TEMPLATES: Template[] = [
     ],
   },
 
-  // ── 7. Dynamic Flow ─────────────────────────────────────────────────────────
+  // ── Template 33 (Dynamic Flow) ──────────────────────────────────────────────
   {
-    id: "dynamic-flow",
-    name: "Dynamic Flow",
+    id: "template-33",
+    name: "Template 33",
     description: "Creative split layout with text on the right and screenshot on the left (10 Screens)",
     category: "Creative",
     layout: "screenshot-float-reverse",
-    tags: ["creative", "flow", "dynamic", "asymmetric"],
+    tags: ["creative", "flow", "dynamic", "asymmetric", "template 33"],
     previewColor: "#8b5cf6",
     previewGradient: ["#8b5cf6", "#ec4899"],
     screens: [
@@ -1396,5 +1394,11 @@ const mappedFigmaTemplates: Template[] = FIGMA_TEMPLATES.map((ft) => {
   };
 });
 
-// Append the mapped figma templates to the end
-export const ALL_TEMPLATES: Template[] = [...DEFAULT_TEMPLATES, ...mappedFigmaTemplates];
+// All templates ordered: Blank, then Figma Templates 1 to 27, then Templates 28 to 33
+export const ALL_TEMPLATES: Template[] = [
+  BLANK_TEMPLATE,
+  ...mappedFigmaTemplates,
+  ...CORE_TEMPLATES,
+];
+
+export const DEFAULT_TEMPLATES: Template[] = ALL_TEMPLATES;

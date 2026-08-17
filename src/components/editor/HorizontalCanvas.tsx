@@ -86,14 +86,13 @@ export function HorizontalCanvas() {
       ref={containerRef}
       onMouseDown={handleMouseDown}
       className={cn(
-        "flex-1 overflow-auto bg-background transition-colors",
+        "flex-1 overflow-auto bg-background transition-colors text-foreground/15",
         isPanning ? "cursor-grabbing select-none" : "cursor-grab"
       )}
       style={{
         backgroundImage:
-          "radial-gradient(circle, var(--color-foreground) 1px, transparent 1px)",
+          "radial-gradient(circle, currentColor 1.2px, transparent 1.2px)",
         backgroundSize: "24px 24px",
-        opacity: 0.9,
       }}
     >
       <div className="min-w-fit px-12 py-10 space-y-12">

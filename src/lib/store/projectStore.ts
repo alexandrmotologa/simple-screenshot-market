@@ -20,8 +20,17 @@ export const useProjectStore = create<ProjectStore>()(
       projects: [],
 
       createProject: (templateId, name, platforms = { ios: true, android: true }) => {
-        const template = templateId
-          ? ALL_TEMPLATES.find((t) => t.id === templateId)
+        const ID_ALIASES: Record<string, string> = {
+          "premium-dark": "template-28",
+          "minimal-light": "template-29",
+          "vibrant-playful": "template-30",
+          "professional-blue": "template-31",
+          "neon-cyber": "template-32",
+          "dynamic-flow": "template-33",
+        };
+        const resolvedId = templateId ? (ID_ALIASES[templateId] ?? templateId) : null;
+        const template = resolvedId
+          ? ALL_TEMPLATES.find((t) => t.id === resolvedId)
           : null;
 
         const baseScreens = template?.screens && template.screens.length > 0
