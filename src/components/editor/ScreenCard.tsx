@@ -966,7 +966,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           const isApple = sl.shape === "appstore-badge";
           const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
           const maxR = Math.min(bw, bh) / 2;
-          const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : Math.min(bh * 0.22, maxR);
+          const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : Math.min(bh * 0.24, maxR);
 
           // Background pill
           ctx.beginPath();
@@ -979,30 +979,47 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             ctx.stroke();
           }
 
-          // Icon area (left side)
-          const iconSize  = bh * 0.52;
-          const iconX     = bx + bh * 0.36;
+          // Icon area (generous left margin: more for Apple, slightly less for Google Play)
+          const iconSize = bh * 0.50;
+          const iconX = isApple ? bx + bh * 0.58 : bx + bh * 0.46;
           if (isApple) {
             drawAppleLogo(ctx, iconX, by + bh / 2, iconSize, "#FFFFFF");
           } else {
             drawGooglePlayLogo(ctx, iconX, by + bh / 2, iconSize);
           }
 
-          // Labels (Left-aligned next to icon)
-          const labelX = iconX + iconSize * 0.78;
+          // Labels (Left-aligned next to icon with auto-fit)
+          const labelX = isApple ? iconX + iconSize * 0.85 : iconX + iconSize * 0.80;
+          const maxTextW = bw - (labelX - bx) - bh * 0.20;
+
           const topLabel = sl.subtext || (isApple ? "Download on the" : "GET IT ON");
           const botLabel = sl.text || (isApple ? "App Store" : "Google Play");
 
-          ctx.textAlign = "left";
-          ctx.textBaseline = "middle";
+          drawAutoFitText(
+            ctx,
+            topLabel,
+            labelX,
+            by + bh * 0.34,
+            maxTextW,
+            bh * 0.19,
+            500,
+            '"Inter", sans-serif',
+            "rgba(255,255,255,0.85)",
+            "left"
+          );
 
-          ctx.font = `500 ${bh * 0.19}px "Inter", sans-serif`;
-          ctx.fillStyle = "rgba(255,255,255,0.85)";
-          ctx.fillText(topLabel, labelX, by + bh * 0.34);
-
-          ctx.font = `700 ${bh * 0.34}px "Inter", sans-serif`;
-          ctx.fillStyle = "#FFFFFF";
-          ctx.fillText(botLabel, labelX, by + bh * 0.68);
+          drawAutoFitText(
+            ctx,
+            botLabel,
+            labelX,
+            by + bh * 0.68,
+            maxTextW,
+            bh * 0.34,
+            700,
+            '"Inter", sans-serif',
+            "#FFFFFF",
+            "left"
+          );
 
         } else if (sl.shape === "rating-badge") {
           const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
