@@ -723,32 +723,22 @@ const PRESS_PRESETS: BlockPreset[] = [
 
 const BADGE_PRESETS: BlockPreset[] = [
   {
-    id: "appstore",
-    name: "Apple App Store Badge",
+    id: "appstore-dark",
+    name: "App Store Badge (Dark)",
+    category: "Store Badges",
     preview: (
-      <div
-        className="flex items-center gap-2 px-3 py-2 rounded-xl text-white text-[10px] font-semibold bg-black border border-white/20 hover:border-primary/50 transition-colors shadow-xs"
-        style={{ minWidth: 120 }}
-      >
-        <Apple className="w-5 h-5 fill-white shrink-0" />
-        <div className="text-left">
-          <div className="text-[8px] opacity-80 font-normal leading-none">Download on the</div>
-          <div className="text-[13px] font-bold leading-tight mt-0.5">App Store</div>
-        </div>
+      <div className="h-10 flex items-center justify-center p-1 bg-slate-900 rounded-lg border border-border/40">
+        <img src="/badges/appstore-dark.svg" alt="App Store Dark" className="h-8 object-contain" />
       </div>
     ),
     getLayers: (sw, sh) => {
       const w = Math.round(sw * 0.72);
-      const h = Math.round(sw * 0.21);
+      const h = Math.round(w / (205 / 59));
       return [{
         type: "shape",
-        shape: "appstore-badge",
+        shape: "appstore-dark",
         text: "App Store",
         subtext: "Download on the",
-        fill: "#000000",
-        stroke: "rgba(255,255,255,0.3)",
-        strokeWidth: 3,
-        cornerRadius: Math.round(sw * 0.04),
         width: w,
         height: h,
         x: Math.round((sw - w) / 2),
@@ -759,32 +749,74 @@ const BADGE_PRESETS: BlockPreset[] = [
     },
   },
   {
-    id: "googleplay",
-    name: "Google Play Store Badge",
+    id: "appstore-light",
+    name: "App Store Badge (Light)",
+    category: "Store Badges",
     preview: (
-      <div
-        className="flex items-center gap-2 px-3 py-2 rounded-xl text-white text-[10px] font-semibold bg-black border border-white/20 hover:border-primary/50 transition-colors shadow-xs"
-        style={{ minWidth: 120 }}
-      >
-        <Play className="w-4 h-4 fill-white shrink-0 text-white" />
-        <div className="text-left">
-          <div className="text-[8px] opacity-80 font-normal leading-none">GET IT ON</div>
-          <div className="text-[13px] font-bold leading-tight mt-0.5">Google Play</div>
-        </div>
+      <div className="h-10 flex items-center justify-center p-1 bg-slate-100 dark:bg-slate-800 rounded-lg border border-border/40">
+        <img src="/badges/appstore-light.svg" alt="App Store Light" className="h-8 object-contain" />
       </div>
     ),
     getLayers: (sw, sh) => {
       const w = Math.round(sw * 0.72);
-      const h = Math.round(sw * 0.21);
+      const h = Math.round(w / (201 / 59));
       return [{
         type: "shape",
-        shape: "googleplay-badge",
+        shape: "appstore-light",
+        text: "App Store",
+        subtext: "Download on the",
+        width: w,
+        height: h,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        rotation: 0,
+        opacity: 1,
+      } as any];
+    },
+  },
+  {
+    id: "googleplay-dark",
+    name: "Google Play Badge (Dark)",
+    category: "Store Badges",
+    preview: (
+      <div className="h-10 flex items-center justify-center p-1 bg-slate-900 rounded-lg border border-border/40">
+        <img src="/badges/googleplay-dark.svg" alt="Google Play Dark" className="h-8 object-contain" />
+      </div>
+    ),
+    getLayers: (sw, sh) => {
+      const w = Math.round(sw * 0.72);
+      const h = Math.round(w / (204 / 59));
+      return [{
+        type: "shape",
+        shape: "googleplay-dark",
         text: "Google Play",
         subtext: "GET IT ON",
-        fill: "#000000",
-        stroke: "rgba(255,255,255,0.3)",
-        strokeWidth: 3,
-        cornerRadius: Math.round(sw * 0.04),
+        width: w,
+        height: h,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        rotation: 0,
+        opacity: 1,
+      } as any];
+    },
+  },
+  {
+    id: "googleplay-light",
+    name: "Google Play Badge (Light)",
+    category: "Store Badges",
+    preview: (
+      <div className="h-10 flex items-center justify-center p-1 bg-slate-100 dark:bg-slate-800 rounded-lg border border-border/40">
+        <img src="/badges/googleplay-light.svg" alt="Google Play Light" className="h-8 object-contain" />
+      </div>
+    ),
+    getLayers: (sw, sh) => {
+      const w = Math.round(sw * 0.72);
+      const h = Math.round(w / (201 / 59));
+      return [{
+        type: "shape",
+        shape: "googleplay-light",
+        text: "Google Play",
+        subtext: "GET IT ON",
         width: w,
         height: h,
         x: Math.round((sw - w) / 2),
