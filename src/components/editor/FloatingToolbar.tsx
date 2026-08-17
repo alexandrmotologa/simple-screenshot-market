@@ -1105,14 +1105,39 @@ export function FloatingToolbar() {
               <TooltipContent>Stroke color</TooltipContent>
             </Tooltip>
 
-            {/* Corner radius for Shapes */}
-            {sh.shape === "rounded-rectangle" && (
-              <div className="flex items-center gap-0.5 shrink-0 ml-1">
-                <button type="button" onClick={() => update({ cornerRadius: Math.max(0, (sh.cornerRadius ?? 0) - 5) } as Partial<ShapeLayer>)} className="w-6 h-6 rounded hover:bg-secondary flex items-center justify-center text-muted-foreground"><Minus className="w-3 h-3" /></button>
-                <NumInput value={sh.cornerRadius ?? 0} onChange={(v) => update({ cornerRadius: v } as Partial<ShapeLayer>)} min={0} max={200} unit="r" width="w-8" />
-                <button type="button" onClick={() => update({ cornerRadius: Math.min(200, (sh.cornerRadius ?? 0) + 5) } as Partial<ShapeLayer>)} className="w-6 h-6 rounded hover:bg-secondary flex items-center justify-center text-muted-foreground"><Plus className="w-3 h-3" /></button>
-              </div>
-            )}
+            {/* Corner radius for Shapes & Badges */}
+            {(sh.shape === "rounded-rectangle" || sh.shape === "rectangle" || sh.cornerRadius !== undefined || sh.shape.includes("badge") || sh.shape.includes("card")) && (() => {
+              const maxR = Math.max(1, Math.round(Math.min(sh.width, sh.height) / 2));
+              const currentR = sh.cornerRadius !== undefined ? Math.min(sh.cornerRadius, maxR) : maxR;
+              return (
+                <div className="flex items-center gap-0.5 shrink-0 ml-1">
+                  <button
+                    type="button"
+                    onClick={() => update({ cornerRadius: Math.max(0, currentR - 5) } as Partial<ShapeLayer>)}
+                    className="w-6 h-6 rounded hover:bg-secondary flex items-center justify-center text-muted-foreground"
+                    title="Decrease corner radius"
+                  >
+                    <Minus className="w-3 h-3" />
+                  </button>
+                  <NumInput
+                    value={currentR}
+                    onChange={(v) => update({ cornerRadius: Math.min(maxR, Math.max(0, v)) } as Partial<ShapeLayer>)}
+                    min={0}
+                    max={maxR}
+                    unit="r"
+                    width="w-8"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => update({ cornerRadius: Math.min(maxR, currentR + 5) } as Partial<ShapeLayer>)}
+                    className="w-6 h-6 rounded hover:bg-secondary flex items-center justify-center text-muted-foreground"
+                    title="Increase corner radius"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </button>
+                </div>
+              );
+            })()}
 
             <Separator orientation="vertical" className="h-5 mx-0.5 shrink-0" />
           </>
