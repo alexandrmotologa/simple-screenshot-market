@@ -608,15 +608,6 @@ export default function DashboardPage() {
               GitHub
             </Button>
             <ThemeToggle />
-            <Button
-              id="new-project-btn"
-              onClick={() => setShowNewProject(true)}
-              className="gap-2 shadow-sm shadow-primary/20"
-              size="sm"
-            >
-              <Plus className="w-4 h-4" />
-              New Project
-            </Button>
           </div>
         </div>
       </header>
