@@ -2,11 +2,11 @@
 
 import { useState, useCallback } from "react";
 import {
-  Layers, Type, Image as ImageIcon, Square, Flag,
+  Layers, Type, Square, Flag,
   Cpu, Upload, Grid3X3, X, Palette, Smile, Globe, User,
   Smartphone, LayoutList
 } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { LayersPanel } from "@/components/editor/panels/LayersPanel";
 import { TextPanel } from "@/components/editor/panels/TextPanel";
 import { BackgroundPanel } from "@/components/editor/panels/BackgroundPanel";
@@ -22,37 +22,78 @@ import { ThemesPanel } from "@/components/editor/panels/ThemesPanel";
 import { StoreListingPanel } from "@/components/editor/panels/StoreListingPanel";
 import { cn } from "@/lib/utils";
 
-type PanelId = "themes" | "platforms" | "layers" | "text" | "background" | "flags" | "brands" | "assets" | "blocks" | "stickers" | "languages" | "characters" | "store_listing" | null;
+type PanelId =
+  | "themes"
+  | "platforms"
+  | "layers"
+  | "text"
+  | "background"
+  | "flags"
+  | "brands"
+  | "assets"
+  | "blocks"
+  | "stickers"
+  | "languages"
+  | "characters"
+  | "store_listing"
+  | null;
 
-const SIDEBAR_TOOLS: { id: PanelId; icon: React.ElementType; label: string }[] = [
-  { id: "themes", icon: Palette, label: "Color Themes" },
-  { id: "platforms", icon: Smartphone, label: "Platforms" },
-  { id: "store_listing", icon: LayoutList, label: "Store Listing" },
-  { id: "layers", icon: Layers, label: "Layers" },
-  { id: "text", icon: Type, label: "Text" },
-  { id: "background", icon: Grid3X3, label: "Background" },
-  { id: "languages", icon: Globe, label: "Languages" },
-  { id: "characters", icon: User, label: "Characters" },
-  { id: "stickers", icon: Smile, label: "Stickers" },
-  { id: "blocks", icon: Square, label: "Block Elements" },
-  { id: "assets", icon: Upload, label: "My Screenshots" },
-  { id: "flags", icon: Flag, label: "Flags" },
-  { id: "brands", icon: Cpu, label: "Brand Icons" },
+interface SidebarTool {
+  id: NonNullable<PanelId>;
+  icon: React.ElementType;
+  label: string;
+  badge?: string;
+}
+
+interface SidebarGroup {
+  name: string;
+  tools: SidebarTool[];
+}
+
+const SIDEBAR_GROUPS: SidebarGroup[] = [
+  {
+    name: "Structure & Style",
+    tools: [
+      { id: "platforms", icon: Smartphone, label: "Platforms & Presets" },
+      { id: "themes", icon: Palette, label: "Color Themes" },
+      { id: "background", icon: Grid3X3, label: "Background & Mesh" },
+      { id: "layers", icon: Layers, label: "Layer Order" },
+    ],
+  },
+  {
+    name: "Elements & Content",
+    tools: [
+      { id: "text", icon: Type, label: "Typography & Captions" },
+      { id: "assets", icon: Upload, label: "My Screenshots & Assets" },
+      { id: "blocks", icon: Square, label: "Block Elements & Shapes" },
+      { id: "stickers", icon: Smile, label: "Stickers & Badges" },
+      { id: "characters", icon: User, label: "3D Characters & Mascots" },
+      { id: "brands", icon: Cpu, label: "Brand Icons" },
+      { id: "flags", icon: Flag, label: "Country Flags" },
+    ],
+  },
+  {
+    name: "Global & Store",
+    tools: [
+      { id: "languages", icon: Globe, label: "Multi-Language (i18n)" },
+      { id: "store_listing", icon: LayoutList, label: "Store Listing" },
+    ],
+  },
 ];
 
 const PANEL_TITLES: Record<NonNullable<PanelId>, string> = {
   themes: "Color Themes",
-  platforms: "Platforms",
+  platforms: "Platforms & Devices",
   layers: "Layers",
-  text: "Text",
-  background: "Background",
-  stickers: "Stickers & Emojis",
-  flags: "Flags",
-  brands: "Brand icons",
-  assets: "My Screenshots",
-  blocks: "Block element",
-  languages: "Languages & i18n",
-  characters: "Characters",
+  text: "Typography & Captions",
+  background: "Background & Mesh",
+  stickers: "Stickers & Badges",
+  flags: "Country Flags",
+  brands: "Brand Icons",
+  assets: "Screenshots & Media",
+  blocks: "Block Elements",
+  languages: "Languages & Localization",
+  characters: "3D Characters",
   store_listing: "Store Listing",
 };
 
@@ -84,37 +125,53 @@ export function EditorSidebar() {
 
   return (
     <div className="flex shrink-0 h-full z-30">
-      {/* Icon rail — use native title instead of Tooltip to avoid nested button issue */}
-      <div className="w-11 border-r border-border/50 bg-card/70 flex flex-col items-center py-2 gap-0.5">
-        {SIDEBAR_TOOLS.map((tool) => (
-          <button
-            key={tool.id}
-            id={`sidebar-${tool.id}`}
-            type="button"
-            onClick={() => togglePanel(tool.id)}
-            title={tool.label}
-            className={cn(
-              "relative w-9 h-9 rounded-xl flex items-center justify-center transition-all text-sm",
-              activePanel === tool.id
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+      {/* Icon Rail with Group Separators */}
+      <div className="w-12 border-r border-border/50 bg-card/70 backdrop-blur-md flex flex-col items-center py-2.5 gap-2 overflow-y-auto overflow-x-hidden select-none">
+        {SIDEBAR_GROUPS.map((group, gIdx) => (
+          <div key={group.name} className="flex flex-col items-center gap-1 w-full">
+            {gIdx > 0 && (
+              <div className="w-6 h-[1px] bg-border/60 my-1" />
             )}
-          >
-            <tool.icon className="w-4 h-4" />
-            {/* Active indicator */}
-            {activePanel === tool.id && (
-              <span className="absolute -right-1 top-1/2 -translate-y-1/2 w-1 h-4 bg-primary rounded-l-full" />
-            )}
-          </button>
+
+            {group.tools.map((tool) => {
+              const isActive = activePanel === tool.id;
+              return (
+                <Tooltip key={tool.id}>
+                  <TooltipTrigger
+                    id={`sidebar-${tool.id}`}
+                    type="button"
+                    onClick={() => togglePanel(tool.id)}
+                    className={cn(
+                      "relative w-9 h-9 rounded-xl flex items-center justify-center transition-all text-sm outline-none",
+                      isActive
+                        ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 font-semibold scale-105"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary/80"
+                    )}
+                  >
+                    <tool.icon className="w-4 h-4" />
+                    {isActive && (
+                      <span className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-1 h-4 bg-primary rounded-l-full" />
+                    )}
+                  </TooltipTrigger>
+
+                  <TooltipContent side="right" sideOffset={8} className="text-xs font-medium">
+                    {tool.label}
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })}
+          </div>
         ))}
       </div>
 
       {/* Slide-out panel */}
       {activePanel && (
-        <div className="w-72 border-r border-border/50 bg-card/90 backdrop-blur-sm flex flex-col h-full shadow-xl">
+        <div className="w-72 border-r border-border/50 bg-card/95 backdrop-blur-md flex flex-col h-full shadow-2xl">
           {/* Panel header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border/40 shrink-0">
-            <h3 className="text-sm font-semibold">{PANEL_TITLES[activePanel]}</h3>
+            <h3 className="text-sm font-semibold tracking-tight text-foreground">
+              {PANEL_TITLES[activePanel]}
+            </h3>
             <button
               type="button"
               onClick={() => setActivePanel(null)}
@@ -124,7 +181,7 @@ export function EditorSidebar() {
             </button>
           </div>
           {/* Panel content */}
-          <div className="flex-1 min-h-0 flex flex-col">
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
             {renderPanel(activePanel)}
           </div>
         </div>

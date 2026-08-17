@@ -52,9 +52,11 @@ function Btn({
       <TooltipTrigger
         onClick={onClick}
         className={cn(
-          "w-7 h-7 rounded-lg flex items-center justify-center transition-colors",
-          active ? "bg-primary text-primary-foreground" : "",
-          danger ? "hover:bg-destructive/15 text-muted-foreground hover:text-destructive" : "hover:bg-secondary text-muted-foreground hover:text-foreground",
+          "w-7 h-7 rounded-lg flex items-center justify-center transition-all",
+          active
+            ? "bg-primary text-primary-foreground shadow-sm shadow-primary/30 ring-1 ring-primary/60 font-semibold scale-105"
+            : "hover:bg-secondary text-muted-foreground hover:text-foreground",
+          danger && "hover:bg-destructive/15 text-muted-foreground hover:text-destructive",
           className,
         )}
       >
@@ -667,10 +669,15 @@ export function FloatingToolbar() {
             </Btn>
             <Popover>
               <PopoverTrigger
-                className={cn("w-8 h-8 flex items-center justify-center rounded-lg transition-colors", !!sl.shadow ? "bg-secondary text-foreground" : "hover:bg-secondary/50 text-muted-foreground hover:text-foreground")}
+                className={cn(
+                  "w-7 h-7 flex items-center justify-center rounded-lg transition-all outline-none",
+                  !!sl.shadow
+                    ? "bg-primary text-primary-foreground shadow-sm shadow-primary/30 ring-1 ring-primary/60 scale-105"
+                    : "hover:bg-secondary text-muted-foreground hover:text-foreground"
+                )}
                 title="Shadow Settings"
               >
-                <div className="w-4 h-4 border-[1.5px] border-current rounded-[3px] drop-shadow-md" />
+                <div className={cn("w-3.5 h-3.5 border-[1.5px] rounded-[3px]", !!sl.shadow ? "border-primary-foreground bg-primary-foreground/20" : "border-current")} />
               </PopoverTrigger>
               <PopoverContent className="w-[280px] p-4 flex flex-col gap-4 rounded-xl shadow-xl">
                 <div className="flex items-center justify-between">
@@ -730,11 +737,16 @@ export function FloatingToolbar() {
 
             <Popover>
               <PopoverTrigger
-                className={cn("w-8 h-8 flex items-center justify-center rounded-lg transition-colors", sl.focusOverlay?.enabled ? "bg-secondary text-foreground" : "hover:bg-secondary/50 text-muted-foreground hover:text-foreground")}
+                className={cn(
+                  "w-7 h-7 flex items-center justify-center rounded-lg transition-all outline-none",
+                  sl.focusOverlay?.enabled
+                    ? "bg-primary text-primary-foreground shadow-sm shadow-primary/30 ring-1 ring-primary/60 scale-105"
+                    : "hover:bg-secondary text-muted-foreground hover:text-foreground"
+                )}
                 title="Focus Overlay Settings"
               >
-                <div className="relative w-4 h-4 rounded-[3px] border-[1.5px] border-current overflow-hidden flex items-center justify-center opacity-80">
-                   <div className="w-1.5 h-1.5 bg-current rounded-[1px] opacity-100" />
+                <div className={cn("relative w-3.5 h-3.5 rounded-[3px] border-[1.5px] overflow-hidden flex items-center justify-center", sl.focusOverlay?.enabled ? "border-primary-foreground" : "border-current")}>
+                   <div className={cn("w-1.5 h-1.5 rounded-[1px]", sl.focusOverlay?.enabled ? "bg-primary-foreground" : "bg-current")} />
                 </div>
               </PopoverTrigger>
               <PopoverContent className="w-[320px] p-4 flex flex-col gap-5 rounded-xl shadow-xl">
@@ -852,6 +864,71 @@ export function FloatingToolbar() {
         {/* ── TEXT CONTROLS ──────────────────────────────────────────────── */}
         {isText && tl && (
           <>
+            {/* Direct Text Content Input */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <input
+                type="text"
+                value={tl.content}
+                onChange={(e) => {
+                  update({ content: e.target.value } as Partial<TextLayer>);
+                  useEditorStore.getState().recordHistory();
+                }}
+                className="h-7 w-48 px-2.5 text-xs bg-secondary/80 hover:bg-secondary focus:bg-background border border-border/70 rounded-md outline-none focus:ring-1 focus:ring-primary font-medium text-foreground transition-all shadow-xs"
+                placeholder="Text content..."
+                title="Edit Text (or double-click text on screen)"
+              />
+            </div>
+
+            <Separator orientation="vertical" className="h-5 mx-0.5 shrink-0" />
+
+            {/* Quick Typography Hierarchy Presets */}
+            <div className="flex items-center gap-1 bg-secondary/50 p-0.5 rounded-lg border border-border/40 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  update({ fontSize: 130, fontWeight: 800, letterSpacing: -2, lineHeight: 1.1 } as Partial<TextLayer>);
+                  useEditorStore.getState().recordHistory();
+                }}
+                className={cn(
+                  "px-2 py-0.5 text-[10px] font-bold rounded transition-colors",
+                  tl.fontSize >= 100 ? "bg-primary text-primary-foreground" : "hover:bg-secondary text-muted-foreground hover:text-foreground"
+                )}
+                title="Headline Style (130px, Bold)"
+              >
+                H1
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  update({ fontSize: 60, fontWeight: 500, letterSpacing: 0, lineHeight: 1.3 } as Partial<TextLayer>);
+                  useEditorStore.getState().recordHistory();
+                }}
+                className={cn(
+                  "px-2 py-0.5 text-[10px] font-medium rounded transition-colors",
+                  tl.fontSize >= 50 && tl.fontSize < 100 ? "bg-primary text-primary-foreground" : "hover:bg-secondary text-muted-foreground hover:text-foreground"
+                )}
+                title="Subtitle Style (60px, Regular)"
+              >
+                Sub
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  update({ fontSize: 36, fontWeight: 700, letterSpacing: 5, lineHeight: 1.2 } as Partial<TextLayer>);
+                  useEditorStore.getState().recordHistory();
+                }}
+                className={cn(
+                  "px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded transition-colors",
+                  tl.fontSize < 50 ? "bg-primary text-primary-foreground" : "hover:bg-secondary text-muted-foreground hover:text-foreground"
+                )}
+                title="Eyebrow Style (36px, Spaced)"
+              >
+                Badge
+              </button>
+            </div>
+
+            <Separator orientation="vertical" className="h-5 mx-0.5 shrink-0" />
+
             {/* Font family dropdown */}
             <Popover open={fontOpen} onOpenChange={setFontOpen}>
               <PopoverTrigger

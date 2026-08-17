@@ -1,6 +1,7 @@
 "use client";
 
 import { useEditorStore } from "@/lib/store/editorStore";
+import { toast } from "@/lib/store/toastStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -196,36 +197,60 @@ function FontRow() {
   const tl = layer as import("@/lib/types").TextLayer;
   const filtered = GOOGLE_FONTS.filter((f) => f.toLowerCase().includes(search.toLowerCase()));
 
+  const loadFont = (fontName: string) => {
+    if (fontName === "Inter") return;
+    const href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontName)}:wght@400;600;800&display=swap`;
+    if (!document.querySelector(`link[href="${href}"]`)) {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = href;
+      document.head.appendChild(link);
+    }
+  };
+
   return (
-    <div className="px-4 pt-3 pb-2 border-b border-border/30">
-      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Font Family (selected layer)</p>
+    <div className="px-4 pt-3 pb-3 border-b border-border/40 bg-card/40">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Font Family</p>
+        <span className="text-[10px] text-primary font-medium">{tl.fontFamily || "Inter"}</span>
+      </div>
       <input
         type="text"
-        placeholder="Search fonts..."
+        placeholder="Search 20+ Google fonts..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="w-full mb-2 px-2.5 py-1.5 rounded-lg bg-secondary/70 border border-border/30 text-xs outline-none text-foreground placeholder:text-muted-foreground"
+        className="w-full mb-2 px-2.5 py-1.5 rounded-lg bg-secondary/80 border border-border/40 text-xs outline-none text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-primary/40"
       />
-      <div className="flex flex-col gap-0.5 max-h-36 overflow-y-auto pr-1">
-        {filtered.map((font) => (
-          <button
-            key={font}
-            type="button"
-            onClick={() => {
-              updateLayer(set.id, screen.id, layer.id, { fontFamily: font } as Partial<import("@/lib/types").Layer>);
-              useEditorStore.getState().recordHistory();
-            }}
-            className={cn(
-              "text-left px-2.5 py-1.5 rounded-lg text-xs transition-all",
-              tl.fontFamily === font
-                ? "bg-primary/15 text-primary ring-1 ring-primary/30"
-                : "hover:bg-secondary text-foreground"
-            )}
-            style={{ fontFamily: `"${font}", sans-serif` }}
-          >
-            {font}
-          </button>
-        ))}
+      <div className="flex flex-col gap-1 max-h-44 overflow-y-auto pr-1">
+        {filtered.map((font) => {
+          loadFont(font);
+          const isSelected = (tl.fontFamily || "Inter") === font;
+          return (
+            <button
+              key={font}
+              type="button"
+              onClick={() => {
+                loadFont(font);
+                updateLayer(set.id, screen.id, layer.id, { fontFamily: font } as Partial<import("@/lib/types").Layer>);
+                useEditorStore.getState().recordHistory();
+                toast.info(`Font set to ${font}`);
+              }}
+              className={cn(
+                "flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all text-left",
+                isSelected
+                  ? "bg-primary/20 text-primary ring-1 ring-primary/40 font-semibold"
+                  : "hover:bg-secondary/80 text-foreground"
+              )}
+            >
+              <span style={{ fontFamily: `"${font}", sans-serif` }} className="text-sm">
+                {font}
+              </span>
+              <span className="text-[10px] opacity-60 font-mono" style={{ fontFamily: `"${font}", sans-serif` }}>
+                Aa 123
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

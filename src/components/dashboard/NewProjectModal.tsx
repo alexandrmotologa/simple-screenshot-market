@@ -1,13 +1,19 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { X, Search, Check, Sparkles, ArrowRight, Monitor, Plus } from "lucide-react";
+import { X, Search, Check, Sparkles, ArrowRight, Monitor, Plus, Flame, ArrowUpDown, Tag } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ALL_TEMPLATES, TEMPLATE_CATEGORIES, LAYOUT_META } from "@/lib/templates";
 import { useProjectStore } from "@/lib/store/projectStore";
+import {
+  sortAndFilterTemplates,
+  recordTemplateSelection,
+  TemplateSortOption,
+  getTemplateScore,
+} from "@/lib/templatePopularity";
 import { cn } from "@/lib/utils";
 import { Template } from "@/lib/types";
 
@@ -134,24 +140,65 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
   const [platforms, setPlatforms] = useState<{ ios: boolean; android: boolean }>({ ios: true, android: true });
   const [creating, setCreating] = useState(false);
 
+  // Search and sort state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<TemplateSortOption>("popularity");
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [globalCounts, setGlobalCounts] = useState<Record<string, number>>({});
+
   useEffect(() => {
     if (open) {
       setSelectedTemplate(null);
       setProjectName("My App Screenshots");
       setPlatforms({ ios: true, android: true });
       setCreating(false);
+      setSearchQuery("");
+
+      // Fetch global popularity counts from API
+      fetch("/api/templates/popularity")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.success && data.counts) {
+            setGlobalCounts(data.counts);
+          }
+        })
+        .catch(() => {});
     }
   }, [open]);
 
-  // We filter out "blank" from the main list so we can append it at the bottom manually
-  const themes = useMemo(() => {
-    return ALL_TEMPLATES.filter(t => t.id !== "blank");
+  // Categories list
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    ALL_TEMPLATES.forEach((t) => {
+      if (t.id !== "blank" && t.category) set.add(t.category);
+    });
+    return ["All", ...Array.from(set)];
   }, []);
+
+  // Filtered & Sorted Themes
+  const themes = useMemo(() => {
+    let base = ALL_TEMPLATES.filter((t) => t.id !== "blank");
+    if (selectedCategory !== "All") {
+      base = base.filter((t) => t.category === selectedCategory);
+    }
+    return sortAndFilterTemplates(base, searchQuery, sortBy, globalCounts);
+  }, [searchQuery, sortBy, selectedCategory, globalCounts]);
+
+  // Identify top 3 popular templates for 🔥 Popular badge
+  const topPopularIds = useMemo(() => {
+    const sorted = [...ALL_TEMPLATES.filter((t) => t.id !== "blank")].sort((a, b) => {
+      return getTemplateScore(b.id, globalCounts) - getTemplateScore(a.id, globalCounts);
+    });
+    return new Set(sorted.slice(0, 3).map((t) => t.id));
+  }, [globalCounts]);
 
   const handleCreate = async () => {
     if (!projectName.trim() || !selectedTemplate || (!platforms.ios && !platforms.android)) return;
     setCreating(true);
     try {
+      // Record popularity (+1 in localStorage + Firebase sync)
+      recordTemplateSelection(selectedTemplate);
+
       const project = createProject(selectedTemplate, projectName.trim(), platforms);
       onClose();
       onCreated(project.id);
@@ -165,38 +212,119 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
       <DialogContent showCloseButton={false} className="max-w-5xl h-[88vh] flex flex-col p-0 gap-0 overflow-hidden bg-background/95 backdrop-blur-xl">
 
         {/* Header */}
-        <DialogHeader className="px-7 py-5 border-b border-border/50 shrink-0 flex-row items-start justify-between">
-          <div>
-            <DialogTitle className="text-2xl font-bold">Select a Theme</DialogTitle>
-            <p className="text-sm text-muted-foreground mt-1">
-              Choose a pre-designed theme for your screenshots
-            </p>
+        <DialogHeader className="px-7 py-4 border-b border-border/50 shrink-0 flex-col gap-3">
+          <div className="flex items-start justify-between">
+            <div>
+              <DialogTitle className="text-2xl font-bold">Select a Theme</DialogTitle>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Choose a pre-designed theme for your screenshots
+              </p>
+            </div>
+            <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full -mr-2 -mt-2">
+              <X className="w-5 h-5" />
+            </Button>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full -mr-2 -mt-2">
-            <X className="w-5 h-5" />
-          </Button>
+
+          {/* Search, Filter & Sort Controls Row */}
+          <div className="flex items-center gap-3 flex-wrap justify-between pt-1">
+            {/* Search Input */}
+            <div className="relative flex-1 min-w-[220px] max-w-md">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by theme name, style, or tag…"
+                className="h-9 pl-9 pr-8 text-xs bg-secondary/40 border-border/50 rounded-xl"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Sort Selector Dropdown/Tabs */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 bg-secondary/50 p-1 rounded-xl border border-border/40 text-xs">
+                <span className="text-[11px] font-medium text-muted-foreground px-2 flex items-center gap-1">
+                  <ArrowUpDown className="w-3 h-3" /> Sort:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSortBy("popularity")}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg font-medium transition-all flex items-center gap-1",
+                    sortBy === "popularity"
+                      ? "bg-background text-foreground shadow-xs ring-1 ring-border/50 font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Flame className="w-3 h-3 text-amber-500" />
+                  Popularity
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSortBy("name-asc")}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg font-medium transition-all",
+                    sortBy === "name-asc"
+                      ? "bg-background text-foreground shadow-xs ring-1 ring-border/50 font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Name A–Z
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSortBy("newest")}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg font-medium transition-all",
+                    sortBy === "newest"
+                      ? "bg-background text-foreground shadow-xs ring-1 ring-border/50 font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Newest
+                </button>
+              </div>
+            </div>
+          </div>
         </DialogHeader>
 
         {/* Body (Scrollable List) */}
         <ScrollArea className="flex-1 min-h-0 bg-secondary/20">
-          <div className="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="p-7 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             
             {themes.map((tpl) => {
               const isSelected = selectedTemplate === tpl.id;
+              const isPopular = topPopularIds.has(tpl.id);
+
               return (
                 <div 
                   key={tpl.id} 
                   className={cn(
-                    "relative flex flex-col items-center gap-5 p-6 rounded-[2rem] transition-all cursor-pointer group",
+                    "relative flex flex-col items-center gap-4 p-6 rounded-[2rem] transition-all cursor-pointer group",
                     isSelected 
-                      ? "bg-primary/5 shadow-2xl shadow-primary/10 ring-2 ring-primary" 
+                      ? "bg-primary/5 shadow-2xl shadow-primary/10 ring-2 ring-primary scale-[1.01]" 
                       : "bg-background shadow-md hover:shadow-xl hover:-translate-y-1 hover:ring-2 hover:ring-primary/30 border border-border/50"
                   )}
                   onClick={() => setSelectedTemplate(tpl.id)}
                 >
+                  {/* Popular Badge */}
+                  {isPopular && (
+                    <div className="absolute top-4 left-4 z-10 flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 shadow-xs">
+                      <Flame className="w-3 h-3 fill-amber-500 text-amber-500" />
+                      POPULAR
+                    </div>
+                  )}
+
                   {/* Selection indicator */}
                   <div className={cn(
-                    "absolute top-5 right-5 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors z-10",
+                    "absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors z-10",
                     isSelected ? "border-primary bg-primary" : "border-muted-foreground/30 group-hover:border-primary/50 bg-background/50 backdrop-blur"
                   )}>
                     {isSelected && <Check className="w-3.5 h-3.5 text-primary-foreground" />}
@@ -212,8 +340,8 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
 
                   {/* Text details */}
                   <div className="text-center mt-1 w-full px-2">
-                    <h3 className="text-xl font-bold text-foreground">{tpl.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">{tpl.description}</p>
+                    <h3 className="text-lg font-bold text-foreground">{tpl.name}</h3>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{tpl.description}</p>
                   </div>
                 </div>
               );
@@ -222,7 +350,7 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
             {/* Custom/Blank Project at the bottom */}
             <div 
               className={cn(
-                "relative flex flex-col items-center justify-center gap-4 p-6 rounded-[2rem] transition-all cursor-pointer group h-full min-h-[320px]",
+                "relative flex flex-col items-center justify-center gap-4 p-6 rounded-[2rem] transition-all cursor-pointer group h-full min-h-[300px]",
                 selectedTemplate === "blank"
                   ? "bg-primary/5 shadow-2xl shadow-primary/10 ring-2 ring-primary" 
                   : "bg-secondary/20 shadow-md border-2 border-dashed border-border hover:shadow-xl hover:-translate-y-1 hover:border-primary/50 hover:bg-secondary/40"
@@ -230,19 +358,19 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
               onClick={() => setSelectedTemplate("blank")}
             >
               <div className={cn(
-                "absolute top-5 right-5 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors z-10",
+                "absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors z-10",
                 selectedTemplate === "blank" ? "border-primary bg-primary" : "border-muted-foreground/30 group-hover:border-primary/50"
               )}>
                 {selectedTemplate === "blank" && <Check className="w-3.5 h-3.5 text-primary-foreground" />}
               </div>
 
-              <div className="w-20 h-20 rounded-full bg-background shadow-sm border border-border/50 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                <Plus className="w-10 h-10 text-muted-foreground group-hover:text-primary transition-colors" />
+              <div className="w-16 h-16 rounded-full bg-background shadow-sm border border-border/50 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                <Plus className="w-8 h-8 text-muted-foreground group-hover:text-primary transition-colors" />
               </div>
 
               <div className="text-center w-full px-2">
-                <h3 className="text-xl font-bold text-foreground">Custom Design</h3>
-                <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">Start with a blank canvas and create from scratch.</p>
+                <h3 className="text-lg font-bold text-foreground">Custom Design</h3>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">Start with a blank canvas and create from scratch.</p>
               </div>
             </div>
 
@@ -250,7 +378,7 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
         </ScrollArea>
 
         {/* Footer */}
-        <div className="px-7 py-5 border-t border-border/50 shrink-0 bg-card flex items-end justify-between">
+        <div className="px-7 py-4 border-t border-border/50 shrink-0 bg-card flex items-end justify-between">
           <div className="flex items-end gap-4 flex-1">
             <div className="flex flex-col gap-1 w-full max-w-sm">
               <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Project Name</label>
@@ -258,7 +386,7 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
                 placeholder="My App Screenshots"
-                className="h-10 text-base border-border/50 bg-secondary/30"
+                className="h-10 text-sm border-border/50 bg-secondary/30"
                 onKeyDown={(e) => { if (e.key === "Enter") handleCreate(); }}
               />
             </div>
@@ -317,4 +445,3 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
     </Dialog>
   );
 }
-

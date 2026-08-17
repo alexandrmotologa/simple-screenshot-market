@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { useProjectStore } from "@/lib/store/projectStore";
 import { useLanguageStore, getLang } from "@/lib/store/languageStore";
+import { toast } from "@/lib/store/toastStore";
 import type { TextLayer, ShapeLayer, ImageLayer } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { AppleStoreIcon, GooglePlayIcon, APP_STORE_LABEL, GOOGLE_PLAY_LABEL } from "@/components/icons/StoreIcons";
@@ -287,6 +288,7 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
 
     setDone(true);
     setIsExporting(false);
+    toast.success(`Exported ${exported} screenshots successfully!`);
   };
 
   return (
@@ -391,17 +393,18 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
           {/* Scale + Format row */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs font-medium text-muted-foreground mb-2">Resolution</p>
+              <p className="text-xs font-semibold text-muted-foreground mb-2">Resolution Scale</p>
               <div className="flex gap-1.5">
                 {([1, 2, 3] as ScaleOption[]).map((s) => (
                   <button
                     key={s}
+                    type="button"
                     onClick={() => setScale(s)}
                     className={cn(
-                      "flex-1 py-2 rounded-lg text-sm font-medium transition-all",
+                      "flex-1 py-2 rounded-xl text-xs font-bold transition-all border",
                       scale === s
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary hover:bg-secondary/60 text-muted-foreground"
+                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                        : "bg-secondary/60 hover:bg-secondary border-border/40 text-muted-foreground"
                     )}
                   >
                     @{s}x
@@ -410,17 +413,18 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
               </div>
             </div>
             <div>
-              <p className="text-xs font-medium text-muted-foreground mb-2">Format</p>
+              <p className="text-xs font-semibold text-muted-foreground mb-2">Image Format</p>
               <div className="flex gap-1.5">
                 {(["png", "jpg", "webp"] as FormatOption[]).map((f) => (
                   <button
                     key={f}
+                    type="button"
                     onClick={() => setFormat(f)}
                     className={cn(
-                      "flex-1 py-2 rounded-lg text-xs font-medium uppercase transition-all",
+                      "flex-1 py-2 rounded-xl text-xs font-bold uppercase transition-all border",
                       format === f
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary hover:bg-secondary/60 text-muted-foreground"
+                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                        : "bg-secondary/60 hover:bg-secondary border-border/40 text-muted-foreground"
                     )}
                   >
                     {f}
@@ -431,18 +435,18 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
           </div>
 
           {/* Export summary */}
-          <div className="px-4 py-3 rounded-xl bg-secondary/50 border border-border/40 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">
-                <span className="font-semibold text-foreground">{totalScreens}</span> screenshots to export
+          <div className="px-4 py-3 rounded-2xl bg-secondary/50 border border-border/50 text-xs">
+            <div className="flex items-center justify-between font-medium">
+              <span className="text-foreground">
+                <span className="font-bold text-primary text-sm mr-1">{totalScreens}</span> screens ready to export
               </span>
-              <span className="text-xs font-mono text-muted-foreground">
-                {screenSets[0]?.preset?.width ?? "—"} × {screenSets[0]?.preset?.height ?? "—"} px
+              <span className="font-mono text-muted-foreground font-semibold px-2 py-0.5 rounded-md bg-background border border-border/50">
+                {((screenSets[0]?.preset?.width ?? 1290) * scale)} × {((screenSets[0]?.preset?.height ?? 2796) * scale)} px
               </span>
             </div>
             {activeLangs.length > 1 && (
-              <p className="text-[11px] text-muted-foreground mt-1">
-                {screensPerLang} screens × {activeLangs.length} languages → organized in subfolders
+              <p className="text-[11px] text-muted-foreground mt-1.5">
+                {screensPerLang} screens × {activeLangs.length} languages → organized in localized ZIP subfolders
               </p>
             )}
           </div>

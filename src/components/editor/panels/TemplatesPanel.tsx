@@ -5,6 +5,7 @@ import { Search, Sparkles, Check } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { ALL_TEMPLATES } from "@/lib/templates";
+import { recordTemplateSelection } from "@/lib/templatePopularity";
 import { cn } from "@/lib/utils";
 import type { Template } from "@/lib/types";
 
@@ -121,6 +122,8 @@ export function TemplatesPanel() {
 
   const handleApply = (template: Template) => {
     if (!activeSet || !activeScreen) return;
+    // Record template usage count (+1)
+    recordTemplateSelection(template.id);
     // Apply to ALL screens in the active set (replace layers and background)
     applyTemplate(activeSet.id, template);
     setAppliedId(template.id);

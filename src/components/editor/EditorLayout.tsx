@@ -4,8 +4,12 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   ArrowLeft, Undo2, Redo2, Download,
-  Share2, ZoomIn, ZoomOut, Upload, Sparkles, Film
+  Share2, ZoomIn, ZoomOut, Upload, Sparkles, Film,
+  Copy, Keyboard, Check, ChevronDown
 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { KeyboardShortcutsModal } from "@/components/editor/KeyboardShortcutsModal";
+import { toast } from "@/lib/store/toastStore";
 import { Separator } from "@/components/ui/separator";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { useProjectStore } from "@/lib/store/projectStore";
@@ -65,6 +69,9 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
   const screenSets = useEditorStore((s) => s.screenSets);
   const [showExport, setShowExport] = useState(false);
   const [showGif, setShowGif] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [zoomOpen, setZoomOpen] = useState(false);
+  const [isCopying, setIsCopying] = useState(false);
   const replaceFileRef = useRef<HTMLInputElement>(null);
   const thumbTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -115,35 +122,74 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
       ctx.fillStyle = "#1a1a2e";
       ctx.fillRect(0, 0, firstScreen.width, firstScreen.height);
     }
-    saveProjectThumbnail(projectId, canvas.toDataURL("image/webp", 0.7));
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.6);
+    saveProjectThumbnail(projectId, dataUrl);
   }, [screenSets, projectId, saveProjectThumbnail]);
 
   useEffect(() => {
     if (thumbTimerRef.current) clearTimeout(thumbTimerRef.current);
-    thumbTimerRef.current = setTimeout(() => { generateThumbnail(); }, 3000);
-    return () => { if (thumbTimerRef.current) clearTimeout(thumbTimerRef.current); };
+    thumbTimerRef.current = setTimeout(generateThumbnail, 3000);
+    return () => {
+      if (thumbTimerRef.current) clearTimeout(thumbTimerRef.current);
+    };
   }, [screenSets, generateThumbnail]);
 
 
-  // Detect if active layer is a screenshot zone
-  const activeLayer = useEditorStore((s) => s.getActiveLayer());
+  // ── Replace screenshot file handler ──────────────────────────────────────
+  const activeSet = getActiveSet();
+  const activeScreen = getActiveScreen();
+  const activeLayer = activeScreen?.layers.find((l) => l.id === activeLayerId);
   const isScreenshotSelected = activeLayer?.type === "screenshot";
 
   const handleReplaceFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !activeLayer || activeLayer.type !== "screenshot") return;
-    const set = getActiveSet();
-    const screen = getActiveScreen();
-    if (!set || !screen) return;
+    if (!file || !activeSet || !activeScreen || !activeLayerId) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
-      updateLayer(set.id, screen.id, activeLayer.id, { src: ev.target?.result as string } as Partial<ScreenshotLayer>);
+      const src = ev.target?.result as string;
+      if (!src) return;
+      updateLayer(activeSet.id, activeScreen.id, activeLayerId, { src } as Partial<ScreenshotLayer>);
+      useEditorStore.getState().recordHistory();
+      toast.success("Screenshot replaced successfully!");
     };
     reader.readAsDataURL(file);
     e.target.value = "";
   };
 
-  // ─── Keyboard shortcuts ────────────────────────────────────────────────────
+  // ── Quick copy active screen to clipboard ────────────────────────────────
+  const handleCopyScreenToClipboard = async () => {
+    try {
+      setIsCopying(true);
+      // Find current active screen card's canvas
+      const activeCanvas = document.querySelector(".canvas-active canvas") as HTMLCanvasElement || document.querySelector("canvas") as HTMLCanvasElement;
+      if (!activeCanvas) {
+        toast.error("No active screen found to copy.");
+        return;
+      }
+
+      activeCanvas.toBlob(async (blob) => {
+        if (!blob) {
+          toast.error("Failed to generate image.");
+          return;
+        }
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ "image/png": blob })
+          ]);
+          toast.success("Active screen copied to clipboard as PNG!");
+        } catch {
+          toast.error("Clipboard copy not permitted by browser.");
+        } finally {
+          setIsCopying(false);
+        }
+      }, "image/png");
+    } catch {
+      setIsCopying(false);
+      toast.error("Failed to copy image to clipboard.");
+    }
+  };
+
+  // ── Global keyboard shortcuts ────────────────────────────────────────────
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement).tagName;
@@ -179,15 +225,19 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
       // Zoom shortcuts
       if ((e.ctrlKey || e.metaKey) && e.key === "=") {
         e.preventDefault();
-        setZoom(zoom + 0.1);
+        setZoom(Math.min(2.0, zoom + 0.1));
       }
       if ((e.ctrlKey || e.metaKey) && e.key === "-") {
         e.preventDefault();
-        setZoom(zoom - 0.1);
+        setZoom(Math.max(0.2, zoom - 0.1));
       }
       if ((e.ctrlKey || e.metaKey) && e.key === "0") {
         e.preventDefault();
         setZoom(0.65);
+      }
+      if (e.key === "?" || ((e.ctrlKey || e.metaKey) && e.key === "/")) {
+        e.preventDefault();
+        setShowShortcuts((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handler);
@@ -197,93 +247,155 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
   return (
     <div className="relative flex flex-col h-screen bg-background overflow-hidden select-none">
       {/* ── Top Navigation Bar ── */}
-      <header className="h-11 border-b border-border/50 bg-card/90 backdrop-blur-sm flex items-center px-3 gap-2 shrink-0 z-40">
-        {/* Back */}
-        <IconBtn title="Back to Dashboard (Esc)" onClick={() => router.push("/")}>
-          <ArrowLeft className="w-3.5 h-3.5" />
-        </IconBtn>
-
-        <Separator orientation="vertical" className="h-4" />
-
-        {/* Project name */}
-        <input
-          type="text"
-          value={project?.name ?? ""}
-          onChange={(e) => {
-            if (project) {
-              useProjectStore.getState().updateProject(project.id, { name: e.target.value });
-            }
-          }}
-          className="text-sm font-medium tracking-tight truncate max-w-48 bg-transparent border-none outline-none focus:ring-1 focus:ring-primary/50 px-1 py-0.5 rounded transition-all hover:bg-secondary/50"
-          placeholder="Untitled Project"
-          spellCheck={false}
-        />
-
-        <div className="flex-1" />
-
-        {/* Undo / Redo */}
-        <div className="flex items-center gap-0.5">
-          <IconBtn title="Undo (Ctrl+Z)" onClick={undo} disabled={!canUndo()}>
-            <Undo2 className="w-3.5 h-3.5" />
+      <header className="h-11 border-b border-border/50 bg-card/90 backdrop-blur-md flex items-center px-3 gap-2 shrink-0 z-40 justify-between">
+        <div className="flex items-center gap-2">
+          {/* Back */}
+          <IconBtn title="Back to Dashboard (Esc)" onClick={() => router.push("/")}>
+            <ArrowLeft className="w-3.5 h-3.5" />
           </IconBtn>
-          <IconBtn title="Redo (Ctrl+Y)" onClick={redo} disabled={!canRedo()}>
-            <Redo2 className="w-3.5 h-3.5" />
-          </IconBtn>
+
+          <Separator orientation="vertical" className="h-4" />
+
+          {/* Project name & Autosave Badge */}
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={project?.name ?? ""}
+              onChange={(e) => {
+                if (project) {
+                  useProjectStore.getState().updateProject(project.id, { name: e.target.value });
+                }
+              }}
+              className="text-sm font-semibold tracking-tight truncate max-w-44 bg-transparent border-none outline-none focus:ring-1 focus:ring-primary/50 px-1 py-0.5 rounded transition-all hover:bg-secondary/50"
+              placeholder="Untitled Project"
+              spellCheck={false}
+            />
+            <span className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border border-emerald-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Saved
+            </span>
+          </div>
         </div>
 
-        <Separator orientation="vertical" className="h-4" />
+        {/* Center Actions / Undo / Redo */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-0.5 bg-secondary/50 p-0.5 rounded-lg border border-border/40">
+            <IconBtn title="Undo (Ctrl+Z)" onClick={undo} disabled={!canUndo()}>
+              <Undo2 className="w-3.5 h-3.5" />
+            </IconBtn>
+            <IconBtn title="Redo (Ctrl+Y)" onClick={redo} disabled={!canRedo()}>
+              <Redo2 className="w-3.5 h-3.5" />
+            </IconBtn>
+          </div>
 
-        {/* Replace screenshot — appears when screenshot layer is selected */}
-        {isScreenshotSelected && (
-          <>
-            <input ref={replaceFileRef} type="file" accept="image/*" className="hidden" onChange={handleReplaceFile} />
-            <button
-              type="button"
-              onClick={() => replaceFileRef.current?.click()}
-              className="h-7 flex items-center gap-1.5 px-3 text-xs font-semibold rounded-lg bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 ring-1 ring-indigo-500/30 transition-all"
-            >
-              <Upload className="w-3 h-3" />
-              Replace screenshot
-            </button>
-            <Separator orientation="vertical" className="h-4" />
-          </>
-        )}
+          {/* Replace screenshot — appears when screenshot layer is selected */}
+          {isScreenshotSelected && (
+            <>
+              <input ref={replaceFileRef} type="file" accept="image/*" className="hidden" onChange={handleReplaceFile} />
+              <button
+                type="button"
+                onClick={() => replaceFileRef.current?.click()}
+                className="h-7 flex items-center gap-1.5 px-3 text-xs font-semibold rounded-lg bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 ring-1 ring-indigo-500/30 transition-all shadow-xs"
+              >
+                <Upload className="w-3 h-3" />
+                Replace screenshot
+              </button>
+            </>
+          )}
+        </div>
 
-        {/* Zoom */}
-        <div className="flex items-center gap-0.5">
-          <IconBtn title="Zoom Out (Ctrl+-)" onClick={() => setZoom(zoom - 0.1)}>
-            <ZoomOut className="w-3.5 h-3.5" />
-          </IconBtn>
+        {/* Right Tools: Zoom, Copy, Shortcuts, Theme, Export */}
+        <div className="flex items-center gap-1.5">
+          {/* Zoom Popover */}
+          <Popover open={zoomOpen} onOpenChange={setZoomOpen}>
+            <div className="flex items-center gap-0.5 bg-secondary/50 rounded-lg p-0.5 border border-border/40">
+              <IconBtn title="Zoom Out (Ctrl+-)" onClick={() => setZoom(Math.max(0.2, zoom - 0.1))}>
+                <ZoomOut className="w-3.5 h-3.5" />
+              </IconBtn>
+              
+              <PopoverTrigger className="text-xs font-mono font-medium text-foreground hover:bg-secondary px-1.5 py-0.5 rounded flex items-center gap-1 transition-colors outline-none">
+                <span>{Math.round(zoom * 100)}%</span>
+                <ChevronDown className="w-3 h-3 text-muted-foreground opacity-60" />
+              </PopoverTrigger>
+
+              <IconBtn title="Zoom In (Ctrl+=)" onClick={() => setZoom(Math.min(2.0, zoom + 0.1))}>
+                <ZoomIn className="w-3.5 h-3.5" />
+              </IconBtn>
+            </div>
+
+            <PopoverContent align="center" className="w-40 p-1.5 text-xs shadow-xl border border-border/70 rounded-xl">
+              <div className="space-y-0.5">
+                {[
+                  { label: "Fit to View", value: 0.65, shortcut: "Ctrl+0" },
+                  { label: "50%", value: 0.5 },
+                  { label: "75%", value: 0.75 },
+                  { label: "100%", value: 1.0, shortcut: "1:1" },
+                  { label: "125%", value: 1.25 },
+                  { label: "150%", value: 1.5 },
+                  { label: "200%", value: 2.0 },
+                ].map((opt) => (
+                  <button
+                    key={opt.label}
+                    type="button"
+                    onClick={() => {
+                      setZoom(opt.value);
+                      setZoomOpen(false);
+                    }}
+                    className={cn(
+                      "w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-left transition-colors font-medium",
+                      Math.abs(zoom - opt.value) < 0.04
+                        ? "bg-primary text-primary-foreground font-semibold"
+                        : "hover:bg-secondary text-foreground"
+                    )}
+                  >
+                    <span>{opt.label}</span>
+                    {opt.shortcut && (
+                      <span className="text-[10px] opacity-70 font-mono">{opt.shortcut}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          <Separator orientation="vertical" className="h-4" />
+
+          {/* Quick Copy Screen to Clipboard */}
           <button
             type="button"
-            onClick={() => setZoom(0.65)}
-            className="text-xs font-mono text-muted-foreground hover:text-foreground w-10 text-center tabular-nums hover:bg-secondary rounded-md py-0.5 transition-colors"
-            title="Reset zoom (Ctrl+0)"
+            onClick={handleCopyScreenToClipboard}
+            disabled={isCopying}
+            className="h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary border border-border/40 transition-colors"
+            title="Copy active screen to clipboard (PNG)"
           >
-            {Math.round(zoom * 100)}%
+            <Copy className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Copy Screen</span>
           </button>
-          <IconBtn title="Zoom In (Ctrl+=)" onClick={() => setZoom(zoom + 0.1)}>
-            <ZoomIn className="w-3.5 h-3.5" />
-          </IconBtn>
+
+          {/* Keyboard shortcuts */}
+          <button
+            type="button"
+            onClick={() => setShowShortcuts(true)}
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            title="Keyboard Shortcuts (?)"
+          >
+            <Keyboard className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
+          {/* Export Button */}
+          <button
+            id="export-btn"
+            type="button"
+            onClick={() => setShowExport(true)}
+            className="h-7 flex items-center gap-1.5 px-3 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm shadow-primary/30"
+          >
+            <Download className="w-3 h-3" />
+            Export
+          </button>
         </div>
-
-        <Separator orientation="vertical" className="h-4" />
-
-
-
-        {/* Theme Toggle */}
-        <ThemeToggle />
-
-        {/* Export */}
-        <button
-          id="export-btn"
-          type="button"
-          onClick={() => setShowExport(true)}
-          className="h-7 flex items-center gap-1.5 px-3 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm shadow-primary/30"
-        >
-          <Download className="w-3 h-3" />
-          Export
-        </button>
       </header>
 
       {/* ── Contextual Toolbar ── */}
@@ -311,6 +423,9 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
       )}
       {showGif && (
         <GifExportModal projectId={projectId} onClose={() => setShowGif(false)} />
+      )}
+      {showShortcuts && (
+        <KeyboardShortcutsModal open={showShortcuts} onClose={() => setShowShortcuts(false)} />
       )}
     </div>
   );

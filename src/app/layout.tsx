@@ -140,6 +140,7 @@ const jsonLd = {
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { PostHogProvider } from "@/providers/posthog-provider";
+import { ToastContainer } from "@/components/ui/toast";
 
 export default function RootLayout({
   children,
@@ -166,7 +167,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <PostHogProvider>
-            <TooltipProvider>{children}</TooltipProvider>
+            <TooltipProvider>
+              {children}
+              <ToastContainer />
+            </TooltipProvider>
           </PostHogProvider>
         </ThemeProvider>
       </body>

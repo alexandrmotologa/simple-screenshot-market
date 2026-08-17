@@ -6,11 +6,11 @@ import {
   Sun, Moon, Link2, Upload, EyeOff, Eye, CopyCheck,
 } from "lucide-react";
 import { useEditorStore } from "@/lib/store/editorStore";
+import { toast } from "@/lib/store/toastStore";
 import { ScreenSet, ScreenshotLayer } from "@/lib/types";
 import { ScreenCard } from "@/components/editor/ScreenCard";
 import { IOS_DEVICES, ANDROID_DEVICES, COLOR_HEX_MAP } from "@/lib/devices";
 import { cn } from "@/lib/utils";
-import { AdvancedBackgroundPicker } from "@/components/editor/AdvancedBackgroundPicker";
 import { DragDropContext, Droppable, DropResult } from "@hello-pangea/dnd";
 import {
   DropdownMenu,
@@ -21,6 +21,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { AppleStoreIcon, GooglePlayIcon, APP_STORE_LABEL, GOOGLE_PLAY_LABEL } from "@/components/icons/StoreIcons";
 
@@ -29,6 +38,7 @@ interface ScreenSetRowProps {
 }
 
 export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
+  const [showSyncConfirm, setShowSyncConfirm] = useState(false);
   const {
     activeSetId, setActiveSet, setActiveScreen, addScreen, zoom,
     updateDevice, updateMockup, screenSets, updateLayer, reorderScreens,
@@ -291,15 +301,6 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Advanced Background Picker */}
-        <AdvancedBackgroundPicker 
-          currentBackground={screenSet.screens[0]?.background || { type: "solid", color: "#ffffff" }}
-          onSelect={(bg) => {
-            updateAllScreensBackground(screenSet.id, bg);
-            useEditorStore.getState().recordHistory();
-          }}
-        />
-
         {/* Toggles Group */}
         <div className="flex items-center gap-4 ml-2">
           {screenSet.store === "ios" && (
@@ -356,37 +357,57 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
             </div>
             <Switch checked={isReflectionOn} onCheckedChange={toggleReflection} />
           </label>
+
+          {/* Show/Hide Screenshots toggle with Switch */}
+          <label className="flex items-center gap-1.5 cursor-pointer" title="Toggle Screenshots Visibility">
+            <div className="w-5 h-5 flex items-center justify-center text-muted-foreground">
+              {isShowingScreenshots ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+            </div>
+            <span className="text-xs font-medium text-muted-foreground mr-0.5">Screenshots</span>
+            <Switch checked={isShowingScreenshots} onCheckedChange={toggleScreenshots} />
+          </label>
         </div>
-
-        {/* Show/Hide Screenshots toggle */}
-        <button
-          type="button"
-          title={isShowingScreenshots ? "Hide screenshots (focus on text)" : "Show screenshots"}
-          onClick={toggleScreenshots}
-          className={cn(
-            "flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-all",
-            !isShowingScreenshots
-              ? "bg-orange-500/12 text-orange-400 ring-1 ring-orange-500/30"
-              : "bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary"
-          )}
-        >
-          {isShowingScreenshots ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-          {isShowingScreenshots ? "Screenshots" : "Hidden"}
-        </button>
-
-        {/* Removed Replace screenshot per user request */}
 
         {/* Sync to all sets */}
         {screenSets.length > 1 && (
-          <button
-            type="button"
-            title="Apply all style and background settings to other platforms"
-            onClick={syncAll}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-secondary/70 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <CopyCheck className="w-3.5 h-3.5" />
-            Sync Styles to all Platforms
-          </button>
+          <>
+            <button
+              type="button"
+              title="Apply all style and background settings to other platforms"
+              onClick={() => setShowSyncConfirm(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-secondary/70 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors ml-1"
+            >
+              <CopyCheck className="w-3.5 h-3.5" />
+              Sync Styles to all Platforms
+            </button>
+
+            {/* Sync Styles Confirmation Modal */}
+            <Dialog open={showSyncConfirm} onOpenChange={setShowSyncConfirm}>
+              <DialogContent className="max-w-md rounded-2xl p-6 shadow-2xl border border-border/80">
+                <DialogHeader>
+                  <DialogTitle className="text-base font-semibold">Sync Styles Across All Platforms?</DialogTitle>
+                  <DialogDescription className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                    This will copy the current background, frame styling, colors, and effects from <span className="font-bold text-foreground">{storeLabel}</span> and apply them to all other platform screen sets.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="flex items-center justify-end gap-2 mt-5">
+                  <Button variant="outline" size="sm" onClick={() => setShowSyncConfirm(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      syncAll();
+                      setShowSyncConfirm(false);
+                      toast.success("Styles synchronized across all platforms!");
+                    }}
+                  >
+                    Sync Styles
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </>
         )}
 
 

@@ -1643,7 +1643,630 @@ export function createAutoLayoutPanoramaTemplate(config: {
   };
 }
 
+function createSoundwaveBars(baseY = 550, count = 28) {
+  const bars: any[] = [];
+  const barWidth = 22;
+  const gap = 20;
+  const startX = 65;
+  const heights = [180, 260, 420, 310, 560, 780, 620, 900, 720, 540, 850, 640, 430, 320, 600, 820, 950, 710, 490, 380, 520, 740, 610, 450, 300, 220, 160, 120];
+  for (let i = 0; i < count; i++) {
+    const h = heights[i % heights.length];
+    bars.push(
+      shapeLayer("rounded-rectangle", startX + i * (barWidth + gap), baseY + (950 - h) / 2, barWidth, h, "rgba(255, 255, 255, 0.08)", { cornerRadius: 11 })
+    );
+  }
+  return bars;
+}
+
 export const COMMUNITY_TEMPLATES: Template[] = [
+  // ── Amber Sonic Flow (Figma Community Golden Audio Kit) ──────────────────────
+  {
+    id: "community-amber-sonic-flow",
+    name: "Amber Sonic Flow",
+    description: "Warm golden-amber soundwave aesthetic with tilted panoramic hero & bottom feature captions (5 Screens)",
+    category: "Community",
+    layout: "screenshot-top",
+    tags: ["community", "amber", "golden", "music", "audio", "podcast", "streaming", "sonic", "figma", "5 screens"],
+    previewColor: "#EA9E24",
+    previewGradient: ["#EA9E24", "#D97706"],
+    screens: [
+      // Screen 1: Hero Panoramic 1/2
+      {
+        name: "1 • Hero Panoramic (Left)",
+        background: {
+          type: "gradient",
+          gradient: { direction: "to-br", stops: [{ color: "#EA9E24", position: 0 }, { color: "#D97706", position: 100 }] },
+        },
+        layers: [
+          ...createSoundwaveBars(650, 28),
+          textLayer("A neat attractive\napp title here", Math.round(W * 0.08), 220, Math.round(W * 0.84), 320, {
+            fontFamily: "Montserrat",
+            fontSize: 115,
+            fontWeight: 800,
+            color: "#ffffff",
+            lineHeight: 1.08,
+            letterSpacing: -1,
+            align: "left",
+          }) as any,
+          screenshotWithFrame(300, 780, 1050, 2200, "Drop screenshot here", -28) as any,
+        ],
+      },
+      // Screen 2: Hero Panoramic 2/2
+      {
+        name: "2 • Hero Panoramic (Right)",
+        background: {
+          type: "gradient",
+          gradient: { direction: "to-br", stops: [{ color: "#EA9E24", position: 0 }, { color: "#D97706", position: 100 }] },
+        },
+        layers: [
+          ...createSoundwaveBars(650, 28),
+          textLayer("Feature title here", Math.round(W * 0.08), 220, Math.round(W * 0.84), 220, {
+            fontFamily: "Montserrat",
+            fontSize: 100,
+            fontWeight: 800,
+            color: "#ffffff",
+            lineHeight: 1.12,
+            letterSpacing: -1,
+            align: "left",
+          }) as any,
+          textLayer("Some sub title explaining the benefits.", Math.round(W * 0.08), 470, Math.round(W * 0.84), 160, {
+            fontFamily: "Montserrat",
+            fontSize: 54,
+            fontWeight: 700,
+            color: "rgba(255, 255, 255, 0.94)",
+            lineHeight: 1.3,
+            align: "left",
+          }) as any,
+          screenshotWithFrame(-260, 420, 1050, 2200, "Drop screenshot here", -28) as any,
+        ],
+      },
+      // Screen 3: Feature 1 Top Mockup + Bottom Text
+      {
+        name: "3 • Feature Showcase 1",
+        background: {
+          type: "gradient",
+          gradient: { direction: "to-br", stops: [{ color: "#EA9E24", position: 0 }, { color: "#D97706", position: 100 }] },
+        },
+        layers: [
+          ...createSoundwaveBars(300, 28),
+          screenshotWithFrame(182, 190, 926, 1850, "Drop screenshot here") as any,
+          textLayer("Feature title here", Math.round(W * 0.08), 2150, Math.round(W * 0.84), 140, {
+            fontFamily: "Montserrat",
+            fontSize: 96,
+            fontWeight: 800,
+            color: "#ffffff",
+            lineHeight: 1.15,
+            letterSpacing: -1,
+            align: "center",
+          }) as any,
+          textLayer("Some sub title explaining the benefits.", Math.round(W * 0.08), 2310, Math.round(W * 0.84), 140, {
+            fontFamily: "Montserrat",
+            fontSize: 58,
+            fontWeight: 700,
+            color: "rgba(255, 255, 255, 0.94)",
+            lineHeight: 1.3,
+            align: "center",
+          }) as any,
+        ],
+      },
+      // Screen 4: Feature 2 Top Mockup + Bottom Text
+      {
+        name: "4 • Feature Showcase 2",
+        background: {
+          type: "gradient",
+          gradient: { direction: "to-br", stops: [{ color: "#EA9E24", position: 0 }, { color: "#D97706", position: 100 }] },
+        },
+        layers: [
+          ...createSoundwaveBars(300, 28),
+          screenshotWithFrame(182, 190, 926, 1850, "Drop screenshot here") as any,
+          textLayer("Feature title here", Math.round(W * 0.08), 2150, Math.round(W * 0.84), 140, {
+            fontFamily: "Montserrat",
+            fontSize: 96,
+            fontWeight: 800,
+            color: "#ffffff",
+            lineHeight: 1.15,
+            letterSpacing: -1,
+            align: "center",
+          }) as any,
+          textLayer("Some sub title explaining the benefits.", Math.round(W * 0.08), 2310, Math.round(W * 0.84), 140, {
+            fontFamily: "Montserrat",
+            fontSize: 58,
+            fontWeight: 700,
+            color: "rgba(255, 255, 255, 0.94)",
+            lineHeight: 1.3,
+            align: "center",
+          }) as any,
+        ],
+      },
+      // Screen 5: Feature 3 Top Mockup + Bottom Text
+      {
+        name: "5 • Feature Showcase 3",
+        background: {
+          type: "gradient",
+          gradient: { direction: "to-br", stops: [{ color: "#EA9E24", position: 0 }, { color: "#D97706", position: 100 }] },
+        },
+        layers: [
+          ...createSoundwaveBars(300, 28),
+          screenshotWithFrame(182, 190, 926, 1850, "Drop screenshot here") as any,
+          textLayer("Feature title here", Math.round(W * 0.08), 2150, Math.round(W * 0.84), 140, {
+            fontFamily: "Montserrat",
+            fontSize: 96,
+            fontWeight: 800,
+            color: "#ffffff",
+            lineHeight: 1.15,
+            letterSpacing: -1,
+            align: "center",
+          }) as any,
+          textLayer("Some sub title explaining the benefits.", Math.round(W * 0.08), 2310, Math.round(W * 0.84), 140, {
+            fontFamily: "Montserrat",
+            fontSize: 58,
+            fontWeight: 700,
+            color: "rgba(255, 255, 255, 0.94)",
+            lineHeight: 1.3,
+            align: "center",
+          }) as any,
+        ],
+      },
+    ],
+  },
+
+  // ── 1. Minimalist Pure Dark (6 Screens - Alternating Rhythm) ─────────────────
+  {
+    id: "community-pure-dark-minimal",
+    name: "Minimalist Pure Dark",
+    description: "Ultra-clean pure black theme with rhythmic alternating top and bottom phone layout (6 Screens)",
+    category: "Community",
+    layout: "screenshot-bottom",
+    tags: ["community", "minimalist", "dark", "pure black", "clean", "figma", "6 screens"],
+    previewColor: "#010101",
+    previewGradient: ["#010101", "#18181b"],
+    screens: [
+      {
+        name: "1 • Feature Hero (Top Text)",
+        background: { type: "solid", color: "#010101" },
+        layers: [
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#ffffff", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 430, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 400, color: "rgba(255, 255, 255, 0.68)", lineHeight: 1.35, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 680, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+      {
+        name: "2 • Feature Focus (Bottom Text)",
+        background: { type: "solid", color: "#010101" },
+        layers: [
+          screenshotWithFrame(182, 160, 926, 1850, "Drop screenshot here") as any,
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 2120, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#ffffff", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 2370, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 400, color: "rgba(255, 255, 255, 0.68)", lineHeight: 1.35, align: "center",
+          }) as any,
+        ],
+      },
+      {
+        name: "3 • Feature 3 (Top Text)",
+        background: { type: "solid", color: "#010101" },
+        layers: [
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#ffffff", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 430, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 400, color: "rgba(255, 255, 255, 0.68)", lineHeight: 1.35, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 680, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+      {
+        name: "4 • Feature 4 (Bottom Text)",
+        background: { type: "solid", color: "#010101" },
+        layers: [
+          screenshotWithFrame(182, 160, 926, 1850, "Drop screenshot here") as any,
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 2120, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#ffffff", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 2370, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 400, color: "rgba(255, 255, 255, 0.68)", lineHeight: 1.35, align: "center",
+          }) as any,
+        ],
+      },
+      {
+        name: "5 • Feature 5 (Top Text)",
+        background: { type: "solid", color: "#010101" },
+        layers: [
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#ffffff", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 430, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 400, color: "rgba(255, 255, 255, 0.68)", lineHeight: 1.35, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 680, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+      {
+        name: "6 • Feature 6 (Bottom Text)",
+        background: { type: "solid", color: "#010101" },
+        layers: [
+          screenshotWithFrame(182, 160, 926, 1850, "Drop screenshot here") as any,
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 2120, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#ffffff", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 2370, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 400, color: "rgba(255, 255, 255, 0.68)", lineHeight: 1.35, align: "center",
+          }) as any,
+        ],
+      },
+    ],
+  },
+
+  // ── 2. Lifestyle Warm Beige (6 Screens) ──────────────────────────────────────
+  {
+    id: "community-lifestyle-warm-beige",
+    name: "Lifestyle Warm Beige",
+    description: "Organic warm linen aesthetic with deep espresso typography and clean device frames (6 Screens)",
+    category: "Community",
+    layout: "screenshot-bottom",
+    tags: ["community", "lifestyle", "beige", "linen", "organic", "minimal", "figma", "6 screens"],
+    previewColor: "#E3E2DA",
+    previewGradient: ["#E8E6DF", "#DFDCD3"],
+    screens: [
+      {
+        name: "1 • Brand Hero",
+        background: { type: "solid", color: "#E3E2DA" },
+        layers: [
+          shapeLayer("rounded-rectangle", Math.round(W * 0.38), 180, Math.round(W * 0.24), 60, "rgba(28, 25, 23, 0.08)", { cornerRadius: 30 }) as any,
+          textLayer("LIFESTYLE", Math.round(W * 0.38), 195, Math.round(W * 0.24), 30, {
+            fontFamily: "Inter", fontSize: 26, fontWeight: 800, color: "#1C1917", letterSpacing: 3, align: "center",
+          }) as any,
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 280, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#1C1917", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 530, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 500, color: "#57534E", lineHeight: 1.35, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 740, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+      {
+        name: "2 • Daily Routine",
+        background: { type: "solid", color: "#E3E2DA" },
+        layers: [
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#1C1917", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 430, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 500, color: "#57534E", lineHeight: 1.35, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 680, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+      {
+        name: "3 • Seamless Habits",
+        background: { type: "solid", color: "#E3E2DA" },
+        layers: [
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#1C1917", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 430, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 500, color: "#57534E", lineHeight: 1.35, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 680, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+      {
+        name: "4 • Peaceful Mind",
+        background: { type: "solid", color: "#E3E2DA" },
+        layers: [
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#1C1917", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 430, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 500, color: "#57534E", lineHeight: 1.35, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 680, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+      {
+        name: "5 • Journal & Reflect",
+        background: { type: "solid", color: "#E3E2DA" },
+        layers: [
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#1C1917", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 430, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 500, color: "#57534E", lineHeight: 1.35, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 680, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+      {
+        name: "6 • Core Values",
+        background: { type: "solid", color: "#E3E2DA" },
+        layers: [
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#1C1917", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 430, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 500, color: "#57534E", lineHeight: 1.35, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 680, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+    ],
+  },
+
+  // ── 3. Ambient Glow Studio (6 Screens) ───────────────────────────────────────
+  {
+    id: "community-ambient-glow-studio",
+    name: "Ambient Gradient Glow Studio",
+    description: "Crisp white canvas with glowing ambient light halos behind each phone mockup (6 Screens)",
+    category: "Community",
+    layout: "screenshot-bottom",
+    tags: ["community", "glow", "ambient", "light", "modern", "figma", "6 screens"],
+    previewColor: "#FFFFFF",
+    previewGradient: ["#FFFFFF", "#F4F4F5"],
+    screens: [
+      {
+        name: "1 • Violet Halo",
+        background: { type: "solid", color: "#FFFFFF" },
+        layers: [
+          shapeLayer("circle", 145, 1100, 1000, 1000, "rgba(168, 85, 247, 0.28)") as any,
+          textLayer("A super helpful\napp feature goes here", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#09090B", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 430, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 400, color: "#71717A", lineHeight: 1.35, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 680, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+      {
+        name: "2 • Blue Sky Halo",
+        background: { type: "solid", color: "#FFFFFF" },
+        layers: [
+          shapeLayer("circle", 145, 1100, 1000, 1000, "rgba(59, 130, 246, 0.28)") as any,
+          textLayer("A super helpful\napp feature goes here", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#09090B", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 430, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 400, color: "#71717A", lineHeight: 1.35, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 680, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+      {
+        name: "3 • Sunset Rose Halo",
+        background: { type: "solid", color: "#FFFFFF" },
+        layers: [
+          shapeLayer("circle", 145, 1100, 1000, 1000, "rgba(244, 63, 94, 0.28)") as any,
+          textLayer("A super helpful\napp feature goes here", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#09090B", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 430, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 400, color: "#71717A", lineHeight: 1.35, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 680, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+      {
+        name: "4 • Emerald Teal Halo",
+        background: { type: "solid", color: "#FFFFFF" },
+        layers: [
+          shapeLayer("circle", 145, 1100, 1000, 1000, "rgba(16, 185, 129, 0.28)") as any,
+          textLayer("A super helpful\napp feature goes here", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#09090B", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 430, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 400, color: "#71717A", lineHeight: 1.35, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 680, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+      {
+        name: "5 • Amber Gold Halo",
+        background: { type: "solid", color: "#FFFFFF" },
+        layers: [
+          shapeLayer("circle", 145, 1100, 1000, 1000, "rgba(245, 158, 11, 0.28)") as any,
+          textLayer("A super helpful\napp feature goes here", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#09090B", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 430, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 400, color: "#71717A", lineHeight: 1.35, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 680, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+      {
+        name: "6 • Royal Indigo Halo",
+        background: { type: "solid", color: "#FFFFFF" },
+        layers: [
+          shapeLayer("circle", 145, 1100, 1000, 1000, "rgba(99, 102, 241, 0.28)") as any,
+          textLayer("A super helpful\napp feature goes here", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#09090B", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 430, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 400, color: "#71717A", lineHeight: 1.35, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 680, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+    ],
+  },
+
+  // ── 4. Bottom Color-Bar Studio (6 Screens) ──────────────────────────────────
+  {
+    id: "community-bottom-colorbar-studio",
+    name: "Bottom Color-Bar Studio",
+    description: "Crisp white canvas with bold geometric bottom color blocks and centered mockups (6 Screens)",
+    category: "Community",
+    layout: "screenshot-bottom",
+    tags: ["community", "colorbar", "modern", "geometric", "clean", "figma", "6 screens"],
+    previewColor: "#FFFFFF",
+    previewGradient: ["#FFFFFF", "#3B82F6"],
+    screens: [
+      {
+        name: "1 • Emerald Foundation",
+        background: { type: "solid", color: "#FFFFFF" },
+        layers: [
+          shapeLayer("rectangle", 0, 2150, W, 646, "#10B981") as any,
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#09090B", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 540, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+      {
+        name: "2 • Amber Gold Foundation",
+        background: { type: "solid", color: "#FFFFFF" },
+        layers: [
+          shapeLayer("rectangle", 0, 2150, W, 646, "#F59E0B") as any,
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#09090B", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 540, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+      {
+        name: "3 • Vibrant Orange Foundation",
+        background: { type: "solid", color: "#FFFFFF" },
+        layers: [
+          shapeLayer("rectangle", 0, 2150, W, 646, "#F97316") as any,
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#09090B", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 540, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+      {
+        name: "4 • Coral Rose Foundation",
+        background: { type: "solid", color: "#FFFFFF" },
+        layers: [
+          shapeLayer("rectangle", 0, 2150, W, 646, "#FB7185") as any,
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#09090B", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 540, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+      {
+        name: "5 • Royal Blue Foundation",
+        background: { type: "solid", color: "#FFFFFF" },
+        layers: [
+          shapeLayer("rectangle", 0, 2150, W, 646, "#3B82F6") as any,
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#09090B", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 540, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+      {
+        name: "6 • Violet Purple Foundation",
+        background: { type: "solid", color: "#FFFFFF" },
+        layers: [
+          shapeLayer("rectangle", 0, 2150, W, 646, "#A855F7") as any,
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#09090B", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 540, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+    ],
+  },
+
+  // ── 5. Dynamic Cyan Navy Panorama (6 Screens) ───────────────────────────────
+  {
+    id: "community-dynamic-cyan-navy",
+    name: "Dynamic Cyan Navy",
+    description: "High-tech deep oceanic navy with continuous tilted panoramic flow & glowing cyan accents (6 Screens)",
+    category: "Community",
+    layout: "screenshot-bottom",
+    tags: ["community", "navy", "cyan", "panoramic", "tech", "modern", "figma", "6 screens"],
+    previewColor: "#0D3B5C",
+    previewGradient: ["#0D3B5C", "#082032"],
+    screens: [
+      {
+        name: "1 • Panorama Tilted (Part 1)",
+        background: { type: "solid", color: "#0D3B5C" },
+        layers: [
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#ffffff", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 430, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 400, color: "rgba(103, 232, 249, 0.85)", lineHeight: 1.35, align: "center",
+          }) as any,
+          screenshotWithFrame(480, 780, 1050, 2200, "Drop screenshot here", -25) as any,
+        ],
+      },
+      {
+        name: "2 • Panorama Tilted (Part 2)",
+        background: { type: "solid", color: "#0D3B5C" },
+        layers: [
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#ffffff", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 430, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 400, color: "rgba(103, 232, 249, 0.85)", lineHeight: 1.35, align: "center",
+          }) as any,
+          screenshotWithFrame(-320, 460, 1050, 2200, "Drop screenshot here", -25) as any,
+        ],
+      },
+      {
+        name: "3 • Tilted Feature Focus",
+        background: { type: "solid", color: "#0D3B5C" },
+        layers: [
+          screenshotWithFrame(182, 160, 926, 1850, "Drop screenshot here", 5) as any,
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 2120, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#ffffff", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 2370, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 400, color: "rgba(103, 232, 249, 0.85)", lineHeight: 1.35, align: "center",
+          }) as any,
+        ],
+      },
+      {
+        name: "4 • Upright Feature View",
+        background: { type: "solid", color: "#0D3B5C" },
+        layers: [
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#ffffff", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 430, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 400, color: "rgba(103, 232, 249, 0.85)", lineHeight: 1.35, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 680, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+      {
+        name: "5 • High-Contrast View",
+        background: { type: "solid", color: "#0D3B5C" },
+        layers: [
+          screenshotWithFrame(182, 160, 926, 1850, "Drop screenshot here") as any,
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 2120, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#ffffff", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 2370, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 400, color: "rgba(103, 232, 249, 0.85)", lineHeight: 1.35, align: "center",
+          }) as any,
+        ],
+      },
+      {
+        name: "6 • Final Call to Action",
+        background: { type: "solid", color: "#0D3B5C" },
+        layers: [
+          textLayer("A super helpful\napp feature", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Inter", fontSize: 104, fontWeight: 800, color: "#ffffff", lineHeight: 1.1, letterSpacing: -1.5, align: "center",
+          }) as any,
+          textLayer("This is a subtitle which explains this feature in a better way.", Math.round(W * 0.1), 430, Math.round(W * 0.8), 140, {
+            fontFamily: "Inter", fontSize: 46, fontWeight: 400, color: "rgba(103, 232, 249, 0.85)", lineHeight: 1.35, align: "center",
+          }) as any,
+          screenshotWithFrame(182, 680, 926, 1950, "Drop screenshot here") as any,
+        ],
+      },
+    ],
+  },
   createRubikTemplate({
     id: "community-rubik-dark",
     name: "Rubik Modern Dark",

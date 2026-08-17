@@ -1,7 +1,8 @@
 import { useCallback, useRef, useEffect, useState } from "react";
-import { Trash2, Copy, ArrowUp, ArrowDown, Lock, RefreshCw, GripHorizontal } from "lucide-react";
+import { Trash2, Copy, ArrowUp, ArrowDown, Lock, RefreshCw, GripHorizontal, AlignCenter, AlignJustify, Edit3 } from "lucide-react";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { useLanguageStore } from "@/lib/store/languageStore";
+import { toast } from "@/lib/store/toastStore";
 import {
   Screen, ScreenSet, TextLayer, ShapeLayer,
   ImageLayer, ScreenshotLayer, FlagLayer, Layer
@@ -54,8 +55,19 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
   // Text inline edit state
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (editingLayerId && textareaRef.current) {
+      textareaRef.current.focus();
+      textareaRef.current.select();
+    }
+  }, [editingLayerId]);
+
   // Right-click context menu
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; layerId: string } | null>(null);
+  // Smart Snapping state
+  const [snapGuides, setSnapGuides] = useState<{ x?: boolean; y?: boolean } | null>(null);
   // Drag over state for images
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
@@ -1092,11 +1104,38 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!dragRef.current) return;
     const { x, y } = getCanvasCoords(e);
-    const dx = x - dragRef.current.startX;
-    const dy = y - dragRef.current.startY;
+    let targetX = dragRef.current.origX + (x - dragRef.current.startX);
+    let targetY = dragRef.current.origY + (y - dragRef.current.startY);
+
+    const layer = screen.layers.find((l) => l.id === dragRef.current?.layerId);
+    let snappedX = false;
+    let snappedY = false;
+
+    if (layer) {
+      // Horizontal center snapping
+      const layerCenterX = targetX + layer.width / 2;
+      const screenCenterX = screen.width / 2;
+      const SNAP_THRESHOLD = 30;
+
+      if (Math.abs(layerCenterX - screenCenterX) < SNAP_THRESHOLD) {
+        targetX = Math.round(screenCenterX - layer.width / 2);
+        snappedX = true;
+      }
+
+      // Vertical center snapping
+      const layerCenterY = targetY + layer.height / 2;
+      const screenCenterY = screen.height / 2;
+      if (Math.abs(layerCenterY - screenCenterY) < SNAP_THRESHOLD) {
+        targetY = Math.round(screenCenterY - layer.height / 2);
+        snappedY = true;
+      }
+    }
+
+    setSnapGuides({ x: snappedX, y: snappedY });
+
     updateLayer(screenSet.id, screen.id, dragRef.current.layerId, {
-      x: Math.round(dragRef.current.origX + dx),
-      y: Math.round(dragRef.current.origY + dy),
+      x: Math.round(targetX),
+      y: Math.round(targetY),
     } as Parameters<typeof updateLayer>[3]);
   };
 
@@ -1104,7 +1143,8 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
     if (dragRef.current) {
       useEditorStore.getState().recordHistory();
     }
-    dragRef.current = null; 
+    dragRef.current = null;
+    setSnapGuides(null);
   };
 
   // ── Double-click: inline text edit ─────────────────────────────────────────
@@ -1348,6 +1388,14 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           className={cn(isScreenshotActive ? "cursor-move" : "cursor-pointer", isDraggingOver ? "opacity-75" : "")}
         />
 
+        {/* Magnetic Smart Snapping Guide Lines */}
+        {snapGuides?.x && (
+          <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[1.5px] bg-pink-500 shadow-md shadow-pink-500/50 z-20 pointer-events-none" />
+        )}
+        {snapGuides?.y && (
+          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[1.5px] bg-pink-500 shadow-md shadow-pink-500/50 z-20 pointer-events-none" />
+        )}
+
         {/* Resize handles overlay — shown when layer is selected */}
         {isActiveScreen && activeLayer && !editingLayerId && (
           <ResizeOverlay
@@ -1363,14 +1411,16 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           if (!editLayer) return null;
           return (
             <div
-              className="absolute inset-0"
+              className="absolute inset-0 z-40 bg-black/20 backdrop-blur-[2px] rounded-2xl"
               onClick={() => {
                 updateLayer(screenSet.id, screen.id, editingLayerId, { content: editText } as Partial<Layer>);
                 useEditorStore.getState().recordHistory();
                 setEditingLayerId(null);
+                toast.success("Text updated");
               }}
             >
               <textarea
+                ref={textareaRef}
                 autoFocus
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
@@ -1382,61 +1432,102 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
                     updateLayer(screenSet.id, screen.id, editingLayerId, { content: editText } as Partial<Layer>);
+                    useEditorStore.getState().recordHistory();
                     setEditingLayerId(null);
+                    toast.success("Text updated");
                   }
                 }}
                 style={{
                   position: "absolute",
-                  left: editLayer.x * scale,
-                  top: editLayer.y * scale,
-                  width: editLayer.width * scale,
-                  minHeight: editLayer.height * scale,
-                  fontSize: editLayer.fontSize * scale,
+                  left: Math.max(6, Math.min(editLayer.x * scale, CARD_DISPLAY_WIDTH - 140)),
+                  top: Math.max(6, Math.min(editLayer.y * scale, displayH - 60)),
+                  width: Math.min(CARD_DISPLAY_WIDTH - 16, Math.max(140, editLayer.width * scale)),
+                  minHeight: Math.max(48, editLayer.height * scale),
+                  fontSize: Math.max(13, editLayer.fontSize * scale),
                   fontFamily: `"${editLayer.fontFamily}", sans-serif`,
                   fontWeight: editLayer.fontWeight,
                   color: editLayer.color,
                   textAlign: editLayer.align,
                   lineHeight: editLayer.lineHeight,
                   letterSpacing: `${editLayer.letterSpacing * scale}px`,
-                  background: "rgba(99,102,241,0.08)",
+                  background: "rgba(15, 23, 42, 0.92)",
+                  backdropFilter: "blur(12px)",
                   border: "2px solid #6366f1",
-                  borderRadius: 4,
+                  borderRadius: 8,
                   outline: "none",
                   resize: "none",
-                  padding: "2px 4px",
+                  padding: "6px 10px",
+                  boxShadow: "0 12px 30px -4px rgba(0, 0, 0, 0.6), 0 0 0 2px rgba(99, 102, 241, 0.4)",
+                  zIndex: 50,
                 }}
               />
-              <div className="absolute bottom-2 right-2 flex gap-1">
-                <span className="px-2 py-0.5 rounded bg-black/60 text-white text-[9px]">Enter to save · Esc to cancel</span>
+              <div className="absolute bottom-2.5 inset-x-2 flex items-center justify-center pointer-events-none">
+                <span className="px-2.5 py-1 rounded-md bg-black/80 text-white/90 text-[10px] font-medium shadow-md">
+                  ↵ Enter to save · Shift+↵ for new line · Esc to cancel
+                </span>
               </div>
             </div>
           );
         })()}
+        </div>
 
-        {/* Right-click context menu */}
+        {/* Right-click context menu (Rendered outside overflow-hidden with clamped position) */}
         {ctxMenu && isActiveScreen && (() => {
           const ctxLayer = screen.layers.find((l) => l.id === ctxMenu.layerId);
           if (!ctxLayer) return null;
+          const MENU_WIDTH = 196;
+          const MENU_HEIGHT = 280;
+          const menuLeft = Math.max(6, Math.min(ctxMenu.x, CARD_DISPLAY_WIDTH - MENU_WIDTH - 6));
+          const menuTop = Math.max(6, Math.min(ctxMenu.y, displayH - MENU_HEIGHT - 6));
+
+          const isTextLayer = ctxLayer.type === "text";
+
           return (
             <div
-              className="absolute z-50 min-w-44 bg-popover border border-border rounded-xl shadow-2xl shadow-black/30 py-1 overflow-hidden"
-              style={{ left: ctxMenu.x, top: ctxMenu.y }}
+              className="absolute z-50 min-w-48 bg-card/95 backdrop-blur-xl border border-border/80 rounded-2xl shadow-2xl shadow-black/50 py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
+              style={{ left: menuLeft, top: menuTop }}
               onMouseLeave={() => setCtxMenu(null)}
             >
               {/* Layer name header */}
               <div className="px-3 py-1.5 border-b border-border/50">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  {ctxLayer.type === "text"
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate">
+                  {isTextLayer
                     ? (ctxLayer as TextLayer).content.slice(0, 20) || "Text"
                     : ctxLayer.type}
                 </p>
               </div>
 
               {[
+                ...(isTextLayer ? [{
+                  icon: Edit3,
+                  label: "Edit Text",
+                  action: () => {
+                    setEditingLayerId(ctxMenu.layerId);
+                    setEditText((ctxLayer as TextLayer).content);
+                    setCtxMenu(null);
+                  }
+                }] : []),
                 {
                   icon: Copy, label: "Duplicate", action: () => {
                     duplicateLayer(screenSet.id, screen.id, ctxMenu.layerId);
                     setCtxMenu(null);
+                    toast.success("Layer duplicated");
+                  }
+                },
+                {
+                  icon: AlignCenter, label: "Center Horizontally", action: () => {
+                    updateLayer(screenSet.id, screen.id, ctxMenu.layerId, { x: Math.round(screen.width / 2 - ctxLayer.width / 2) } as Partial<Layer>);
+                    useEditorStore.getState().recordHistory();
+                    setCtxMenu(null);
+                    toast.info("Layer centered horizontally");
+                  }
+                },
+                {
+                  icon: AlignJustify, label: "Center Vertically", action: () => {
+                    updateLayer(screenSet.id, screen.id, ctxMenu.layerId, { y: Math.round(screen.height / 2 - ctxLayer.height / 2) } as Partial<Layer>);
+                    useEditorStore.getState().recordHistory();
+                    setCtxMenu(null);
+                    toast.info("Layer centered vertically");
                   }
                 },
                 {
@@ -1457,6 +1548,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
                   action: () => {
                     lockLayer(screenSet.id, screen.id, ctxMenu.layerId, !ctxLayer.locked);
                     setCtxMenu(null);
+                    toast.info(ctxLayer.locked ? "Layer unlocked" : "Layer locked");
                   }
                 },
               ].map(({ icon: Icon, label, action }) => (
@@ -1464,7 +1556,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
                   key={label}
                   type="button"
                   onClick={action}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs hover:bg-secondary text-foreground transition-colors text-left"
+                  className="w-full flex items-center gap-2.5 px-3 py-1.5 text-xs hover:bg-secondary text-foreground transition-colors text-left"
                 >
                   <Icon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                   {label}
@@ -1477,8 +1569,9 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
                   onClick={() => {
                     deleteLayer(screenSet.id, screen.id, ctxMenu.layerId);
                     setCtxMenu(null);
+                    toast.info("Layer deleted");
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs hover:bg-destructive/15 text-destructive transition-colors text-left"
+                  className="w-full flex items-center gap-2.5 px-3 py-1.5 text-xs hover:bg-destructive/15 text-destructive transition-colors text-left"
                 >
                   <Trash2 className="w-3.5 h-3.5 shrink-0" />
                   Delete Layer
@@ -1487,7 +1580,6 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             </div>
           );
         })()}
-        </div>
 
         {/* Vertical Screen Context Menu (1-3 Mockups + Background) - only visible when the screen/frame itself is selected, NOT when a layer inside is selected */}
         {isActiveScreen && !activeLayerId && (!selectedLayerIds || selectedLayerIds.length === 0) && (
