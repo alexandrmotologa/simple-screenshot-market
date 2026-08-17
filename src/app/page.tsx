@@ -846,21 +846,23 @@ export default function DashboardPage() {
             {/* ── Content View ── */}
             {viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {/* Add New Project Card */}
-                <button
-                  id="new-project-card"
-                  type="button"
-                  onClick={() => setShowNewProject(true)}
-                  className="group rounded-2xl border-2 border-dashed border-border/80 hover:border-primary/60 hover:bg-primary/5 transition-all duration-300 flex flex-col items-center justify-center p-6 gap-3 text-muted-foreground hover:text-primary min-h-[260px] cursor-pointer"
-                >
-                  <div className="w-14 h-14 rounded-2xl bg-secondary group-hover:bg-primary/15 flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-xs">
-                    <Plus className="w-7 h-7" />
-                  </div>
-                  <div className="text-center">
-                    <span className="text-sm font-semibold block text-foreground group-hover:text-primary">Create New Project</span>
-                    <span className="text-xs text-muted-foreground mt-0.5 block">Start from a template or scratch</span>
-                  </div>
-                </button>
+                {/* Add New Project Card (only visible when fewer than 4 projects exist) */}
+                {projects.length < 4 && (
+                  <button
+                    id="new-project-card"
+                    type="button"
+                    onClick={() => setShowNewProject(true)}
+                    className="group rounded-2xl border-2 border-dashed border-border/80 hover:border-primary/60 hover:bg-primary/5 transition-all duration-300 flex flex-col items-center justify-center p-6 gap-3 text-muted-foreground hover:text-primary min-h-[260px] cursor-pointer"
+                  >
+                    <div className="w-14 h-14 rounded-2xl bg-secondary group-hover:bg-primary/15 flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-xs">
+                      <Plus className="w-7 h-7" />
+                    </div>
+                    <div className="text-center">
+                      <span className="text-sm font-semibold block text-foreground group-hover:text-primary">Create New Project</span>
+                      <span className="text-xs text-muted-foreground mt-0.5 block">Start from a template or scratch</span>
+                    </div>
+                  </button>
+                )}
 
                 {/* Project Cards */}
                 {filtered.map((project) => (
