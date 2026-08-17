@@ -20,8 +20,8 @@ export async function GET() {
 
     return NextResponse.json({ success: true, counts, configured: true });
   } catch (error: any) {
-    console.error("Error fetching template stats from Firestore:", error);
-    return NextResponse.json({ success: false, counts: {}, error: error.message }, { status: 500 });
+    console.warn("Firestore template stats fetch warning (check Firestore Rules):", error?.message || error);
+    return NextResponse.json({ success: true, counts: {}, fallback: true, error: error?.message });
   }
 }
 
@@ -33,7 +33,6 @@ export async function POST(req: Request) {
     }
 
     if (!isFirebaseConfigured || !db) {
-      // Return success gracefully so client continues with local storage fallback
       return NextResponse.json({ success: true, configured: false, note: "Recorded locally (Firebase not configured yet)" });
     }
 
@@ -56,7 +55,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, templateId, configured: true });
   } catch (error: any) {
-    console.error("Error updating template popularity in Firestore:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.warn("Firestore template stats update warning (check Firestore Rules):", error?.message || error);
+    return NextResponse.json({ success: true, templateId: "local-fallback", fallback: true });
   }
 }
