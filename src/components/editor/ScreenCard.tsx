@@ -97,7 +97,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
 
   const {
     activeSetId, activeScreenId, activeLayerId, selectedLayerIds,
-    setActiveSet, setActiveScreen, setActiveLayer, toggleSelectLayer,
+    setActiveSet, setActiveScreen, setActiveLayer, toggleSelectLayer, clearSelection,
     deleteScreen, deleteLayer, duplicateLayer, updateLayer, updateScreen,
     lockLayer, bringForward, sendBackward, zoom,
   } = useEditorStore();
@@ -1085,18 +1085,19 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
     setActiveScreen(screen.id);
     const { x, y } = getCanvasCoords(e);
     const hit = hitTest(x, y);
-    if (e.shiftKey && hit) {
-      // Multi-select mode
-      toggleSelectLayer(hit);
-    } else {
-      setActiveLayer(hit);
-    }
     if (hit) {
+      if (e.shiftKey) {
+        toggleSelectLayer(hit);
+      } else {
+        setActiveLayer(hit);
+      }
       const layer = screen.layers.find((l) => l.id === hit);
-      // Don't drag locked layers
       if (layer && !layer.locked) {
         dragRef.current = { layerId: hit, startX: x, startY: y, origX: layer.x, origY: layer.y };
       }
+    } else {
+      // Clicked on empty background of screen -> clear layer selection
+      clearSelection();
     }
     e.stopPropagation();
   };

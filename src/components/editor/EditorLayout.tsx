@@ -212,7 +212,7 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
         }
       }
       if (e.key === "Escape") {
-        setActiveLayer(null);
+        useEditorStore.getState().clearSelection();
       }
       if ((e.ctrlKey || e.metaKey) && e.key === "d" && activeLayerId) {
         e.preventDefault();
