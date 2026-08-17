@@ -302,31 +302,33 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
         </DropdownMenu>
 
         {/* Toggles Group */}
-        <div className="flex items-center gap-4 ml-2">
+        <div className="flex items-center gap-3.5 ml-2">
           {screenSet.store === "ios" && (
             <>
               {/* Notch toggle */}
               {currentDevice?.notchType === "notch" && (
-                <label className="flex items-center gap-2 cursor-pointer" title="Show Notch">
-                  <div className="w-5 h-5 flex items-center justify-center text-muted-foreground">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <label className="flex items-center gap-1.5 cursor-pointer" title="Show/Hide Notch">
+                  <div className="w-4 h-4 flex items-center justify-center text-muted-foreground shrink-0">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="4" y="2" width="16" height="20" rx="4" />
                       <path d="M8 2v1a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V2" />
                     </svg>
                   </div>
+                  <span className="text-xs font-medium text-muted-foreground mr-0.5">Notch</span>
                   <Switch checked={isNotchOn} onCheckedChange={toggleNotch} />
                 </label>
               )}
 
               {/* Dynamic Island toggle */}
               {currentDevice?.notchType === "island" && (
-                <label className="flex items-center gap-2 cursor-pointer" title="Show Dynamic Island">
-                  <div className="w-5 h-5 flex items-center justify-center text-muted-foreground">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <label className="flex items-center gap-1.5 cursor-pointer" title="Show/Hide Dynamic Island">
+                  <div className="w-4 h-4 flex items-center justify-center text-muted-foreground shrink-0">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="4" y="2" width="16" height="20" rx="4" />
                       <rect x="9" y="5" width="6" height="2.5" rx="1.25" fill="currentColor" stroke="none" />
                     </svg>
                   </div>
+                  <span className="text-xs font-medium text-muted-foreground mr-0.5">Island</span>
                   <Switch checked={isIslandOn} onCheckedChange={toggleIsland} />
                 </label>
               )}
@@ -334,33 +336,34 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
           )}
 
           {screenSet.store === "android" && (
-            <label className="flex items-center gap-2 cursor-pointer" title="Show Camera Hole">
-              <div className="w-5 h-5 flex items-center justify-center text-muted-foreground">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <label className="flex items-center gap-1.5 cursor-pointer" title="Show/Hide Camera Hole">
+              <div className="w-4 h-4 flex items-center justify-center text-muted-foreground shrink-0">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="4" y="2" width="16" height="20" rx="4" />
                   <circle cx="12" cy="6" r="1.5" fill="currentColor" stroke="none" />
                 </svg>
               </div>
+              <span className="text-xs font-medium text-muted-foreground mr-0.5">Camera</span>
               <Switch checked={isNotchOn} onCheckedChange={toggleNotch} />
             </label>
           )}
 
           {/* Reflection toggle */}
-          <label className="flex items-center gap-2 cursor-pointer" title="Show Screen Reflection">
-            <div className="w-5 h-5 flex items-center justify-center text-muted-foreground">
-              {/* Custom SVG for reflection */}
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <label className="flex items-center gap-1.5 cursor-pointer" title="Show/Hide Screen Reflection">
+            <div className="w-4 h-4 flex items-center justify-center text-muted-foreground shrink-0">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="4" y="2" width="16" height="20" rx="4" />
                 <path d="M6 10l8-8" opacity="0.5" />
                 <path d="M4 14l12-12" opacity="0.5" />
               </svg>
             </div>
+            <span className="text-xs font-medium text-muted-foreground mr-0.5">Reflection</span>
             <Switch checked={isReflectionOn} onCheckedChange={toggleReflection} />
           </label>
 
           {/* Show/Hide Screenshots toggle with Switch */}
           <label className="flex items-center gap-1.5 cursor-pointer" title="Toggle Screenshots Visibility">
-            <div className="w-5 h-5 flex items-center justify-center text-muted-foreground">
+            <div className="w-4 h-4 flex items-center justify-center text-muted-foreground shrink-0">
               {isShowingScreenshots ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             </div>
             <span className="text-xs font-medium text-muted-foreground mr-0.5">Screenshots</span>
