@@ -51,8 +51,8 @@ export function HorizontalCanvas() {
       return;
     }
 
-    // Deselect all selected layers when clicking on empty canvas background
-    useEditorStore.getState().clearSelection();
+    // Deselect all selected layers and active screen when clicking on empty canvas background
+    useEditorStore.getState().clearAllSelection();
 
     const container = containerRef.current;
     if (!container) return;
