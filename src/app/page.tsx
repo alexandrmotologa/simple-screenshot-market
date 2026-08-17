@@ -85,65 +85,97 @@ function ProjectThumbnail({ project }: { project: Project }) {
         ctx.fillRect(x, y, w, h);
       }
 
-      // Draw text layers (headlines)
+      // 1. Draw stylized device mockup placeholder first (at bottom/center)
+      const mw = w * 0.72;
+      const mh = h * 0.65;
+      const mx = x + (w - mw) / 2;
+      const my = y + h - mh + 6;
+
+      ctx.save();
+      // Device drop shadow
+      ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+      ctx.shadowBlur = 14;
+      ctx.shadowOffsetY = 6;
+
+      // Device frame outer body
+      ctx.fillStyle = isBackground ? "#111827" : "#1e293b";
+      ctx.beginPath();
+      ctx.roundRect(mx, my, mw, mh, [14, 14, 0, 0]);
+      ctx.fill();
+
+      // Device screen inner area
+      const sm = 2.5;
+      ctx.fillStyle = isBackground ? "#0b0f19" : "#0f172a";
+      ctx.beginPath();
+      ctx.roundRect(mx + sm, my + sm, mw - sm * 2, mh - sm * 2, [12, 12, 0, 0]);
+      ctx.fill();
+
+      // Mini mock app UI cards inside phone
+      ctx.fillStyle = isBackground ? "rgba(255, 255, 255, 0.05)" : "rgba(255, 255, 255, 0.08)";
+      ctx.beginPath();
+      ctx.roundRect(mx + sm + 6, my + sm + 18, mw - sm * 2 - 12, mh * 0.35, 6);
+      ctx.fill();
+
+      ctx.fillStyle = isBackground ? "rgba(255, 255, 255, 0.04)" : "rgba(255, 255, 255, 0.06)";
+      ctx.beginPath();
+      ctx.roundRect(mx + sm + 6, my + sm + 24 + mh * 0.35, mw - sm * 2 - 12, mh * 0.38, 6);
+      ctx.fill();
+
+      // Device frame border
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = isBackground ? "rgba(255, 255, 255, 0.15)" : "rgba(255, 255, 255, 0.35)";
+      ctx.stroke();
+
+      // Dynamic island / Camera notch pill
+      ctx.fillStyle = "#000000";
+      ctx.beginPath();
+      ctx.roundRect(mx + mw / 2 - 12, my + 4, 24, 5, 2.5);
+      ctx.fill();
+      ctx.restore();
+
+      // 2. Draw text layers (headlines) ON TOP
       const scale = w / (scr.width || 1290);
-      for (const layer of scr.layers) {
-        if (layer.type === "text") {
-          const tl = layer as import("@/lib/types").TextLayer;
+      const textLayers = scr.layers.filter((l) => l.type === "text") as import("@/lib/types").TextLayer[];
+
+      if (textLayers.length > 0) {
+        for (const tl of textLayers) {
           ctx.save();
-          ctx.globalAlpha = (layer.opacity ?? 1) * (isBackground ? 0.7 : 1);
-          const fs = Math.max(7, tl.fontSize * scale);
-          ctx.font = `${tl.fontWeight || 600} ${fs}px "${tl.fontFamily || "Inter"}", -apple-system, sans-serif`;
+          ctx.globalAlpha = (tl.opacity ?? 1) * (isBackground ? 0.75 : 1);
+          const fs = Math.max(7.5, Math.min(13, (tl.fontSize || 54) * scale * 1.3));
+          ctx.font = `700 ${fs}px "${tl.fontFamily || "Inter"}", -apple-system, sans-serif`;
           ctx.fillStyle = tl.color || "#ffffff";
           ctx.textAlign = (tl.align as CanvasTextAlign) || "center";
+          ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+          ctx.shadowBlur = 4;
 
-          const lines = tl.content.split("\n");
-          const lineH = fs * 1.25;
+          const lines = (tl.content || "Awesome App").split("\n");
+          const lineH = fs * 1.2;
           const xPos =
             tl.align === "center"
               ? x + w / 2
               : tl.align === "right"
-              ? x + w - 10
-              : x + 10;
-          lines.forEach((line, i) => {
-            if (i < 2) {
-              ctx.fillText(line, xPos, y + (tl.y * scale) + fs + i * lineH);
-            }
+              ? x + w - 8
+              : x + 8;
+          
+          const textY = Math.max(16, (tl.y || 120) * scale);
+          lines.slice(0, 2).forEach((line, i) => {
+            ctx.fillText(line, xPos, y + textY + i * lineH);
           });
           ctx.restore();
         }
+      } else {
+        // Fallback default caption if no text layer exists
+        ctx.save();
+        ctx.font = `700 8.5px "Inter", -apple-system, sans-serif`;
+        ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+        ctx.textAlign = "center";
+        ctx.fillText("App Showcase", x + w / 2, y + 24);
+        ctx.restore();
       }
 
-      // Draw stylized device mockup placeholder at bottom
-      const mw = w * 0.72;
-      const mh = h * 0.65;
-      const mx = x + (w - mw) / 2;
-      const my = y + h - mh + 8;
-
-      ctx.save();
-      ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-      ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
-      ctx.shadowBlur = 12;
-      ctx.beginPath();
-      ctx.roundRect(mx, my, mw, mh, [12, 12, 0, 0]);
-      ctx.fill();
-
-      // Device frame border
-      ctx.lineWidth = 2.5;
-      ctx.strokeStyle = isBackground ? "rgba(255, 255, 255, 0.15)" : "rgba(255, 255, 255, 0.35)";
-      ctx.stroke();
-
-      // Camera notch / dynamic island pill
-      ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
-      ctx.beginPath();
-      ctx.roundRect(mx + mw / 2 - 14, my + 4, 28, 6, 3);
-      ctx.fill();
-
-      ctx.restore();
-
-      // Subtle screen glass border
-      ctx.strokeStyle = isBackground ? "rgba(255, 255, 255, 0.1)" : "rgba(255, 255, 255, 0.25)";
-      ctx.lineWidth = 1.5;
+      // Subtle outer screen glass border
+      ctx.strokeStyle = isBackground ? "rgba(255, 255, 255, 0.08)" : "rgba(255, 255, 255, 0.2)";
+      ctx.lineWidth = 1;
       ctx.stroke();
 
       ctx.restore();
@@ -676,40 +708,21 @@ export default function DashboardPage() {
           </motion.div>
         ) : (
           <>
-            {/* ── Dashboard Controls Bar ── */}
-            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8">
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight">Your Projects</h1>
-                <p className="text-muted-foreground text-sm mt-0.5">
-                  {projects.length} screenshot project{projects.length !== 1 ? "s" : ""} • Manage, edit, and export your sets
-                </p>
+            {/* ── Top Header Controls Row ── */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5">
+              {/* Title & Project Count Badge */}
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Your Projects</h1>
+                <Badge variant="secondary" className="text-xs font-semibold px-2.5 py-0.5 rounded-full border border-border/50">
+                  {projects.length}
+                </Badge>
               </div>
 
-              <div className="flex items-center gap-3 flex-wrap w-full lg:w-auto justify-between lg:justify-end">
-                {/* Search Bar */}
-                <div className="relative flex-1 sm:w-64 max-w-sm">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder="Search projects or stores…"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full h-9 pl-9 pr-8 text-xs bg-secondary/50 border border-border/50 rounded-xl outline-none text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-primary/50 transition-all"
-                  />
-                  {search && (
-                    <button
-                      type="button"
-                      onClick={() => setSearch("")}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-
+              {/* Action Controls (Sort, View Mode, New Project) */}
+              <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap justify-between sm:justify-end w-full sm:w-auto">
                 {/* Bidirectional Sort Toggle Group */}
                 <div className="flex items-center gap-1 bg-secondary/50 p-1 rounded-xl border border-border/40 text-xs">
-                  <span className="text-[11px] font-medium text-muted-foreground px-2 flex items-center gap-1">
+                  <span className="text-[11px] font-medium text-muted-foreground px-2 hidden sm:flex items-center gap-1">
                     <ArrowUpDown className="w-3 h-3" /> Sort:
                   </span>
 
@@ -755,7 +768,7 @@ export default function DashboardPage() {
                       if (sortBy === "screens-desc") setSortBy("screens-asc");
                       else setSortBy("screens-desc");
                     }}
-                    className={`hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer select-none ${
+                    className={`hidden md:flex items-center gap-1 px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer select-none ${
                       sortBy === "screens-desc" || sortBy === "screens-asc"
                         ? "bg-background text-foreground shadow-xs ring-1 ring-border/50 font-semibold"
                         : "text-muted-foreground hover:text-foreground"
@@ -795,16 +808,39 @@ export default function DashboardPage() {
                   </button>
                 </div>
 
+                {/* New Project Button */}
                 <Button
                   id="new-project-btn-2"
                   onClick={() => setShowNewProject(true)}
                   size="sm"
-                  className="gap-1.5 shadow-sm shadow-primary/20 rounded-xl"
+                  className="gap-1.5 shadow-sm shadow-primary/20 rounded-xl font-semibold px-3.5"
                 >
                   <Plus className="w-4 h-4" />
                   New Project
                 </Button>
               </div>
+            </div>
+
+            {/* ── Full Width Search Bar Row ── */}
+            <div className="relative w-full mb-8">
+              <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search projects by name, store (iOS, Android), or device preset..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full h-11 pl-11 pr-10 text-sm bg-secondary/40 hover:bg-secondary/60 focus:bg-secondary/80 border border-border/50 focus:border-primary/50 rounded-2xl outline-none text-foreground placeholder:text-muted-foreground transition-all shadow-xs"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                  title="Clear search"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             {/* ── Content View ── */}
