@@ -364,9 +364,14 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
           <button
             type="button"
             onClick={handleCopyScreenToClipboard}
-            disabled={isCopying}
-            className="h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary border border-border/40 transition-colors"
-            title="Copy active screen to clipboard (PNG)"
+            disabled={isCopying || !activeScreenId}
+            className={cn(
+              "h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs font-medium border border-border/40 transition-colors",
+              activeScreenId && !isCopying
+                ? "text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer"
+                : "opacity-40 cursor-not-allowed text-muted-foreground bg-secondary/20"
+            )}
+            title={activeScreenId ? "Copy active screen to clipboard (PNG)" : "Select a screen on canvas to copy"}
           >
             <Copy className="w-3.5 h-3.5" />
             <span className="hidden md:inline">Copy Screen</span>

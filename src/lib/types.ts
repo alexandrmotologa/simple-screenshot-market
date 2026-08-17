@@ -51,7 +51,15 @@ export type ShapeType =
   | "line"
   | "wave"
   | "appstore-badge"
-  | "googleplay-badge";
+  | "googleplay-badge"
+  | "rating-badge"
+  | "award-badge"
+  | "users-badge"
+  | "security-badge"
+  | "notification-badge"
+  | "search-badge"
+  | "glow-orb"
+  | (string & {});
 
 export type TextAlign = "left" | "center" | "right";
 

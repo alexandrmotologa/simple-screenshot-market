@@ -268,17 +268,30 @@ export function ScreenThumbnailCanvas({
       else if (layer.type === "shape") {
         const sl = layer as ShapeLayer;
         ctx.fillStyle = sl.fill || "transparent";
-        const r = sl.cornerRadius ?? 0;
+        const r = sl.cornerRadius ?? (sl.shape.includes("badge") ? sl.height / 2 : 0);
 
         ctx.beginPath();
         if (sl.shape === "circle") {
           ctx.arc(sl.x + sl.width / 2, sl.y + sl.height / 2, Math.min(sl.width, sl.height) / 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (sl.shape === "glow-orb") {
+          const cx = sl.x + sl.width / 2;
+          const cy = sl.y + sl.height / 2;
+          const rad = Math.min(sl.width, sl.height) / 2;
+          const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
+          grad.addColorStop(0, sl.fill || "rgba(139,92,246,0.6)");
+          grad.addColorStop(0.6, "rgba(139,92,246,0.2)");
+          grad.addColorStop(1, "transparent");
+          ctx.fillStyle = grad;
+          ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+          ctx.fill();
         } else if (r > 0) {
           ctx.roundRect(sl.x, sl.y, sl.width, sl.height, r);
+          ctx.fill();
         } else {
           ctx.rect(sl.x, sl.y, sl.width, sl.height);
+          ctx.fill();
         }
-        ctx.fill();
 
         if (sl.stroke && sl.strokeWidth) {
           ctx.strokeStyle = sl.stroke;

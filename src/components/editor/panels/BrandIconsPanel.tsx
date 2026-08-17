@@ -83,6 +83,168 @@ const UI_ICONS = [
   "zap", "award", "thumbs-up", "smile", "globe", "activity", "bar-chart", "pie-chart", "trending-up"
 ].map((slug) => ({ name: slug.replace(/-/g, " "), slug, color: "000000" }));
 
+const PHOSPHOR_MAP: Record<string, string> = {
+  home: "house",
+  settings: "gear",
+  search: "magnifying-glass",
+  user: "user",
+  star: "star",
+  heart: "heart",
+  check: "check",
+  x: "x",
+  info: "info",
+  "alert-triangle": "warning",
+  camera: "camera",
+  image: "image",
+  video: "video-camera",
+  music: "music-notes",
+  mic: "microphone",
+  bell: "bell",
+  calendar: "calendar",
+  clock: "clock",
+  "map-pin": "map-pin",
+  map: "map-trifold",
+  phone: "phone",
+  mail: "envelope",
+  "message-circle": "chat-circle",
+  "message-square": "chat-centered-text",
+  send: "paper-plane-tilt",
+  share: "share-network",
+  link: "link",
+  download: "download-simple",
+  upload: "upload-simple",
+  cloud: "cloud",
+  lock: "lock",
+  unlock: "lock-open",
+  key: "key",
+  shield: "shield",
+  power: "power",
+  battery: "battery-charging",
+  wifi: "wifi-high",
+  bluetooth: "bluetooth",
+  cast: "screencast",
+  play: "play",
+  pause: "pause",
+  square: "square",
+  menu: "list",
+  grid: "squares-four",
+  list: "list-bullets",
+  filter: "funnel",
+  "arrow-up-down": "arrows-down-up",
+  edit: "pencil-simple",
+  trash: "trash",
+  save: "floppy-disk",
+  folder: "folder",
+  file: "file",
+  "file-text": "file-text",
+  paperclip: "paperclip",
+  bookmark: "bookmark",
+  tag: "tag",
+  "shopping-cart": "shopping-cart",
+  "credit-card": "credit-card",
+  wallet: "wallet",
+  gift: "gift",
+  "shopping-bag": "tote",
+  truck: "truck",
+  plane: "airplane",
+  car: "car",
+  bus: "bus",
+  train: "train",
+  bike: "bicycle",
+  navigation: "navigation-arrow",
+  compass: "compass",
+  zap: "lightning",
+  award: "medal",
+  "thumbs-up": "thumbs-up",
+  smile: "smiley",
+  globe: "globe",
+  activity: "activity",
+  "bar-chart": "chart-bar",
+  "pie-chart": "chart-pie",
+  "trending-up": "trend-up",
+};
+
+const MDI_MAP: Record<string, string> = {
+  home: "home",
+  settings: "cog",
+  search: "magnify",
+  user: "account",
+  star: "star",
+  heart: "heart",
+  check: "check",
+  x: "close",
+  info: "information",
+  "alert-triangle": "alert",
+  camera: "camera",
+  image: "image",
+  video: "video",
+  music: "music",
+  mic: "microphone",
+  bell: "bell",
+  calendar: "calendar",
+  clock: "clock",
+  "map-pin": "map-marker",
+  map: "map",
+  phone: "phone",
+  mail: "email",
+  "message-circle": "message",
+  "message-square": "chat",
+  send: "send",
+  share: "share-variant",
+  link: "link",
+  download: "download",
+  upload: "upload",
+  cloud: "cloud",
+  lock: "lock",
+  unlock: "lock-open",
+  key: "key",
+  shield: "shield",
+  power: "power",
+  battery: "battery",
+  wifi: "wifi",
+  bluetooth: "bluetooth",
+  cast: "cast",
+  play: "play",
+  pause: "pause",
+  square: "square",
+  menu: "menu",
+  grid: "view-grid",
+  list: "format-list-bulleted",
+  filter: "filter",
+  "arrow-up-down": "swap-vertical",
+  edit: "pencil",
+  trash: "delete",
+  save: "content-save",
+  folder: "folder",
+  file: "file",
+  "file-text": "file-document",
+  paperclip: "paperclip",
+  bookmark: "bookmark",
+  tag: "tag",
+  "shopping-cart": "cart",
+  "credit-card": "credit-card",
+  wallet: "wallet",
+  gift: "gift",
+  "shopping-bag": "shopping",
+  truck: "truck",
+  plane: "airplane",
+  car: "car",
+  bus: "bus",
+  train: "train",
+  bike: "bike",
+  navigation: "navigation",
+  compass: "compass",
+  zap: "flash",
+  award: "trophy",
+  "thumbs-up": "thumb-up",
+  smile: "emoticon-happy",
+  globe: "earth",
+  activity: "pulse",
+  "bar-chart": "chart-bar",
+  "pie-chart": "chart-pie",
+  "trending-up": "trending-up",
+};
+
 type Library = "brands" | "lucide" | "phosphor" | "material";
 
 export function BrandIconsPanel() {
@@ -111,10 +273,14 @@ export function BrandIconsPanel() {
         return `https://api.iconify.design/simple-icons/${slug}.svg?color=%23${colorHex}`;
       case "lucide":
         return `https://api.iconify.design/lucide/${slug}.svg?color=%23${colorHex}`;
-      case "phosphor":
-        return `https://api.iconify.design/ph/${slug}.svg?color=%23${colorHex}`;
-      case "material":
-        return `https://api.iconify.design/mdi/${slug.replace(/-/g, "")}.svg?color=%23${colorHex}`;
+      case "phosphor": {
+        const phSlug = PHOSPHOR_MAP[slug] || slug;
+        return `https://api.iconify.design/ph/${phSlug}.svg?color=%23${colorHex}`;
+      }
+      case "material": {
+        const mdiSlug = MDI_MAP[slug] || slug;
+        return `https://api.iconify.design/mdi/${mdiSlug}.svg?color=%23${colorHex}`;
+      }
     }
   };
 
@@ -233,10 +399,6 @@ export function BrandIconsPanel() {
                     alt={icon.name}
                     loading="lazy"
                     className="w-6 h-6 object-contain opacity-90 group-hover:opacity-100 transition-opacity"
-                    onError={(e) => {
-                      // Fallback directly to directUrl if proxy has issue
-                      (e.target as HTMLImageElement).src = directUrl;
-                    }}
                   />
                 </div>
                 <span className="text-[9.5px] text-muted-foreground group-hover:text-foreground text-center leading-tight truncate w-full capitalize font-medium">

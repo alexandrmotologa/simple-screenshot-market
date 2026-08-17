@@ -104,19 +104,19 @@ export function CharactersPanel() {
         ))}
       </div>
 
-      {/* Category filter */}
-      <div className="px-3 pt-2.5 pb-2 shrink-0 border-b border-border/30">
-        <div className="flex flex-wrap gap-1">
+      {/* Category filter — horizontally scrollable */}
+      <div className="px-3 py-2 shrink-0 border-b border-border/30 overflow-x-auto scrollbar-none">
+        <div className="flex items-center gap-1.5 flex-nowrap min-w-max">
           {categories.map((cat) => (
             <button
               key={cat}
               type="button"
               onClick={() => setFilter(cat)}
               className={cn(
-                "px-2 py-0.5 rounded-lg text-[10.5px] font-medium transition-all cursor-pointer",
+                "shrink-0 whitespace-nowrap px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border shadow-2xs",
                 filter === cat
-                  ? "bg-indigo-500 text-white shadow-2xs"
-                  : "bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  ? "bg-primary text-primary-foreground border-primary/60 font-semibold"
+                  : "bg-secondary/70 text-muted-foreground hover:text-foreground hover:bg-secondary border-border/40"
               )}
             >
               {CATEGORY_LABELS[cat] ?? cat}

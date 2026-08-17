@@ -206,16 +206,98 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
           } else if (layer.type === "shape") {
             const sl = layer as ShapeLayer;
             ctx.fillStyle = sl.fill;
-            const r2 = sl.cornerRadius ?? 0;
-            ctx.beginPath();
-            if (sl.shape === "circle") {
+            const r2 = sl.cornerRadius ?? (sl.shape.includes("badge") ? sl.height / 2 : 0);
+
+            if (sl.shape === "rating-badge") {
+              const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+              ctx.beginPath();
+              ctx.roundRect(bx, by, bw, bh, bh * 0.5);
+              ctx.fillStyle = sl.fill ?? "rgba(15,23,42,0.88)";
+              ctx.fill();
+              if (sl.stroke && sl.strokeWidth) { ctx.strokeStyle = sl.stroke; ctx.lineWidth = sl.strokeWidth; ctx.stroke(); }
+              ctx.textAlign = "center"; ctx.textBaseline = "middle";
+              ctx.font = `700 ${bh * 0.42}px "Inter", sans-serif`;
+              ctx.fillStyle = "#F59E0B"; ctx.fillText("★★★★★", bx + bw * 0.32, by + bh / 2 + 1);
+              ctx.font = `600 ${bh * 0.35}px "Inter", sans-serif`;
+              ctx.fillStyle = "#FFFFFF"; ctx.fillText("4.9 (100k+)", bx + bw * 0.74, by + bh / 2);
+            } else if (sl.shape === "award-badge") {
+              const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+              ctx.beginPath();
+              ctx.roundRect(bx, by, bw, bh, bh * 0.5);
+              ctx.fillStyle = sl.fill ?? "#1e1b4b";
+              ctx.fill();
+              if (sl.stroke && sl.strokeWidth) { ctx.strokeStyle = sl.stroke; ctx.lineWidth = sl.strokeWidth; ctx.stroke(); }
+              ctx.textAlign = "center"; ctx.textBaseline = "middle";
+              ctx.font = `${bh * 0.5}px serif`; ctx.fillText("🏆", bx + bh * 0.45, by + bh / 2);
+              ctx.font = `700 ${bh * 0.34}px "Inter", sans-serif`;
+              ctx.fillStyle = "#FBBF24"; ctx.fillText("#1 App of the Day", bx + bw * 0.58, by + bh / 2);
+            } else if (sl.shape === "users-badge") {
+              const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+              ctx.beginPath();
+              ctx.roundRect(bx, by, bw, bh, bh * 0.5);
+              ctx.fillStyle = sl.fill ?? "rgba(6,78,59,0.7)";
+              ctx.fill();
+              if (sl.stroke && sl.strokeWidth) { ctx.strokeStyle = sl.stroke; ctx.lineWidth = sl.strokeWidth; ctx.stroke(); }
+              ctx.textAlign = "center"; ctx.textBaseline = "middle";
+              ctx.font = `${bh * 0.45}px serif`; ctx.fillText("👥", bx + bh * 0.45, by + bh / 2);
+              ctx.font = `700 ${bh * 0.34}px "Inter", sans-serif`;
+              ctx.fillStyle = "#10B981"; ctx.fillText("1,000,000+ Users", bx + bw * 0.58, by + bh / 2);
+            } else if (sl.shape === "security-badge") {
+              const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+              ctx.beginPath();
+              ctx.roundRect(bx, by, bw, bh, bh * 0.5);
+              ctx.fillStyle = sl.fill ?? "rgba(30,58,138,0.7)";
+              ctx.fill();
+              if (sl.stroke && sl.strokeWidth) { ctx.strokeStyle = sl.stroke; ctx.lineWidth = sl.strokeWidth; ctx.stroke(); }
+              ctx.textAlign = "center"; ctx.textBaseline = "middle";
+              ctx.font = `${bh * 0.45}px serif`; ctx.fillText("🔒", bx + bh * 0.45, by + bh / 2);
+              ctx.font = `700 ${bh * 0.34}px "Inter", sans-serif`;
+              ctx.fillStyle = "#3B82F6"; ctx.fillText("100% Private & Secure", bx + bw * 0.58, by + bh / 2);
+            } else if (sl.shape === "notification-badge") {
+              const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+              ctx.beginPath();
+              ctx.roundRect(bx, by, bw, bh, 28);
+              ctx.fillStyle = sl.fill ?? "rgba(255,255,255,0.92)";
+              ctx.fill();
+              if (sl.stroke && sl.strokeWidth) { ctx.strokeStyle = sl.stroke; ctx.lineWidth = sl.strokeWidth; ctx.stroke(); }
+              ctx.textAlign = "left"; ctx.textBaseline = "middle";
+              ctx.font = `${bh * 0.3}px serif`; ctx.fillText("⚡", bx + 24, by + bh * 0.35);
+              ctx.font = `700 ${bh * 0.18}px "Inter", sans-serif`; ctx.fillStyle = "#1e293b"; ctx.fillText("SnapFrame", bx + 64, by + bh * 0.32);
+              ctx.font = `400 ${bh * 0.15}px "Inter", sans-serif`; ctx.fillStyle = "#64748b"; ctx.fillText("now", bx + bw - 60, by + bh * 0.32);
+              ctx.font = `500 ${bh * 0.2}px "Inter", sans-serif`; ctx.fillStyle = "#334155"; ctx.fillText("Workout completed! +250 XP earned 🎉", bx + 24, by + bh * 0.7);
+            } else if (sl.shape === "search-badge") {
+              const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+              ctx.beginPath();
+              ctx.roundRect(bx, by, bw, bh, bh * 0.5);
+              ctx.fillStyle = sl.fill ?? "rgba(255,255,255,0.18)";
+              ctx.fill();
+              if (sl.stroke && sl.strokeWidth) { ctx.strokeStyle = sl.stroke; ctx.lineWidth = sl.strokeWidth; ctx.stroke(); }
+              ctx.textAlign = "left"; ctx.textBaseline = "middle";
+              ctx.font = `${bh * 0.38}px serif`; ctx.fillText("🔍", bx + 24, by + bh / 2);
+              ctx.font = `500 ${bh * 0.32}px "Inter", sans-serif`; ctx.fillStyle = "rgba(255,255,255,0.75)"; ctx.fillText("Search songs, artists, albums...", bx + 70, by + bh / 2);
+            } else if (sl.shape === "glow-orb") {
+              const cx = sl.x + sl.width / 2;
+              const cy = sl.y + sl.height / 2;
+              const rad = Math.min(sl.width, sl.height) / 2;
+              const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
+              grad.addColorStop(0, sl.fill || "rgba(139,92,246,0.6)");
+              grad.addColorStop(0.6, sl.fill ? `${sl.fill}44` : "rgba(139,92,246,0.2)");
+              grad.addColorStop(1, "transparent");
+              ctx.fillStyle = grad;
+              ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.fill();
+            } else if (sl.shape === "circle") {
+              ctx.beginPath();
               ctx.ellipse(sl.x + sl.width / 2, sl.y + sl.height / 2, sl.width / 2, sl.height / 2, 0, 0, Math.PI * 2);
+              ctx.fill();
             } else if (r2 > 0) {
+              ctx.beginPath();
               ctx.roundRect(sl.x, sl.y, sl.width, sl.height, r2);
+              ctx.fill();
             } else {
+              ctx.beginPath();
               ctx.rect(sl.x, sl.y, sl.width, sl.height);
+              ctx.fill();
             }
-            ctx.fill();
           } else if (layer.type === "image") {
             const il = layer as ImageLayer;
             try {
