@@ -141,22 +141,6 @@ export function ScreenStrip() {
                           }}
                         />
                         <span>{idx + 1}</span>
-
-                        {/* Delete on hover in compact mode */}
-                        {ss.screens.length > 1 && (
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteScreen(ss.id, screen.id);
-                            }}
-                            className="hidden group-hover:inline-flex text-muted-foreground hover:text-destructive text-[9px] ml-0.5 cursor-pointer"
-                            title="Delete screen"
-                          >
-                            ×
-                          </span>
-                        )}
                       </button>
                     );
                   }
