@@ -80,38 +80,93 @@ function shapeLayer(
   };
 }
 
+// Helper: flag / emoji layer
+function flagLayer(
+  content: string,
+  x: number, y: number, w: number, h: number,
+  opts: Partial<Omit<import("@/lib/types").FlagLayer, "id" | "type" | "content" | "x" | "y" | "width" | "height">> = {}
+): Omit<import("@/lib/types").FlagLayer, "id"> {
+  return {
+    type: "flag",
+    content,
+    x, y, width: w, height: h,
+    rotation: 0,
+    opacity: 1,
+    ...opts,
+  };
+}
+
 // ─── TEMPLATES ─────────────────────────────────────────────────────────────────
+
+const DEFAULT_CUSTOM_SCREENS = [
+  {
+    title: "Everything You Need in One App",
+    subtitle: "Fast, intuitive, and beautifully designed for everyone",
+  },
+  {
+    title: "Powerful Features & Insights",
+    subtitle: "Track your progress and stay on top of your goals",
+  },
+  {
+    title: "Real-Time Collaboration",
+    subtitle: "Work seamlessly with your team anywhere, anytime",
+  },
+  {
+    title: "Customizable & Secure",
+    subtitle: "Tailored to your preferences with bank-level security",
+  },
+  {
+    title: "Get Started in Seconds",
+    subtitle: "Join thousands of happy users today",
+  },
+];
 
 export const BLANK_TEMPLATE: Template = {
   id: "blank",
-  name: "Blank",
-  description: "Start from scratch (5 empty screens)",
+  name: "Custom Design",
+  description: "Start with editable default headlines and screenshots (5 screens)",
   category: "Basic",
-  layout: "text-only",
-  tags: ["blank", "empty", "custom"],
+  layout: "screenshot-bottom",
+  tags: ["blank", "empty", "custom", "default"],
   previewColor: "#1e1b4b",
   previewGradient: ["#6366f1", "#8b5cf6"],
-  screens: Array.from({ length: 5 }).map((_, i) => ({
+  screens: DEFAULT_CUSTOM_SCREENS.map((item, i) => ({
     name: `Screen ${i + 1}`,
     background: {
       type: "gradient",
       gradient: { direction: "to-br", stops: [{ color: "#6366f1", position: 0 }, { color: "#8b5cf6", position: 100 }] },
     },
     layers: [
-      { ...screenshotWithFrame(129, 699, 1032, 1957) } as any
+      textLayer(item.title, Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+        fontSize: 96,
+        fontWeight: 800,
+        align: "center",
+        color: "#ffffff",
+        lineHeight: 1.15,
+        letterSpacing: -1.5,
+      }) as any,
+      textLayer(item.subtitle, Math.round(W * 0.1), 420, Math.round(W * 0.8), 160, {
+        fontSize: 46,
+        fontWeight: 400,
+        align: "center",
+        color: "rgba(255, 255, 255, 0.82)",
+        lineHeight: 1.3,
+        letterSpacing: -0.5,
+      }) as any,
+      { ...screenshotWithFrame(129, 720, 1032, 1957) } as any,
     ],
   })),
 };
 
 export const CORE_TEMPLATES: Template[] = [
-  // ── Template 28 (Deep Dark) ─────────────────────────────────────────────────
+  // ── Template 28 (Obsidian Cyber Glow) ───────────────────────────────────────
   {
     id: "template-28",
-    name: "Template 28",
-    description: "Deep elegant tones with premium 3D glows (10 Screens)",
+    name: "Obsidian Cyber Glow",
+    description: "Deep elegant tones with premium 3D glows & glass badges (10 Screens)",
     category: "Modern",
     layout: "screenshot-bottom",
-    tags: ["dark", "premium", "modern", "glow", "template 28"],
+    tags: ["dark", "premium", "modern", "glow", "cyber", "obsidian"],
     previewColor: "#0f172a",
     previewGradient: ["#1e293b", "#020617"],
     screens: [
@@ -333,14 +388,14 @@ export const CORE_TEMPLATES: Template[] = [
     ],
   },
 
-  // ── Template 29 (Minimal Light) ─────────────────────────────────────────────
+  // ── Template 29 (Nordic Minimal Light) ──────────────────────────────────────
   {
     id: "template-29",
-    name: "Template 29",
-    description: "Clean, high-contrast, airy design (10 Screens)",
+    name: "Nordic Minimal Light",
+    description: "Crisp gallery aesthetic with subtle paper textures (10 Screens)",
     category: "Classic",
     layout: "screenshot-top",
-    tags: ["light", "clean", "white", "minimal", "template 29"],
+    tags: ["light", "clean", "white", "minimal", "nordic", "gallery"],
     previewColor: "#f8fafc",
     previewGradient: ["#ffffff", "#e2e8f0"],
     screens: [
@@ -495,14 +550,14 @@ export const CORE_TEMPLATES: Template[] = [
     ],
   },
 
-  // ── Template 30 (Vibrant Playful) ───────────────────────────────────────────
+  // ── Template 30 (Sunset Playful Mesh) ───────────────────────────────────────
   {
     id: "template-30",
-    name: "Template 30",
-    description: "Fun geometric shapes with energetic gradients (10 Screens)",
+    name: "Sunset Playful Mesh",
+    description: "Warm coral mesh gradients with playful geometric shapes (10 Screens)",
     category: "Social",
     layout: "screenshot-float",
-    tags: ["fun", "vibrant", "shapes", "colorful", "template 30"],
+    tags: ["fun", "vibrant", "shapes", "colorful", "sunset", "mesh"],
     previewColor: "#fb923c",
     previewGradient: ["#f43f5e", "#f59e0b"],
     screens: [
@@ -690,14 +745,14 @@ export const CORE_TEMPLATES: Template[] = [
     ],
   },
 
-  // ── Template 31 (Professional Blue) ─────────────────────────────────────────
+  // ── Template 31 (Fintech Oceanic Pro) ───────────────────────────────────────
   {
     id: "template-31",
-    name: "Template 31",
-    description: "Sleek, trusted blue tones perfect for business/finance (10 Screens)",
+    name: "Fintech Oceanic Pro",
+    description: "Corporate dark blue designed for SaaS & fintech apps (10 Screens)",
     category: "Finance",
     layout: "screenshot-bottom",
-    tags: ["blue", "corporate", "finance", "business", "template 31"],
+    tags: ["blue", "corporate", "finance", "business", "fintech", "oceanic"],
     previewColor: "#2563eb",
     previewGradient: ["#1e3a8a", "#2563eb"],
     screens: [
@@ -1083,14 +1138,14 @@ export const CORE_TEMPLATES: Template[] = [
     ],
   },
 
-  // ── Template 33 (Dynamic Flow) ──────────────────────────────────────────────
+  // ── Template 33 (Aurora Flow Dynamic) ───────────────────────────────────────
   {
     id: "template-33",
-    name: "Template 33",
-    description: "Creative split layout with text on the right and screenshot on the left (10 Screens)",
+    name: "Aurora Flow Dynamic",
+    description: "Multi-colored ambient mesh glows with expressive curves (10 Screens)",
     category: "Creative",
     layout: "screenshot-float-reverse",
-    tags: ["creative", "flow", "dynamic", "asymmetric", "template 33"],
+    tags: ["creative", "flow", "dynamic", "asymmetric", "aurora", "ambient"],
     previewColor: "#8b5cf6",
     previewGradient: ["#8b5cf6", "#ec4899"],
     screens: [
@@ -1276,9 +1331,805 @@ export const CORE_TEMPLATES: Template[] = [
   },
 ];
 
+export function createRubikTemplate(config: {
+  id: string;
+  name: string;
+  description: string;
+  previewColor: string;
+  previewGradient: string[];
+  bg: import("@/lib/types").Background;
+  fgTitle: string;
+  fgSubtitle: string;
+  accentStroke?: string;
+  accentGlow?: string;
+}): Template {
+  const { id, name, description, previewColor, previewGradient, bg, fgTitle, fgSubtitle, accentStroke = "rgba(129, 140, 248, 0.65)", accentGlow = "rgba(99, 102, 241, 0.4)" } = config;
+
+  return {
+    id,
+    name,
+    description,
+    category: "Community",
+    layout: "screenshot-bottom",
+    tags: ["community", "rubik", "modern", "10 screens", "app store", "google play"],
+    previewColor,
+    previewGradient,
+    screens: [
+      // Screen 1: Hero Top Headline
+      {
+        name: "1 • Hero Overview",
+        background: { ...bg },
+        layers: [
+          textLayer("Everything In\nOne App.", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Rubik", fontSize: 108, fontWeight: 700, align: "center", color: fgTitle, lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Fast, intuitive, and beautifully designed for everyone", Math.round(W * 0.1), 420, Math.round(W * 0.8), 140, {
+            fontFamily: "Rubik", fontSize: 48, fontWeight: 400, align: "center", color: fgSubtitle, lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(129, 740, 1032, 1960, "Main Screen") as any,
+        ],
+      },
+      // Screen 2: Bottom Headline
+      {
+        name: "2 • Key Benefits",
+        background: { ...bg },
+        layers: [
+          screenshotWithFrame(129, 120, 1032, 1960, "Feature Showcase") as any,
+          textLayer("Effortless Workflow", Math.round(W * 0.08), 2180, Math.round(W * 0.84), 180, {
+            fontFamily: "Rubik", fontSize: 108, fontWeight: 700, align: "center", color: fgTitle, lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Automate your routine and save hours every single day", Math.round(W * 0.1), 2400, Math.round(W * 0.8), 140, {
+            fontFamily: "Rubik", fontSize: 48, fontWeight: 400, align: "center", color: fgSubtitle, lineHeight: 1.3
+          }) as any,
+        ],
+      },
+      // Screen 3: Analytics / Stats
+      {
+        name: "3 • Live Analytics",
+        background: { ...bg },
+        layers: [
+          textLayer("Real-Time\nInsights", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Rubik", fontSize: 108, fontWeight: 700, align: "center", color: fgTitle, lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Visual analytics and metrics right at your fingertips", Math.round(W * 0.1), 420, Math.round(W * 0.8), 140, {
+            fontFamily: "Rubik", fontSize: 48, fontWeight: 400, align: "center", color: fgSubtitle, lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(129, 740, 1032, 1960, "Analytics Dashboard") as any,
+        ],
+      },
+      // Screen 4: Top Device Feed
+      {
+        name: "4 • Instant Sync",
+        background: { ...bg },
+        layers: [
+          screenshotWithFrame(129, -200, 1032, 1960, "Smart Feed") as any,
+          textLayer("Instant Cloud Sync", Math.round(W * 0.08), 2180, Math.round(W * 0.84), 180, {
+            fontFamily: "Rubik", fontSize: 108, fontWeight: 700, align: "center", color: fgTitle, lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Stay up to date across all devices without any delay", Math.round(W * 0.1), 2400, Math.round(W * 0.8), 140, {
+            fontFamily: "Rubik", fontSize: 48, fontWeight: 400, align: "center", color: fgSubtitle, lineHeight: 1.3
+          }) as any,
+        ],
+      },
+      // Screen 5: Dual Showcase
+      {
+        name: "5 • Dual Perspective",
+        background: { ...bg },
+        layers: [
+          screenshotWithFrame(129, -980, 1032, 1960, "Top View") as any,
+          textLayer("Everything in Sync", Math.round(W * 0.08), 1220, Math.round(W * 0.84), 180, {
+            fontFamily: "Rubik", fontSize: 108, fontWeight: 700, align: "center", color: fgTitle, lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Tailored specifically for speed, comfort, and productivity", Math.round(W * 0.1), 1440, Math.round(W * 0.8), 160, {
+            fontFamily: "Rubik", fontSize: 48, fontWeight: 400, align: "center", color: fgSubtitle, lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(129, 1720, 1032, 1960, "Bottom View") as any,
+        ],
+      },
+      // Screen 6: Split Left
+      {
+        name: "6 • Dark & Light (Left)",
+        background: { ...bg },
+        layers: [
+          textLayer("Dark & Light\nPerfection", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Rubik", fontSize: 108, fontWeight: 700, align: "center", color: fgTitle, lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Engineered for readability in any lighting condition", Math.round(W * 0.1), 420, Math.round(W * 0.8), 140, {
+            fontFamily: "Rubik", fontSize: 48, fontWeight: 400, align: "center", color: fgSubtitle, lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(380, 780, 1850, 3600, "Dark Mode") as any,
+        ],
+      },
+      // Screen 7: Split Right
+      {
+        name: "7 • Dark & Light (Right)",
+        background: { ...bg },
+        layers: [
+          textLayer("True OLED\nContrast", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Rubik", fontSize: 108, fontWeight: 700, align: "center", color: fgTitle, lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Seamless switch anytime with full system support", Math.round(W * 0.1), 420, Math.round(W * 0.8), 140, {
+            fontFamily: "Rubik", fontSize: 48, fontWeight: 400, align: "center", color: fgSubtitle, lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(-940, 780, 1850, 3600, "Light Mode") as any,
+        ],
+      },
+      // Screen 8: Focus Zoom
+      {
+        name: "8 • Feature Focus",
+        background: { ...bg },
+        layers: [
+          textLayer("Precision in\nEvery Detail", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Rubik", fontSize: 108, fontWeight: 700, align: "center", color: fgTitle, lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Zoom into core features with crystal-clear focus", Math.round(W * 0.1), 420, Math.round(W * 0.8), 140, {
+            fontFamily: "Rubik", fontSize: 48, fontWeight: 400, align: "center", color: fgSubtitle, lineHeight: 1.3
+          }) as any,
+          shapeLayer("circle", 360, 1150, 570, 570, "rgba(99, 102, 241, 0.12)", {
+            stroke: accentStroke,
+            strokeWidth: 5,
+            shadow: { blur: 40, spread: 0, color: accentGlow, offsetX: 0, offsetY: 0 },
+          }) as any,
+          screenshotWithFrame(129, 740, 1032, 1960, "Detail View") as any,
+        ],
+      },
+      // Screen 9: Cross-Platform
+      {
+        name: "9 • Cross-Platform",
+        background: { ...bg },
+        layers: [
+          textLayer("iOS & Android\nReady", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Rubik", fontSize: 108, fontWeight: 700, align: "center", color: fgTitle, lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Flawless native experience on every platform", Math.round(W * 0.1), 420, Math.round(W * 0.8), 140, {
+            fontFamily: "Rubik", fontSize: 48, fontWeight: 400, align: "center", color: fgSubtitle, lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(40, 1050, 760, 1680, "Android View") as any,
+          screenshotWithFrame(480, 800, 780, 1680, "iPhone View") as any,
+        ],
+      },
+      // Screen 10: Multilingual
+      {
+        name: "10 • Global Reach",
+        background: { ...bg },
+        layers: [
+          textLayer("Loved Across\nThe World", Math.round(W * 0.08), 180, Math.round(W * 0.84), 220, {
+            fontFamily: "Rubik", fontSize: 108, fontWeight: 700, align: "center", color: fgTitle, lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Localized in 30+ languages for a truly global community", Math.round(W * 0.1), 420, Math.round(W * 0.8), 140, {
+            fontFamily: "Rubik", fontSize: 48, fontWeight: 400, align: "center", color: fgSubtitle, lineHeight: 1.3
+          }) as any,
+          flagLayer("🇺🇸", 80, 760, 150, 150) as any,
+          flagLayer("🇪🇺", 80, 1140, 150, 150) as any,
+          flagLayer("🇯🇵", 80, 1520, 150, 150) as any,
+          flagLayer("🇧🇷", 80, 1900, 150, 150) as any,
+          flagLayer("🇩🇪", 80, 2280, 150, 150) as any,
+          screenshotWithFrame(360, 720, 920, 1940, "Global App") as any,
+        ],
+      },
+    ],
+  };
+}
+
+export function createAutoLayoutPanoramaTemplate(config: {
+  id: string;
+  name: string;
+  description: string;
+  previewColor: string;
+  previewGradient: string[];
+  bgStops: { color: string; position: number }[];
+  fgTitle: string;
+  fgSubtitle: string;
+}): Template {
+  const { id, name, description, previewColor, previewGradient, bgStops, fgTitle, fgSubtitle } = config;
+
+  return {
+    id,
+    name,
+    description,
+    category: "Community",
+    layout: "screenshot-bottom",
+    tags: ["auto-layout", "panorama", "community", "seamless", "app store", "google play"],
+    previewColor,
+    previewGradient,
+    screens: [
+      // Screen 1: Single Center Mockup
+      {
+        name: "1 • Seamless Intro",
+        background: {
+          type: "gradient",
+          gradient: { direction: "to-r", stops: bgStops },
+        },
+        layers: [
+          textLayer("Simple. Fast.\nPowerful.", Math.round(W * 0.08), 140, Math.round(W * 0.84), 200, {
+            fontSize: 108, fontWeight: 800, align: "center", color: fgTitle, lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Everything you need to succeed in one streamlined tool", Math.round(W * 0.1), 380, Math.round(W * 0.8), 140, {
+            fontSize: 48, fontWeight: 400, align: "center", color: fgSubtitle, lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(181, 560, 929, 1952, "Overview Screen") as any,
+        ],
+      },
+      // Screen 2: Panorama Flow 1 (Left Part)
+      {
+        name: "2 • Panorama Flow (Part 1)",
+        background: {
+          type: "gradient",
+          gradient: { direction: "to-r", stops: bgStops },
+        },
+        layers: [
+          textLayer("Connect & Collaborate", Math.round(W * 0.08), 140, Math.round(W * 0.84), 200, {
+            fontSize: 108, fontWeight: 800, align: "center", color: fgTitle, lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Work together in real-time across teams and devices", Math.round(W * 0.1), 380, Math.round(W * 0.8), 140, {
+            fontSize: 48, fontWeight: 400, align: "center", color: fgSubtitle, lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(108, 560, 1394, 2258, "Collaboration Feed") as any,
+          screenshotWithFrame(1182, 540, 1271, 2217, "Activity View") as any,
+        ],
+      },
+      // Screen 3: Panorama Flow 1 (Right Part Continuation)
+      {
+        name: "3 • Panorama Flow (Part 2)",
+        background: {
+          type: "gradient",
+          gradient: { direction: "to-r", stops: bgStops },
+        },
+        layers: [
+          textLayer("Smart Automation", Math.round(W * 0.08), 140, Math.round(W * 0.84), 200, {
+            fontSize: 108, fontWeight: 800, align: "center", color: fgTitle, lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Save hours every week with automated workflows", Math.round(W * 0.1), 380, Math.round(W * 0.8), 140, {
+            fontSize: 48, fontWeight: 400, align: "center", color: fgSubtitle, lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(-1182, 560, 1394, 2258, "Collaboration Feed") as any,
+          screenshotWithFrame(-108, 540, 1271, 2217, "Activity View") as any,
+        ],
+      },
+      // Screen 4: Panorama Flow 2 (Part 1)
+      {
+        name: "4 • Deep Insights (Part 1)",
+        background: {
+          type: "gradient",
+          gradient: { direction: "to-r", stops: bgStops },
+        },
+        layers: [
+          textLayer("Live Performance", Math.round(W * 0.08), 140, Math.round(W * 0.84), 200, {
+            fontSize: 108, fontWeight: 800, align: "center", color: fgTitle, lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Monitor key indicators and growth trends seamlessly", Math.round(W * 0.1), 380, Math.round(W * 0.8), 140, {
+            fontSize: 48, fontWeight: 400, align: "center", color: fgSubtitle, lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(127, 480, 1403, 2359, "Analytics View") as any,
+          screenshotWithFrame(1179, 520, 1296, 2279, "Metrics View") as any,
+        ],
+      },
+      // Screen 5: Panorama Flow 2 (Part 2 Continuation)
+      {
+        name: "5 • Deep Insights (Part 2)",
+        background: {
+          type: "gradient",
+          gradient: { direction: "to-r", stops: bgStops },
+        },
+        layers: [
+          textLayer("Secure Cloud Vault", Math.round(W * 0.08), 140, Math.round(W * 0.84), 200, {
+            fontSize: 108, fontWeight: 800, align: "center", color: fgTitle, lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Enterprise grade encryption protecting your sensitive data", Math.round(W * 0.1), 380, Math.round(W * 0.8), 140, {
+            fontSize: 48, fontWeight: 400, align: "center", color: fgSubtitle, lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(-1163, 480, 1403, 2359, "Analytics View") as any,
+          screenshotWithFrame(-111, 520, 1296, 2279, "Metrics View") as any,
+        ],
+      },
+      // Screen 6: Final Single Phone Showcase
+      {
+        name: "6 • Start Today",
+        background: {
+          type: "gradient",
+          gradient: { direction: "to-r", stops: bgStops },
+        },
+        layers: [
+          textLayer("Ready to Launch?", Math.round(W * 0.08), 140, Math.round(W * 0.84), 200, {
+            fontSize: 108, fontWeight: 800, align: "center", color: fgTitle, lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Join thousands of creators building the future today", Math.round(W * 0.1), 380, Math.round(W * 0.8), 140, {
+            fontSize: 48, fontWeight: 400, align: "center", color: fgSubtitle, lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(65, 520, 1160, 2148, "Final Call to Action") as any,
+        ],
+      },
+    ],
+  };
+}
+
+export const COMMUNITY_TEMPLATES: Template[] = [
+  createRubikTemplate({
+    id: "community-rubik-dark",
+    name: "Rubik Modern Dark",
+    description: "Sleek dark gradient theme inspired by Community Figma kit (10 Screens)",
+    previewColor: "#18181b",
+    previewGradient: ["#1e1e1e", "#3f3f46"],
+    bg: {
+      type: "gradient",
+      gradient: {
+        direction: "to-b",
+        stops: [{ color: "#18181b", position: 0 }, { color: "#27272a", position: 100 }],
+      },
+    },
+    fgTitle: "#ffffff",
+    fgSubtitle: "rgba(255, 255, 255, 0.82)",
+    accentStroke: "rgba(161, 161, 170, 0.6)",
+    accentGlow: "rgba(255, 255, 255, 0.2)",
+  }),
+  createRubikTemplate({
+    id: "community-rubik-light",
+    name: "Rubik Clean Light",
+    description: "Clean minimalist light palette with crisp typography (10 Screens)",
+    previewColor: "#f8fafc",
+    previewGradient: ["#f8fafc", "#e2e8f0"],
+    bg: {
+      type: "gradient",
+      gradient: {
+        direction: "to-b",
+        stops: [{ color: "#f8fafc", position: 0 }, { color: "#e2e8f0", position: 100 }],
+      },
+    },
+    fgTitle: "#0f172a",
+    fgSubtitle: "rgba(15, 23, 42, 0.72)",
+    accentStroke: "rgba(99, 102, 241, 0.6)",
+    accentGlow: "rgba(99, 102, 241, 0.25)",
+  }),
+  createRubikTemplate({
+    id: "community-rubik-vibrant",
+    name: "Rubik Vibrant Sunset",
+    description: "Rich sunset gradient with bold presence and high contrast (10 Screens)",
+    previewColor: "#312e81",
+    previewGradient: ["#312e81", "#701a75"],
+    bg: {
+      type: "gradient",
+      gradient: {
+        direction: "to-br",
+        stops: [{ color: "#312e81", position: 0 }, { color: "#701a75", position: 100 }],
+      },
+    },
+    fgTitle: "#ffffff",
+    fgSubtitle: "rgba(255, 255, 255, 0.88)",
+    accentStroke: "rgba(244, 63, 94, 0.7)",
+    accentGlow: "rgba(244, 63, 94, 0.4)",
+  }),
+  createAutoLayoutPanoramaTemplate({
+    id: "community-autolayout-ocean",
+    name: "Auto-Layout Panorama Ocean",
+    description: "Continuous panorama flow with 6 seamless screen transitions (6 Screens)",
+    previewColor: "#32508c",
+    previewGradient: ["#32508c", "#4494b9"],
+    bgStops: [
+      { color: "#32508c", position: 0 },
+      { color: "#4494b9", position: 100 },
+    ],
+    fgTitle: "#ffffff",
+    fgSubtitle: "rgba(255, 255, 255, 0.85)",
+  }),
+  createAutoLayoutPanoramaTemplate({
+    id: "community-autolayout-dark",
+    name: "Auto-Layout Panorama Dark",
+    description: "Seamless deep charcoal & titanium continuous panorama flow (6 Screens)",
+    previewColor: "#090d16",
+    previewGradient: ["#090d16", "#1e293b"],
+    bgStops: [
+      { color: "#090d16", position: 0 },
+      { color: "#1e293b", position: 100 },
+    ],
+    fgTitle: "#ffffff",
+    fgSubtitle: "rgba(255, 255, 255, 0.82)",
+  }),
+  createAutoLayoutPanoramaTemplate({
+    id: "community-autolayout-sunset",
+    name: "Auto-Layout Panorama Sunset",
+    description: "Vivid magenta & rose continuous panorama flow (6 Screens)",
+    previewColor: "#4c0519",
+    previewGradient: ["#4c0519", "#831843"],
+    bgStops: [
+      { color: "#4c0519", position: 0 },
+      { color: "#831843", position: 100 },
+    ],
+    fgTitle: "#ffffff",
+    fgSubtitle: "rgba(255, 255, 255, 0.88)",
+  }),
+
+  // ── Bold Multicolor Pop ───────────────────────────────────────────────────
+  {
+    id: "community-bold-multicolor",
+    name: "Bold Multicolor Pop",
+    description: "High-contrast dynamic solid background shifts per screen (5 Screens)",
+    category: "Community",
+    layout: "screenshot-bottom",
+    tags: ["community", "multicolor", "bold", "vibrant", "pop", "5 screens"],
+    previewColor: "#c7321a",
+    previewGradient: ["#c7321a", "#06408a"],
+    screens: [
+      {
+        name: "1 • Crimson Hero",
+        background: { type: "solid", color: "#c7321a" },
+        layers: [
+          textLayer("Your Catchy\nHeadline Here.", Math.round(W * 0.08), 180, Math.round(W * 0.84), 260, {
+            fontSize: 112, fontWeight: 800, align: "left", color: "#ffffff", lineHeight: 1.08, letterSpacing: -1.5
+          }) as any,
+          textLayer("Fast and reliable solution for everyday needs", Math.round(W * 0.08), 470, Math.round(W * 0.84), 140, {
+            fontSize: 48, fontWeight: 400, align: "left", color: "rgba(255,255,255,0.85)", lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(129, 780, 1032, 1950, "App Overview") as any,
+        ],
+      },
+      {
+        name: "2 • Cobalt Showcase",
+        background: { type: "solid", color: "#06408a" },
+        layers: [
+          textLayer("Showcase", Math.round(W * 0.08), 160, Math.round(W * 0.84), 140, {
+            fontSize: 116, fontWeight: 800, align: "center", color: "#ffffff", lineHeight: 1.1, letterSpacing: -1.5
+          }) as any,
+          textLayer("Your Feature In Full Detail", Math.round(W * 0.08), 320, Math.round(W * 0.84), 120, {
+            fontSize: 52, fontWeight: 600, align: "center", color: "#eef7ff", lineHeight: 1.25
+          }) as any,
+          screenshotWithFrame(129, 680, 1032, 1950, "Showcase Feature") as any,
+        ],
+      },
+      {
+        name: "3 • Emerald Highlight",
+        background: { type: "solid", color: "#006847" },
+        layers: [
+          textLayer("Highlight", Math.round(W * 0.08), 160, Math.round(W * 0.84), 140, {
+            fontSize: 116, fontWeight: 800, align: "center", color: "#ffffff", lineHeight: 1.1, letterSpacing: -1.5
+          }) as any,
+          textLayer("Something Truly Incredible", Math.round(W * 0.08), 320, Math.round(W * 0.84), 120, {
+            fontSize: 52, fontWeight: 600, align: "center", color: "#eef7ff", lineHeight: 1.25
+          }) as any,
+          screenshotWithFrame(129, 680, 1032, 1950, "Highlight Screen") as any,
+        ],
+      },
+      {
+        name: "4 • Navy Statement",
+        background: { type: "solid", color: "#232669" },
+        layers: [
+          textLayer("Make Bold", Math.round(W * 0.08), 160, Math.round(W * 0.84), 140, {
+            fontSize: 116, fontWeight: 800, align: "center", color: "#ffffff", lineHeight: 1.1, letterSpacing: -1.5
+          }) as any,
+          textLayer("Statements That Resonate", Math.round(W * 0.08), 320, Math.round(W * 0.84), 120, {
+            fontSize: 52, fontWeight: 600, align: "center", color: "#eef7ff", lineHeight: 1.25
+          }) as any,
+          screenshotWithFrame(129, 680, 1032, 1950, "Statement Screen") as any,
+        ],
+      },
+      {
+        name: "5 • Royal Benefits",
+        background: { type: "solid", color: "#7035a8" },
+        layers: [
+          textLayer("Describe", Math.round(W * 0.08), 160, Math.round(W * 0.84), 140, {
+            fontSize: 116, fontWeight: 800, align: "center", color: "#ffffff", lineHeight: 1.1, letterSpacing: -1.5
+          }) as any,
+          textLayer("Key Benefits & Outcomes", Math.round(W * 0.08), 320, Math.round(W * 0.84), 120, {
+            fontSize: 52, fontWeight: 600, align: "center", color: "#eef7ff", lineHeight: 1.25
+          }) as any,
+          screenshotWithFrame(129, 680, 1032, 1950, "Benefits Screen") as any,
+        ],
+      },
+    ],
+  },
+
+  // ── Midnight Cyber Split ──────────────────────────────────────────────────
+  {
+    id: "community-midnight-split",
+    name: "Midnight Cyber Split",
+    description: "Deep midnight purple with split panorama and alternating views (5 Screens)",
+    category: "Community",
+    layout: "screenshot-split",
+    tags: ["community", "midnight", "split", "cyber", "dark", "5 screens"],
+    previewColor: "#1e0b3a",
+    previewGradient: ["#1e0b3a", "#3b0764"],
+    screens: [
+      {
+        name: "1 • Split Giant Phone (Left)",
+        background: { type: "solid", color: "#1e0b3a" },
+        layers: [
+          textLayer("Your Catchy\nHeadline Here.", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
+            fontSize: 104, fontWeight: 800, align: "left", color: "#ffffff", lineHeight: 1.1, letterSpacing: -1.5
+          }) as any,
+          textLayer("Unmatched clarity and futuristic dark aesthetics", Math.round(W * 0.08), 410, Math.round(W * 0.84), 140, {
+            fontSize: 48, fontWeight: 400, align: "left", color: "rgba(255,255,255,0.8)", lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(480, 750, 1550, 2600, "Dark UI Left") as any,
+        ],
+      },
+      {
+        name: "2 • Split Giant Phone (Right)",
+        background: { type: "solid", color: "#1e0b3a" },
+        layers: [
+          textLayer("Highlight Your\nBest Feature.", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
+            fontSize: 104, fontWeight: 800, align: "right", color: "#ffffff", lineHeight: 1.1, letterSpacing: -1.5
+          }) as any,
+          textLayer("Engineered for speed, security, and elegance", Math.round(W * 0.08), 410, Math.round(W * 0.84), 140, {
+            fontSize: 48, fontWeight: 400, align: "right", color: "rgba(255,255,255,0.8)", lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(-880, 750, 1550, 2600, "Dark UI Right") as any,
+        ],
+      },
+      {
+        name: "3 • Top Feed Flow",
+        background: { type: "solid", color: "#1e0b3a" },
+        layers: [
+          screenshotWithFrame(129, -260, 1032, 2190, "Feed Screen") as any,
+          textLayer("Powerful Analytics\nAt Your Fingertips", Math.round(W * 0.08), 2140, Math.round(W * 0.84), 220, {
+            fontSize: 100, fontWeight: 800, align: "left", color: "#ffffff", lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+        ],
+      },
+      {
+        name: "4 • Bottom Details",
+        background: { type: "solid", color: "#1e0b3a" },
+        layers: [
+          textLayer("Briefly Explain\nYour Feature", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
+            fontSize: 100, fontWeight: 800, align: "right", color: "#ffffff", lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          screenshotWithFrame(129, 850, 1032, 2190, "Details Screen") as any,
+        ],
+      },
+      {
+        name: "5 • Instant Access",
+        background: { type: "solid", color: "#1e0b3a" },
+        layers: [
+          screenshotWithFrame(129, -260, 1032, 2190, "Instant Access Screen") as any,
+          textLayer("Instant Access\nEverywhere You Go", Math.round(W * 0.08), 2140, Math.round(W * 0.84), 220, {
+            fontSize: 100, fontWeight: 800, align: "left", color: "#ffffff", lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+        ],
+      },
+    ],
+  },
+
+  // ── Matcha Pastel Clean ───────────────────────────────────────────────────
+  {
+    id: "community-matcha-clean",
+    name: "Matcha Pastel Clean",
+    description: "Warm linen cream palette with rich forest green typography (5 Screens)",
+    category: "Community",
+    layout: "screenshot-bottom",
+    tags: ["community", "matcha", "clean", "minimal", "pastel", "5 screens"],
+    previewColor: "#f6f4e8",
+    previewGradient: ["#f6f4e8", "#e7e4cf"],
+    screens: [
+      {
+        name: "1 • Warm Hero",
+        background: { type: "solid", color: "#f6f4e8" },
+        layers: [
+          textLayer("Your Catchy\nHeadline Here.", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
+            fontSize: 108, fontWeight: 800, align: "center", color: "#003513", lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("A fresh, organic, and clean interface for modern daily workflows", Math.round(W * 0.1), 400, Math.round(W * 0.8), 140, {
+            fontSize: 48, fontWeight: 400, align: "center", color: "rgba(0, 53, 19, 0.75)", lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(129, 720, 1032, 2030, "Clean Home") as any,
+        ],
+      },
+      {
+        name: "2 • Core Feature",
+        background: { type: "solid", color: "#f6f4e8" },
+        layers: [
+          textLayer("Highlight Your\nCore Feature", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
+            fontSize: 108, fontWeight: 800, align: "center", color: "#003513", lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Simple navigation and effortless interactions every day", Math.round(W * 0.1), 400, Math.round(W * 0.8), 140, {
+            fontSize: 48, fontWeight: 400, align: "center", color: "rgba(0, 53, 19, 0.75)", lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(129, 720, 1032, 2030, "Core Screen") as any,
+        ],
+      },
+      {
+        name: "3 • Live Stats",
+        background: { type: "solid", color: "#f6f4e8" },
+        layers: [
+          textLayer("Powerful Stats\nIn Real-Time", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
+            fontSize: 108, fontWeight: 800, align: "center", color: "#003513", lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Gain deep clarity into your habits, milestones, and goals", Math.round(W * 0.1), 400, Math.round(W * 0.8), 140, {
+            fontSize: 48, fontWeight: 400, align: "center", color: "rgba(0, 53, 19, 0.75)", lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(129, 720, 1032, 2030, "Stats Screen") as any,
+        ],
+      },
+      {
+        name: "4 • Smart Reminders",
+        background: { type: "solid", color: "#f6f4e8" },
+        layers: [
+          textLayer("Smart Habits &\nDaily Streaks", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
+            fontSize: 108, fontWeight: 800, align: "center", color: "#003513", lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Stay motivated with gentle notifications and streak rewards", Math.round(W * 0.1), 400, Math.round(W * 0.8), 140, {
+            fontSize: 48, fontWeight: 400, align: "center", color: "rgba(0, 53, 19, 0.75)", lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(129, 720, 1032, 2030, "Habits Screen") as any,
+        ],
+      },
+      {
+        name: "5 • Cloud Sync",
+        background: { type: "solid", color: "#f6f4e8" },
+        layers: [
+          textLayer("Seamless Cloud\nBackup Included", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
+            fontSize: 108, fontWeight: 800, align: "center", color: "#003513", lineHeight: 1.12, letterSpacing: -1.5
+          }) as any,
+          textLayer("Never lose your data with instant end-to-end sync", Math.round(W * 0.1), 400, Math.round(W * 0.8), 140, {
+            fontSize: 48, fontWeight: 400, align: "center", color: "rgba(0, 53, 19, 0.75)", lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(129, 720, 1032, 2030, "Cloud Screen") as any,
+        ],
+      },
+    ],
+  },
+
+  // ── Lavender Tech Zigzag ──────────────────────────────────────────────────
+  {
+    id: "community-lavender-tech",
+    name: "Lavender Tech Zigzag",
+    description: "Alternating top/bottom layout in soft lavender and royal violet (5 Screens)",
+    category: "Community",
+    layout: "screenshot-bottom",
+    tags: ["community", "lavender", "zigzag", "pastel", "tech", "5 screens"],
+    previewColor: "#f5e2fe",
+    previewGradient: ["#f5e2fe", "#e9d5ff"],
+    screens: [
+      {
+        name: "1 • Feature Hero",
+        background: { type: "solid", color: "#f5e2fe" },
+        layers: [
+          textLayer("Feature Name", Math.round(W * 0.08), 140, Math.round(W * 0.84), 160, {
+            fontSize: 120, fontWeight: 800, align: "left", color: "#5100a6", lineHeight: 1.1, letterSpacing: -1.5
+          }) as any,
+          textLayer("Fast, secure, and delightfully simple for everyone", Math.round(W * 0.08), 320, Math.round(W * 0.84), 120, {
+            fontSize: 50, fontWeight: 400, align: "left", color: "rgba(81, 0, 166, 0.75)", lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(129, 780, 1032, 2190, "Hero Screen") as any,
+        ],
+      },
+      {
+        name: "2 • Top Phone Feed",
+        background: { type: "solid", color: "#f5e2fe" },
+        layers: [
+          screenshotWithFrame(129, -220, 1032, 2190, "New Features") as any,
+          textLayer("What's New", Math.round(W * 0.08), 2140, Math.round(W * 0.84), 160, {
+            fontSize: 120, fontWeight: 800, align: "left", color: "#5100a6", lineHeight: 1.1, letterSpacing: -1.5
+          }) as any,
+          textLayer("Redesigned components built for maximum responsiveness", Math.round(W * 0.08), 2320, Math.round(W * 0.84), 120, {
+            fontSize: 48, fontWeight: 400, align: "left", color: "rgba(81, 0, 166, 0.75)", lineHeight: 1.3
+          }) as any,
+        ],
+      },
+      {
+        name: "3 • Premium Tools",
+        background: { type: "solid", color: "#f5e2fe" },
+        layers: [
+          textLayer("Premium Tools", Math.round(W * 0.08), 140, Math.round(W * 0.84), 160, {
+            fontSize: 120, fontWeight: 800, align: "left", color: "#5100a6", lineHeight: 1.1, letterSpacing: -1.5
+          }) as any,
+          textLayer("Professional grade utilities right on your mobile device", Math.round(W * 0.08), 320, Math.round(W * 0.84), 120, {
+            fontSize: 50, fontWeight: 400, align: "left", color: "rgba(81, 0, 166, 0.75)", lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(129, 780, 1032, 2190, "Tools Screen") as any,
+        ],
+      },
+      {
+        name: "4 • Smart Automation",
+        background: { type: "solid", color: "#f5e2fe" },
+        layers: [
+          screenshotWithFrame(129, -220, 1032, 2190, "Smart Automation") as any,
+          textLayer("Smart Flow", Math.round(W * 0.08), 2140, Math.round(W * 0.84), 160, {
+            fontSize: 120, fontWeight: 800, align: "left", color: "#5100a6", lineHeight: 1.1, letterSpacing: -1.5
+          }) as any,
+          textLayer("Let smart presets do the heavy lifting automatically", Math.round(W * 0.08), 2320, Math.round(W * 0.84), 120, {
+            fontSize: 48, fontWeight: 400, align: "left", color: "rgba(81, 0, 166, 0.75)", lineHeight: 1.3
+          }) as any,
+        ],
+      },
+      {
+        name: "5 • Core Benefits",
+        background: { type: "solid", color: "#f5e2fe" },
+        layers: [
+          textLayer("Core Benefits", Math.round(W * 0.08), 140, Math.round(W * 0.84), 160, {
+            fontSize: 120, fontWeight: 800, align: "left", color: "#5100a6", lineHeight: 1.1, letterSpacing: -1.5
+          }) as any,
+          textLayer("Boost your daily productivity and achieve your goals", Math.round(W * 0.08), 320, Math.round(W * 0.84), 120, {
+            fontSize: 50, fontWeight: 400, align: "left", color: "rgba(81, 0, 166, 0.75)", lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(129, 780, 1032, 2190, "Benefits Screen") as any,
+        ],
+      },
+    ],
+  },
+
+  // ── Neon Acid Chartreuse ──────────────────────────────────────────────────
+  {
+    id: "community-neon-acid",
+    name: "Neon Acid Energy",
+    description: "High-voltage lime, acid yellow & deep ink contrast palette (5 Screens)",
+    category: "Community",
+    layout: "screenshot-bottom",
+    tags: ["community", "neon", "acid", "chartreuse", "electric", "5 screens"],
+    previewColor: "#c7f54a",
+    previewGradient: ["#c7f54a", "#00c805"],
+    screens: [
+      {
+        name: "1 • Electric Hero",
+        background: { type: "solid", color: "#c7f54a" },
+        layers: [
+          textLayer("Next-Gen Mobile\nExperience.", Math.round(W * 0.08), 140, Math.round(W * 0.84), 220, {
+            fontSize: 110, fontWeight: 900, align: "center", color: "#130f1e", lineHeight: 1.08, letterSpacing: -2
+          }) as any,
+          shapeLayer("rounded-rectangle", Math.round(W * 0.32), 400, Math.round(W * 0.36), 76, "#130f1e", { cornerRadius: 50 }) as any,
+          textLayer("★★★★★ 4.9 Rating", Math.round(W * 0.32), 416, Math.round(W * 0.36), 76, {
+            fontSize: 38, fontWeight: 700, align: "center", color: "#c7f54a"
+          }) as any,
+          screenshotWithFrame(129, 720, 1032, 1950, "App Home") as any,
+        ],
+      },
+      {
+        name: "2 • Speed & Precision",
+        background: { type: "solid", color: "#c7f54a" },
+        layers: [
+          textLayer("Blazing Fast\nPerformance", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
+            fontSize: 108, fontWeight: 900, align: "center", color: "#130f1e", lineHeight: 1.1, letterSpacing: -2
+          }) as any,
+          textLayer("Engineered from the ground up for instantaneous response", Math.round(W * 0.1), 400, Math.round(W * 0.8), 120, {
+            fontSize: 46, fontWeight: 500, align: "center", color: "rgba(19, 15, 30, 0.75)", lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(129, 720, 1032, 2140, "Fast Screen") as any,
+        ],
+      },
+      {
+        name: "3 • Cyber Ink Dark",
+        background: { type: "solid", color: "#130f1e" },
+        layers: [
+          textLayer("Ultra Dark\nMode On", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
+            fontSize: 108, fontWeight: 900, align: "center", color: "#c7f54a", lineHeight: 1.1, letterSpacing: -2
+          }) as any,
+          textLayer("Saves battery life while looking razor-sharp in any light", Math.round(W * 0.1), 400, Math.round(W * 0.8), 120, {
+            fontSize: 46, fontWeight: 400, align: "center", color: "rgba(199, 245, 74, 0.8)", lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(129, 720, 1032, 2140, "Dark Mode Screen") as any,
+        ],
+      },
+      {
+        name: "4 • Power Tools",
+        background: { type: "solid", color: "#00c805" },
+        layers: [
+          textLayer("Built For\nPower Users", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
+            fontSize: 108, fontWeight: 900, align: "center", color: "#fefb32", lineHeight: 1.1, letterSpacing: -2
+          }) as any,
+          textLayer("Deep customization and powerful automation at your command", Math.round(W * 0.1), 400, Math.round(W * 0.8), 120, {
+            fontSize: 46, fontWeight: 600, align: "center", color: "#ffffff", lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(129, 720, 1032, 2140, "Power Screen") as any,
+        ],
+      },
+      {
+        name: "5 • Instant Launch",
+        background: { type: "solid", color: "#fefb32" },
+        layers: [
+          textLayer("Get Started\nIn Seconds", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
+            fontSize: 108, fontWeight: 900, align: "center", color: "#00c805", lineHeight: 1.1, letterSpacing: -2
+          }) as any,
+          textLayer("Join thousands of creators leveling up their mobile experience", Math.round(W * 0.1), 400, Math.round(W * 0.8), 120, {
+            fontSize: 46, fontWeight: 600, align: "center", color: "#130f1e", lineHeight: 1.3
+          }) as any,
+          screenshotWithFrame(129, 720, 1032, 2140, "Launch Screen") as any,
+        ],
+      },
+    ],
+  },
+];
+
 export const TEMPLATE_CATEGORIES = [
   'All',
   'Basic',
+  'Community',
   'Classic',
   'Modern',
   'Health',
@@ -1307,7 +2158,38 @@ export const LAYOUT_META: Record<string, { icon: string; label: string; descript
 
 import { FIGMA_TEMPLATES } from "./figmaTemplates";
 
+const FIGMA_METADATA_MAP: Record<string, { name: string; description: string; category?: string; tags?: string[] }> = {
+  figma_1: { name: "Emerald Forest Pro", description: "Deep emerald green theme with bold headline focus (10 screens)", category: "Business", tags: ["emerald", "green", "business", "pro"] },
+  figma_2: { name: "Cobalt Sapphire Flow", description: "Deep oceanic blue with dual subtitle captions (10 screens)", category: "Technology", tags: ["cobalt", "sapphire", "blue", "technology"] },
+  figma_3: { name: "Royal Amethyst", description: "Rich royal purple palette for luxury and lifestyle apps (10 screens)", category: "Lifestyle", tags: ["purple", "amethyst", "luxury", "lifestyle"] },
+  figma_4: { name: "Midnight Teal", description: "Elegant dark teal layout with crisp white typography (10 screens)", category: "Classic", tags: ["teal", "midnight", "dark", "classic"] },
+  figma_5: { name: "Crimson Velvet", description: "Intense crimson wine theme for fitness, media and lifestyle (10 screens)", category: "Health", tags: ["crimson", "red", "health", "fitness"] },
+  figma_6: { name: "OLED Pure Black", description: "High-contrast pitch black theme tailored for dark mode apps (10 screens)", category: "Modern", tags: ["black", "dark", "oled", "modern"] },
+  figma_7: { name: "Electric Indigo Gradient", description: "Vibrant electric indigo & violet gradient layout (10 screens)", category: "Creative", tags: ["indigo", "gradient", "creative", "vibrant"] },
+  figma_8: { name: "Mint Pine Minimal", description: "Fresh mint-green palette for health, food and productivity (10 screens)", category: "Health", tags: ["mint", "green", "health", "minimal"] },
+  figma_9: { name: "Deep Navy Corporate", description: "Authoritative dark navy background for finance and business (10 screens)", category: "Finance", tags: ["navy", "corporate", "finance", "business"] },
+  figma_10: { name: "Cyber Violet Gradient", description: "Glowing modern violet-to-blue gradient for tech & AI (10 screens)", category: "Technology", tags: ["violet", "cyber", "gradient", "tech"] },
+  figma_11: { name: "Sunny Gold Accent", description: "High-energy canary gold theme with dark contrast typography (10 screens)", category: "Entertainment", tags: ["gold", "yellow", "entertainment", "vibrant"] },
+  figma_12: { name: "Obsidian Stealth", description: "Minimalist dark stealth layout with centered mockup focus (10 screens)", category: "Modern", tags: ["obsidian", "dark", "stealth", "modern"] },
+  figma_13: { name: "Ultramarine Tech", description: "Vivid ultramarine blue palette for SaaS and developer tools (10 screens)", category: "Technology", tags: ["ultramarine", "blue", "saas", "tech"] },
+  figma_14: { name: "Nordic Ice Pastel", description: "Soft arctic ice-blue pastel for meditation, travel and calm apps (10 screens)", category: "Lifestyle", tags: ["ice", "blue", "pastel", "nordic"] },
+  figma_15: { name: "Hyper Blue Modern", description: "Bright energetic electric blue for social and gaming apps (10 screens)", category: "Social", tags: ["blue", "social", "gaming", "modern"] },
+  figma_16: { name: "Sunset Prism Gradient", description: "Multi-stop vibrant gradient with dynamic device staging (10 screens)", category: "Creative", tags: ["sunset", "prism", "gradient", "creative"] },
+  figma_17: { name: "Deep Abyss Cyan", description: "Moody oceanic abyss teal with clean typography (10 screens)", category: "Utility", tags: ["cyan", "abyss", "utility", "dark"] },
+  figma_18: { name: "Royal Indigo Clean", description: "Bold indigo blue canvas with high-legibility layout (10 screens)", category: "Classic", tags: ["indigo", "clean", "classic", "royal"] },
+  figma_19: { name: "Classic Sapphire", description: "Professional enterprise blue for B2B and enterprise apps (10 screens)", category: "Business", tags: ["sapphire", "blue", "enterprise", "business"] },
+  figma_20: { name: "Plum Luxury", description: "Sophisticated dark plum purple for audio, books and premium apps (10 screens)", category: "Media", tags: ["plum", "luxury", "media", "books"] },
+  figma_21: { name: "Monochrome Dark", description: "Clean monochrome black canvas for photography and portfolio apps (10 screens)", category: "Creative", tags: ["monochrome", "dark", "portfolio", "creative"] },
+  figma_22: { name: "Nordic Slate", description: "Dark slate blue with dual headline and description structure (10 screens)", category: "Business", tags: ["slate", "nordic", "business", "pro"] },
+  figma_23: { name: "Skyline Blue Gradient", description: "Smooth cerulean-to-sky gradient for weather, navigation and utilities (10 screens)", category: "Utility", tags: ["skyline", "blue", "gradient", "utility"] },
+  figma_24: { name: "Pure Studio White", description: "Crisp gallery white canvas for shopping, fashion and e-commerce (10 screens)", category: "Shopping", tags: ["white", "studio", "shopping", "ecommerce"] },
+  figma_25: { name: "Clean Editorial White", description: "Editorial white layout with left-aligned typographic hierarchy (10 screens)", category: "Classic", tags: ["editorial", "white", "minimal", "classic"] },
+  figma_26: { name: "Minimal Gallery Light", description: "Clean modern light theme with maximum device focus (10 screens)", category: "Modern", tags: ["gallery", "light", "minimal", "modern"] },
+  figma_27: { name: "Neon Violet Luxury", description: "Dark purple velvet theme with elevated device frames (10 screens)", category: "Entertainment", tags: ["neon", "violet", "entertainment", "luxury"] },
+};
+
 const mappedFigmaTemplates: Template[] = FIGMA_TEMPLATES.map((ft) => {
+  const meta = FIGMA_METADATA_MAP[ft.id];
   const maxScreenIndex = ft.screens.reduce((max, s) => Math.max(max, s.screenIndex), -1);
   const totalScreens = Math.max(5, maxScreenIndex + 1);
 
@@ -1384,19 +2266,20 @@ const mappedFigmaTemplates: Template[] = FIGMA_TEMPLATES.map((ft) => {
 
   return {
     id: ft.id,
-    name: ft.name,
-    description: "Imported from Figma",
-    category: "Figma",
-    tags: ["Figma", "Imported"],
+    name: meta?.name ?? ft.name,
+    description: meta?.description ?? "Imported from Figma kit (10 screens)",
+    category: meta?.category ?? "Classic",
+    tags: meta?.tags ?? ["Figma", "Classic"],
     previewColor,
     layout: "screenshot-full",
     screens: templateScreens,
   };
 });
 
-// All templates ordered: Blank, then Figma Templates 1 to 27, then Templates 28 to 33
+// All templates ordered: Blank, then Community Templates, then Figma Templates 1 to 27, then Core Templates
 export const ALL_TEMPLATES: Template[] = [
   BLANK_TEMPLATE,
+  ...COMMUNITY_TEMPLATES,
   ...mappedFigmaTemplates,
   ...CORE_TEMPLATES,
 ];

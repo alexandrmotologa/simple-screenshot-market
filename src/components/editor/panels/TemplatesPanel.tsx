@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import type { Template } from "@/lib/types";
 
 // ── Category definitions ────────────────────────────────────────────────────
-const CATEGORIES = ["All", "Basic", "Classic", "Modern", "Bold", "Minimal"] as const;
+const CATEGORIES = ["All", "Community", "Basic", "Classic", "Modern", "Bold", "Minimal"] as const;
 type Category = (typeof CATEGORIES)[number];
 
 // ── Template preview card ───────────────────────────────────────────────────

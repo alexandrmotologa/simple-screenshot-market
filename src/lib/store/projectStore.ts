@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Project, Screen, Layer, ScreenSet } from "@/lib/types";
 import { nanoid } from "@/lib/utils";
-import { ALL_TEMPLATES } from "@/lib/templates";
+import { ALL_TEMPLATES, BLANK_TEMPLATE } from "@/lib/templates";
 
 interface ProjectStore {
   projects: Project[];
@@ -35,40 +35,10 @@ export const useProjectStore = create<ProjectStore>()(
 
         const baseScreens = template?.screens && template.screens.length > 0
           ? template.screens
-          : [
-              {
-                id: "default",
-                background: {
-                  type: "gradient",
-                  gradient: {
-                    direction: "to-br",
-                    stops: [
-                      { color: "#6366f1", position: 0 },
-                      { color: "#8b5cf6", position: 100 },
-                    ],
-                  },
-                },
-                layers: [
-                  {
-                    id: "default-screenshot",
-                    type: "screenshot",
-                    x: 129,
-                    y: 699,
-                    width: 1032,
-                    height: 1957,
-                    rotation: 0,
-                    opacity: 1,
-                    objectFit: "cover",
-                    cornerRadius: 55,
-                    showDeviceFrame: true,
-                    label: "Drop your screenshot here",
-                  }
-                ],
-              } as any
-            ];
+          : BLANK_TEMPLATE.screens;
 
         const generateScreens = (): Screen[] => {
-          return baseScreens.map((ts, index) => ({
+          return baseScreens.map((ts: any, index: number) => ({
             id: nanoid(),
             name: `Screen ${index + 1}`,
             width: 1290,

@@ -42,5 +42,8 @@ next-env.d.ts
 
 # local artifacts & scratch files
 figma_data.json
+figma_autolayout_data.json
+figma_free_template_data.json
+new_figma_data.json
 figma_outline.txt
 test.py
