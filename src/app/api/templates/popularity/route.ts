@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
-import { db, isFirebaseConfigured } from "@/lib/firebase";
-import { collection, getDocs, doc, setDoc, updateDoc, increment, getDoc } from "firebase/firestore";
+import { adminDb, FieldValue, isAdminConfigured } from "@/lib/firebaseAdmin";
 
 export async function GET() {
-  if (!isFirebaseConfigured || !db) {
+  if (!isAdminConfigured || !adminDb) {
     return NextResponse.json({ success: true, counts: {}, configured: false });
   }
 
   try {
-    const querySnapshot = await getDocs(collection(db, "template_stats"));
+    const querySnapshot = await adminDb.collection("template_stats").get();
     const counts: Record<string, number> = {};
     
     querySnapshot.forEach((docSnap) => {
@@ -20,7 +19,7 @@ export async function GET() {
 
     return NextResponse.json({ success: true, counts, configured: true });
   } catch (error: any) {
-    console.warn("Firestore template stats fetch warning (check Firestore Rules):", error?.message || error);
+    console.warn("Firestore template stats fetch warning:", error?.message || error);
     return NextResponse.json({ success: true, counts: {}, fallback: true, error: error?.message });
   }
 }
@@ -32,20 +31,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "Invalid templateId" }, { status: 400 });
     }
 
-    if (!isFirebaseConfigured || !db) {
-      return NextResponse.json({ success: true, configured: false, note: "Recorded locally (Firebase not configured yet)" });
+    if (!isAdminConfigured || !adminDb) {
+      return NextResponse.json({ success: true, configured: false, note: "Recorded locally (Firebase Admin not configured)" });
     }
 
-    const docRef = doc(db, "template_stats", templateId);
-    const docSnap = await getDoc(docRef);
+    const docRef = adminDb.collection("template_stats").doc(templateId);
+    const docSnap = await docRef.get();
 
-    if (docSnap.exists()) {
-      await updateDoc(docRef, {
-        count: increment(1),
+    if (docSnap.exists) {
+      await docRef.update({
+        count: FieldValue.increment(1),
         lastUsedAt: new Date().toISOString(),
       });
     } else {
-      await setDoc(docRef, {
+      await docRef.set({
         count: 1,
         templateId,
         createdAt: new Date().toISOString(),
@@ -55,7 +54,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, templateId, configured: true });
   } catch (error: any) {
-    console.warn("Firestore template stats update warning (check Firestore Rules):", error?.message || error);
+    console.warn("Firestore template stats update warning:", error?.message || error);
     return NextResponse.json({ success: true, templateId: "local-fallback", fallback: true });
   }
 }
