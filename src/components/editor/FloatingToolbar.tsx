@@ -1139,6 +1139,30 @@ export function FloatingToolbar() {
               );
             })()}
 
+            {/* Direct Badge Text & Subtext editing */}
+            {(sh.text !== undefined || sh.shape.includes("badge") || sh.shape.includes("card") || sh.shape.includes("pill") || sh.shape.includes("tag")) && (
+              <div className="flex items-center gap-1.5 shrink-0 ml-1">
+                <input
+                  type="text"
+                  value={sh.text ?? ""}
+                  onChange={(e) => update({ text: e.target.value } as Partial<ShapeLayer>)}
+                  placeholder="Card / Badge text..."
+                  className="bg-secondary/80 border border-border/60 hover:border-primary/40 focus:border-primary rounded-md px-2 py-0.5 text-xs text-foreground outline-none w-44 transition-colors"
+                  title="Edit badge main text"
+                />
+                {sh.subtext !== undefined && (
+                  <input
+                    type="text"
+                    value={sh.subtext ?? ""}
+                    onChange={(e) => update({ subtext: e.target.value } as Partial<ShapeLayer>)}
+                    placeholder="Subtext / Author..."
+                    className="bg-secondary/80 border border-border/60 hover:border-primary/40 focus:border-primary rounded-md px-2 py-0.5 text-xs text-foreground outline-none w-32 transition-colors"
+                    title="Edit badge subtext"
+                  />
+                )}
+              </div>
+            )}
+
             <Separator orientation="vertical" className="h-5 mx-0.5 shrink-0" />
           </>
         )}

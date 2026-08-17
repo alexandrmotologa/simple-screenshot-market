@@ -27,31 +27,22 @@ const SOCIAL_PROOF_PRESETS: BlockPreset[] = [
     ),
     getLayers: (sw, sh) => {
       const w = 620, h = 110;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "rounded-rectangle",
-          fill: "rgba(15,23,42,0.92)",
-          stroke: "rgba(245,158,11,0.5)",
-          strokeWidth: 3,
-          cornerRadius: 55,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "★★★★★  4.9 (100k+ Reviews)",
-          fontSize: 40,
-          fontWeight: 700,
-          fontFamily: "Inter",
-          color: "#FBBF24",
-          align: "center",
-          x, y: y + 28, width: w, height: 60,
-          rotation: 0, opacity: 1,
-        } as any,
-      ];
+      return [{
+        type: "shape",
+        shape: "rating-badge",
+        text: "4.9 (100k+)",
+        subtext: "★★★★★",
+        fill: "rgba(15,23,42,0.92)",
+        stroke: "rgba(245,158,11,0.5)",
+        strokeWidth: 3,
+        cornerRadius: 55,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        width: w,
+        height: h,
+        rotation: 0,
+        opacity: 1,
+      } as any];
     },
   },
   {
@@ -66,31 +57,22 @@ const SOCIAL_PROOF_PRESETS: BlockPreset[] = [
     ),
     getLayers: (sw, sh) => {
       const w = 580, h = 110;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "rounded-rectangle",
-          fill: "#1e1b4b",
-          stroke: "rgba(251,191,36,0.6)",
-          strokeWidth: 3,
-          cornerRadius: 55,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "🏆 #1 App of the Day",
-          fontSize: 42,
-          fontWeight: 700,
-          fontFamily: "Inter",
-          color: "#FBBF24",
-          align: "center",
-          x, y: y + 26, width: w, height: 60,
-          rotation: 0, opacity: 1,
-        } as any,
-      ];
+      return [{
+        type: "shape",
+        shape: "award-badge",
+        text: "#1 App of the Day",
+        subtext: "🏆",
+        fill: "#1e1b4b",
+        stroke: "rgba(251,191,36,0.6)",
+        strokeWidth: 3,
+        cornerRadius: 55,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        width: w,
+        height: h,
+        rotation: 0,
+        opacity: 1,
+      } as any];
     },
   },
   {
@@ -105,31 +87,22 @@ const SOCIAL_PROOF_PRESETS: BlockPreset[] = [
     ),
     getLayers: (sw, sh) => {
       const w = 620, h = 110;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "rounded-rectangle",
-          fill: "rgba(6,78,59,0.85)",
-          stroke: "rgba(16,185,129,0.6)",
-          strokeWidth: 3,
-          cornerRadius: 55,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "👥 1,000,000+ Active Users",
-          fontSize: 40,
-          fontWeight: 700,
-          fontFamily: "Inter",
-          color: "#34D399",
-          align: "center",
-          x, y: y + 28, width: w, height: 60,
-          rotation: 0, opacity: 1,
-        } as any,
-      ];
+      return [{
+        type: "shape",
+        shape: "users-badge",
+        text: "1,000,000+ Users",
+        subtext: "👥",
+        fill: "rgba(6,78,59,0.85)",
+        stroke: "rgba(16,185,129,0.6)",
+        strokeWidth: 3,
+        cornerRadius: 55,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        width: w,
+        height: h,
+        rotation: 0,
+        opacity: 1,
+      } as any];
     },
   },
   {
@@ -144,31 +117,22 @@ const SOCIAL_PROOF_PRESETS: BlockPreset[] = [
     ),
     getLayers: (sw, sh) => {
       const w = 640, h = 110;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "rounded-rectangle",
-          fill: "rgba(30,58,138,0.85)",
-          stroke: "rgba(59,130,246,0.6)",
-          strokeWidth: 3,
-          cornerRadius: 55,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "🔒 End-to-End Encrypted",
-          fontSize: 40,
-          fontWeight: 700,
-          fontFamily: "Inter",
-          color: "#60A5FA",
-          align: "center",
-          x, y: y + 28, width: w, height: 60,
-          rotation: 0, opacity: 1,
-        } as any,
-      ];
+      return [{
+        type: "shape",
+        shape: "security-badge",
+        text: "100% Private & Secure",
+        subtext: "🔒",
+        fill: "rgba(30,58,138,0.85)",
+        stroke: "rgba(59,130,246,0.6)",
+        strokeWidth: 3,
+        cornerRadius: 55,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        width: w,
+        height: h,
+        rotation: 0,
+        opacity: 1,
+      } as any];
     },
   },
 ];
@@ -193,42 +157,22 @@ const UI_WIDGET_PRESETS: BlockPreset[] = [
     ),
     getLayers: (sw, sh) => {
       const w = 920, h = 210;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "rounded-rectangle",
-          fill: "rgba(255,255,255,0.95)",
-          stroke: "rgba(255,255,255,0.4)",
-          strokeWidth: 2,
-          cornerRadius: 32,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "⚡ SnapFrame · now",
-          fontSize: 34,
-          fontWeight: 700,
-          fontFamily: "Inter",
-          color: "#475569",
-          align: "left",
-          x: x + 40, y: y + 30, width: w - 80, height: 45,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "Workout completed! +250 XP earned 🎉",
-          fontSize: 44,
-          fontWeight: 600,
-          fontFamily: "Inter",
-          color: "#0f172a",
-          align: "left",
-          x: x + 40, y: y + 95, width: w - 80, height: 70,
-          rotation: 0, opacity: 1,
-        } as any,
-      ];
+      return [{
+        type: "shape",
+        shape: "notification-badge",
+        text: "Workout completed! +250 XP earned 🎉",
+        subtext: "SnapFrame · now",
+        fill: "rgba(255,255,255,0.95)",
+        stroke: "rgba(255,255,255,0.4)",
+        strokeWidth: 2,
+        cornerRadius: 32,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        width: w,
+        height: h,
+        rotation: 0,
+        opacity: 1,
+      } as any];
     },
   },
   {
@@ -242,31 +186,22 @@ const UI_WIDGET_PRESETS: BlockPreset[] = [
     ),
     getLayers: (sw, sh) => {
       const w = 840, h = 120;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "rounded-rectangle",
-          fill: "rgba(255,255,255,0.18)",
-          stroke: "rgba(255,255,255,0.35)",
-          strokeWidth: 2,
-          cornerRadius: 100,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "🔍  Search songs, artists, albums...",
-          fontSize: 42,
-          fontWeight: 500,
-          fontFamily: "Inter",
-          color: "#FFFFFF",
-          align: "center",
-          x, y: y + 30, width: w, height: 60,
-          rotation: 0, opacity: 0.9,
-        } as any,
-      ];
+      return [{
+        type: "shape",
+        shape: "search-badge",
+        text: "Search songs, artists, albums...",
+        subtext: "🔍",
+        fill: "rgba(255,255,255,0.18)",
+        stroke: "rgba(255,255,255,0.35)",
+        strokeWidth: 2,
+        cornerRadius: 60,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        width: w,
+        height: h,
+        rotation: 0,
+        opacity: 1,
+      } as any];
     },
   },
   {
@@ -284,20 +219,20 @@ const UI_WIDGET_PRESETS: BlockPreset[] = [
     ),
     getLayers: (sw, sh) => {
       const w = 750, h = 750;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "glow-orb",
-          fill: "#8B5CF6",
-          stroke: "transparent",
-          strokeWidth: 0,
-          cornerRadius: 0,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 0.6,
-        } as any,
-      ];
+      return [{
+        type: "shape",
+        shape: "glow-orb",
+        fill: "#8B5CF6",
+        stroke: "transparent",
+        strokeWidth: 0,
+        cornerRadius: 0,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        width: w,
+        height: h,
+        rotation: 0,
+        opacity: 0.6,
+      } as any];
     },
   },
   {
@@ -315,20 +250,20 @@ const UI_WIDGET_PRESETS: BlockPreset[] = [
     ),
     getLayers: (sw, sh) => {
       const w = 750, h = 750;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "glow-orb",
-          fill: "#06B6D4",
-          stroke: "transparent",
-          strokeWidth: 0,
-          cornerRadius: 0,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 0.6,
-        } as any,
-      ];
+      return [{
+        type: "shape",
+        shape: "glow-orb",
+        fill: "#06B6D4",
+        stroke: "transparent",
+        strokeWidth: 0,
+        cornerRadius: 0,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        width: w,
+        height: h,
+        rotation: 0,
+        opacity: 0.6,
+      } as any];
     },
   },
 ];
@@ -347,43 +282,23 @@ const CONTAINER_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 960, h = 420;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "rounded-rectangle",
-          fill: "rgba(255,255,255,0.12)",
-          stroke: "rgba(255,255,255,0.25)",
-          strokeWidth: 2,
-          cornerRadius: 36,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "Ultra Fast & Intuitive",
-          fontSize: 60,
-          fontWeight: 700,
-          fontFamily: "Inter",
-          color: "#FFFFFF",
-          align: "center",
-          x, y: y + 60, width: w, height: 80,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "Everything you need right at your fingertips with zero complexity.",
-          fontSize: 38,
-          fontWeight: 500,
-          fontFamily: "Inter",
-          color: "rgba(255,255,255,0.75)",
-          align: "center",
-          x: x + 40, y: y + 170, width: w - 80, height: 120,
-          rotation: 0, opacity: 1,
-        } as any,
-      ];
+      const w = 960, h = 380;
+      return [{
+        type: "shape",
+        shape: "glass-card",
+        text: "Ultra Fast & Intuitive",
+        subtext: "Everything you need right at your fingertips with zero complexity.",
+        fill: "rgba(255,255,255,0.12)",
+        stroke: "rgba(255,255,255,0.25)",
+        strokeWidth: 2,
+        cornerRadius: 36,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        width: w,
+        height: h,
+        rotation: 0,
+        opacity: 1,
+      } as any];
     },
   },
   {
@@ -398,43 +313,23 @@ const CONTAINER_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 960, h = 420;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "rounded-rectangle",
-          fill: "rgba(0,0,0,0.82)",
-          stroke: "rgba(255,255,255,0.15)",
-          strokeWidth: 2,
-          cornerRadius: 36,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "Pro Performance",
-          fontSize: 60,
-          fontWeight: 700,
-          fontFamily: "Inter",
-          color: "#FFFFFF",
-          align: "center",
-          x, y: y + 60, width: w, height: 80,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "Engineered for power users who demand lightning speed and precision.",
-          fontSize: 38,
-          fontWeight: 500,
-          fontFamily: "Inter",
-          color: "rgba(255,255,255,0.70)",
-          align: "center",
-          x: x + 40, y: y + 170, width: w - 80, height: 120,
-          rotation: 0, opacity: 1,
-        } as any,
-      ];
+      const w = 960, h = 380;
+      return [{
+        type: "shape",
+        shape: "dark-card",
+        text: "Pro Performance",
+        subtext: "Engineered for power users who demand lightning speed and precision.",
+        fill: "rgba(0,0,0,0.82)",
+        stroke: "rgba(255,255,255,0.15)",
+        strokeWidth: 2,
+        cornerRadius: 36,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        width: w,
+        height: h,
+        rotation: 0,
+        opacity: 1,
+      } as any];
     },
   },
   {
@@ -449,31 +344,21 @@ const CONTAINER_PRESETS: BlockPreset[] = [
     ),
     getLayers: (sw, sh) => {
       const w = 400, h = 90;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "rounded-rectangle",
-          fill: "#6366F1",
-          stroke: "rgba(255,255,255,0.3)",
-          strokeWidth: 2,
-          cornerRadius: 100,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "⚡ PRO FEATURE",
-          fontSize: 38,
-          fontWeight: 700,
-          fontFamily: "Inter",
-          color: "#FFFFFF",
-          align: "center",
-          x, y: y + 20, width: w, height: 50,
-          rotation: 0, opacity: 1,
-        } as any,
-      ];
+      return [{
+        type: "shape",
+        shape: "pro-tag",
+        text: "⚡ PRO FEATURE",
+        fill: "#6366F1",
+        stroke: "rgba(255,255,255,0.3)",
+        strokeWidth: 2,
+        cornerRadius: 45,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        width: w,
+        height: h,
+        rotation: 0,
+        opacity: 1,
+      } as any];
     },
   },
   {
@@ -488,31 +373,21 @@ const CONTAINER_PRESETS: BlockPreset[] = [
     ),
     getLayers: (sw, sh) => {
       const w = 280, h = 90;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "rounded-rectangle",
-          fill: "#10B981",
-          stroke: "rgba(255,255,255,0.3)",
-          strokeWidth: 2,
-          cornerRadius: 100,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "✨ NEW",
-          fontSize: 38,
-          fontWeight: 700,
-          fontFamily: "Inter",
-          color: "#FFFFFF",
-          align: "center",
-          x, y: y + 20, width: w, height: 50,
-          rotation: 0, opacity: 1,
-        } as any,
-      ];
+      return [{
+        type: "shape",
+        shape: "new-tag",
+        text: "✨ NEW",
+        fill: "#10B981",
+        stroke: "rgba(255,255,255,0.3)",
+        strokeWidth: 2,
+        cornerRadius: 45,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        width: w,
+        height: h,
+        rotation: 0,
+        opacity: 1,
+      } as any];
     },
   },
   {
@@ -523,20 +398,20 @@ const CONTAINER_PRESETS: BlockPreset[] = [
     ),
     getLayers: (sw, sh) => {
       const w = 260, h = 24;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "rectangle",
-          fill: "#6366F1",
-          stroke: "transparent",
-          strokeWidth: 0,
-          cornerRadius: 12,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 1,
-        } as any,
-      ];
+      return [{
+        type: "shape",
+        shape: "rectangle",
+        fill: "#6366F1",
+        stroke: "transparent",
+        strokeWidth: 0,
+        cornerRadius: 12,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        width: w,
+        height: h,
+        rotation: 0,
+        opacity: 1,
+      } as any];
     },
   },
 ];
@@ -641,31 +516,21 @@ const OFFER_PRESETS: BlockPreset[] = [
     ),
     getLayers: (sw, sh) => {
       const w = 560, h = 110;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "rounded-rectangle",
-          fill: "#E11D48",
-          stroke: "rgba(255,255,255,0.4)",
-          strokeWidth: 3,
-          cornerRadius: 55,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "🏷️ 50% OFF · Early Bird Special",
-          fontSize: 38,
-          fontWeight: 700,
-          fontFamily: "Inter",
-          color: "#FFFFFF",
-          align: "center",
-          x, y: y + 28, width: w, height: 60,
-          rotation: 0, opacity: 1,
-        } as any,
-      ];
+      return [{
+        type: "shape",
+        shape: "sale-badge",
+        text: "🏷️ 50% OFF · Early Bird Special",
+        fill: "#E11D48",
+        stroke: "rgba(255,255,255,0.4)",
+        strokeWidth: 3,
+        cornerRadius: 55,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        width: w,
+        height: h,
+        rotation: 0,
+        opacity: 1,
+      } as any];
     },
   },
   {
@@ -680,31 +545,21 @@ const OFFER_PRESETS: BlockPreset[] = [
     ),
     getLayers: (sw, sh) => {
       const w = 600, h = 110;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "rounded-rectangle",
-          fill: "#6366F1",
-          stroke: "rgba(255,255,255,0.4)",
-          strokeWidth: 3,
-          cornerRadius: 55,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "🚀 Try Free for 7 Days · No Card",
-          fontSize: 38,
-          fontWeight: 700,
-          fontFamily: "Inter",
-          color: "#FFFFFF",
-          align: "center",
-          x, y: y + 28, width: w, height: 60,
-          rotation: 0, opacity: 1,
-        } as any,
-      ];
+      return [{
+        type: "shape",
+        shape: "trial-badge",
+        text: "🚀 Try Free for 7 Days · No Card",
+        fill: "#6366F1",
+        stroke: "rgba(255,255,255,0.4)",
+        strokeWidth: 3,
+        cornerRadius: 55,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        width: w,
+        height: h,
+        rotation: 0,
+        opacity: 1,
+      } as any];
     },
   },
   {
@@ -718,31 +573,21 @@ const OFFER_PRESETS: BlockPreset[] = [
     ),
     getLayers: (sw, sh) => {
       const w = 720, h = 110;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "rounded-rectangle",
-          fill: "rgba(15,23,42,0.92)",
-          stroke: "rgba(255,255,255,0.25)",
-          strokeWidth: 2,
-          cornerRadius: 55,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "✓ Ad-Free  ·  ✓ Offline Mode  ·  ✓ 4K Export",
-          fontSize: 36,
-          fontWeight: 600,
-          fontFamily: "Inter",
-          color: "#F8FAFC",
-          align: "center",
-          x, y: y + 30, width: w, height: 60,
-          rotation: 0, opacity: 1,
-        } as any,
-      ];
+      return [{
+        type: "shape",
+        shape: "checklist-badge",
+        text: "✓ Ad-Free  ·  ✓ Offline Mode  ·  ✓ 4K Export",
+        fill: "rgba(15,23,42,0.92)",
+        stroke: "rgba(255,255,255,0.25)",
+        strokeWidth: 2,
+        cornerRadius: 55,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        width: w,
+        height: h,
+        rotation: 0,
+        opacity: 1,
+      } as any];
     },
   },
 ];
@@ -758,43 +603,23 @@ const PRESS_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 900, h = 260;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "rounded-rectangle",
-          fill: "rgba(15,23,42,0.92)",
-          stroke: "rgba(16,185,129,0.5)",
-          strokeWidth: 3,
-          cornerRadius: 32,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: '"The cleanest and fastest screenshot generator on mobile."',
-          fontSize: 42,
-          fontWeight: 500,
-          fontFamily: "Inter",
-          color: "#FFFFFF",
-          align: "center",
-          x: x + 40, y: y + 45, width: w - 80, height: 100,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "— TechCrunch",
-          fontSize: 36,
-          fontWeight: 700,
-          fontFamily: "Inter",
-          color: "#34D399",
-          align: "center",
-          x: x + 40, y: y + 170, width: w - 80, height: 50,
-          rotation: 0, opacity: 1,
-        } as any,
-      ];
+      const w = 900, h = 240;
+      return [{
+        type: "shape",
+        shape: "press-badge",
+        text: '"The cleanest and fastest screenshot generator on mobile."',
+        subtext: "— TechCrunch",
+        fill: "rgba(15,23,42,0.92)",
+        stroke: "rgba(16,185,129,0.5)",
+        strokeWidth: 3,
+        cornerRadius: 32,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        width: w,
+        height: h,
+        rotation: 0,
+        opacity: 1,
+      } as any];
     },
   },
   {
@@ -808,54 +633,23 @@ const PRESS_PRESETS: BlockPreset[] = [
       </div>
     ),
     getLayers: (sw, sh) => {
-      const w = 900, h = 300;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "rounded-rectangle",
-          fill: "rgba(15,23,42,0.92)",
-          stroke: "rgba(245,158,11,0.5)",
-          strokeWidth: 3,
-          cornerRadius: 36,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "★★★★★",
-          fontSize: 48,
-          fontWeight: 700,
-          fontFamily: "Inter",
-          color: "#FBBF24",
-          align: "center",
-          x: x + 40, y: y + 35, width: w - 80, height: 50,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: '"Boosted our App Store conversion rate by +40% in just 1 week!"',
-          fontSize: 40,
-          fontWeight: 600,
-          fontFamily: "Inter",
-          color: "#FFFFFF",
-          align: "center",
-          x: x + 40, y: y + 105, width: w - 80, height: 100,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "Alex Morgan · Lead iOS Developer",
-          fontSize: 32,
-          fontWeight: 500,
-          fontFamily: "Inter",
-          color: "#94A3B8",
-          align: "center",
-          x: x + 40, y: y + 225, width: w - 80, height: 40,
-          rotation: 0, opacity: 1,
-        } as any,
-      ];
+      const w = 900, h = 280;
+      return [{
+        type: "shape",
+        shape: "testimonial-badge",
+        text: '"Boosted our App Store conversion rate by +40% in just 1 week!"',
+        subtext: "Alex Morgan · Lead iOS Developer",
+        fill: "rgba(15,23,42,0.92)",
+        stroke: "rgba(245,158,11,0.5)",
+        strokeWidth: 3,
+        cornerRadius: 36,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        width: w,
+        height: h,
+        rotation: 0,
+        opacity: 1,
+      } as any];
     },
   },
   {
@@ -869,31 +663,21 @@ const PRESS_PRESETS: BlockPreset[] = [
     ),
     getLayers: (sw, sh) => {
       const w = 580, h = 110;
-      const x = Math.round((sw - w) / 2);
-      const y = Math.round((sh - h) / 2);
-      return [
-        {
-          type: "shape",
-          shape: "rounded-rectangle",
-          fill: "rgba(67,20,7,0.92)",
-          stroke: "rgba(249,115,22,0.6)",
-          strokeWidth: 3,
-          cornerRadius: 55,
-          x, y, width: w, height: h,
-          rotation: 0, opacity: 1,
-        } as any,
-        {
-          type: "text",
-          content: "🔥 2,500+ Downloads Today",
-          fontSize: 40,
-          fontWeight: 700,
-          fontFamily: "Inter",
-          color: "#FB923C",
-          align: "center",
-          x, y: y + 28, width: w, height: 60,
-          rotation: 0, opacity: 1,
-        } as any,
-      ];
+      return [{
+        type: "shape",
+        shape: "live-counter-badge",
+        text: "🔥 2,500+ Downloads Today",
+        fill: "rgba(67,20,7,0.92)",
+        stroke: "rgba(249,115,22,0.6)",
+        strokeWidth: 3,
+        cornerRadius: 55,
+        x: Math.round((sw - w) / 2),
+        y: Math.round((sh - h) / 2),
+        width: w,
+        height: h,
+        rotation: 0,
+        opacity: 1,
+      } as any];
     },
   },
 ];

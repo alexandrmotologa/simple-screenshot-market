@@ -1160,6 +1160,219 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           ctx.fillStyle = "rgba(255,255,255,0.75)";
           ctx.fillText(sl.text || "Search songs, artists, albums...", bx + 70, by + bh / 2);
 
+        } else if (sl.shape === "sale-badge") {
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const maxR = Math.min(bw, bh) / 2;
+          const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : maxR;
+
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? "#E11D48";
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          }
+
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = `700 ${bh * 0.36}px "Inter", sans-serif`;
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillText(sl.text || "🏷️ 50% OFF · Early Bird Special", bx + bw / 2, by + bh / 2);
+
+        } else if (sl.shape === "trial-badge") {
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const maxR = Math.min(bw, bh) / 2;
+          const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : maxR;
+
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? "#6366F1";
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          }
+
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = `700 ${bh * 0.36}px "Inter", sans-serif`;
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillText(sl.text || "🚀 Try Free for 7 Days · No Card", bx + bw / 2, by + bh / 2);
+
+        } else if (sl.shape === "checklist-badge") {
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const maxR = Math.min(bw, bh) / 2;
+          const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : maxR;
+
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? "rgba(15,23,42,0.92)";
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          }
+
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = `600 ${bh * 0.34}px "Inter", sans-serif`;
+          ctx.fillStyle = "#F8FAFC";
+          ctx.fillText(sl.text || "✓ Ad-Free  ·  ✓ Offline Mode  ·  ✓ 4K Export", bx + bw / 2, by + bh / 2);
+
+        } else if (sl.shape === "ranking-badge") {
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const maxR = Math.min(bw, bh) / 2;
+          const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : Math.min(30, maxR);
+
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? "#172554";
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          }
+
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = `700 ${bh * 0.36}px "Inter", sans-serif`;
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillText(sl.text || "🏅 #1 Top Free App", bx + bw / 2, by + bh / 2);
+
+        } else if (sl.shape === "pro-tag" || sl.shape === "new-tag") {
+          const isPro = sl.shape === "pro-tag";
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const maxR = Math.min(bw, bh) / 2;
+          const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : maxR;
+
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? (isPro ? "#6366F1" : "#10B981");
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          }
+
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = `700 ${bh * 0.42}px "Inter", sans-serif`;
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillText(sl.text || (isPro ? "⚡ PRO FEATURE" : "✨ NEW"), bx + bw / 2, by + bh / 2);
+
+        } else if (sl.shape === "press-badge") {
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const maxR = Math.min(bw, bh) / 2;
+          const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : Math.min(32, maxR);
+
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? "rgba(15,23,42,0.92)";
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          }
+
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = `500 ${bh * 0.16}px "Inter", sans-serif`;
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillText(sl.text || '"The cleanest and fastest screenshot generator on mobile."', bx + bw / 2, by + bh * 0.38);
+
+          ctx.font = `700 ${bh * 0.14}px "Inter", sans-serif`;
+          ctx.fillStyle = "#34D399";
+          ctx.fillText(sl.subtext || "— TechCrunch", bx + bw / 2, by + bh * 0.72);
+
+        } else if (sl.shape === "testimonial-badge") {
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const maxR = Math.min(bw, bh) / 2;
+          const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : Math.min(36, maxR);
+
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? "rgba(15,23,42,0.92)";
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          }
+
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          // Stars
+          ctx.font = `700 ${bh * 0.16}px "Inter", sans-serif`;
+          ctx.fillStyle = "#FBBF24";
+          ctx.fillText("★★★★★", bx + bw / 2, by + bh * 0.22);
+
+          // Quote
+          ctx.font = `600 ${bh * 0.13}px "Inter", sans-serif`;
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillText(sl.text || '"Boosted our App Store conversion rate by +40% in just 1 week!"', bx + bw / 2, by + bh * 0.5);
+
+          // Author
+          ctx.font = `500 ${bh * 0.11}px "Inter", sans-serif`;
+          ctx.fillStyle = "#94A3B8";
+          ctx.fillText(sl.subtext || "Alex Morgan · Lead iOS Developer", bx + bw / 2, by + bh * 0.78);
+
+        } else if (sl.shape === "live-counter-badge") {
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const maxR = Math.min(bw, bh) / 2;
+          const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : maxR;
+
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? "rgba(67,20,7,0.92)";
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          }
+
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = `700 ${bh * 0.36}px "Inter", sans-serif`;
+          ctx.fillStyle = "#FB923C";
+          ctx.fillText(sl.text || "🔥 2,500+ Downloads Today", bx + bw / 2, by + bh / 2);
+
+        } else if (sl.shape === "glass-card" || sl.shape === "dark-card") {
+          const isGlass = sl.shape === "glass-card";
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const maxR = Math.min(bw, bh) / 2;
+          const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : Math.min(36, maxR);
+
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? (isGlass ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.82)");
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          }
+
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+
+          // Heading
+          ctx.font = `700 ${bh * 0.15}px "Inter", sans-serif`;
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillText(sl.text || (isGlass ? "Ultra Fast & Intuitive" : "Pro Performance"), bx + bw / 2, by + bh * 0.35);
+
+          // Subtitle
+          ctx.font = `500 ${bh * 0.09}px "Inter", sans-serif`;
+          ctx.fillStyle = isGlass ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.70)";
+          ctx.fillText(sl.subtext || (isGlass ? "Everything you need right at your fingertips with zero complexity." : "Engineered for power users who demand lightning speed and precision."), bx + bw / 2, by + bh * 0.65);
+
         } else if (sl.shape === "glow-orb") {
           const cx = sl.x + sl.width / 2;
           const cy = sl.y + sl.height / 2;
@@ -1173,7 +1386,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           ctx.arc(cx, cy, r, 0, Math.PI * 2);
           ctx.fill();
 
-        } else if (sl.shape === "glass-card" || sl.shape === "dark-card" || sl.shape === "rounded-rectangle" || sl.shape === "rectangle" || r2 > 0) {
+        } else if (sl.shape === "rounded-rectangle" || sl.shape === "rectangle" || r2 > 0) {
           const effectiveR = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, Math.min(sl.width, sl.height) / 2) : r2;
           ctx.beginPath();
           if (effectiveR > 0) {
