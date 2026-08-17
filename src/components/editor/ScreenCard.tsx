@@ -58,6 +58,8 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
   // Drag over state for images
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
+  const [fontsLoaded, setFontsLoaded] = useState(0);
+
   // ── Preload Fonts ─────────────────────────────────────────────────────────
   useEffect(() => {
     let hasFonts = false;
@@ -79,7 +81,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
     }
   }, [screen.layers]);
 
-  const [fontsLoaded, setFontsLoaded] = useState(0);
+
   const {
     activeSetId, activeScreenId, activeLayerId, selectedLayerIds,
     setActiveSet, setActiveScreen, setActiveLayer, toggleSelectLayer,
@@ -418,12 +420,12 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
 
         // Apply shadow parameters
         const applyShadow = () => {
-            if (sl.shadow && mockup?.showShadow !== false) {
-              ctx.shadowBlur = sl.shadow.blur;
-              ctx.shadowColor = sl.shadow.color;
-              ctx.shadowOffsetX = sl.shadow.offsetX;
-              ctx.shadowOffsetY = sl.shadow.offsetY;
-            }
+          if (mockup?.showShadow !== false) {
+            ctx.shadowBlur = sl.shadow?.blur ?? 80;
+            ctx.shadowColor = sl.shadow?.color ?? "rgba(0,0,0,0.35)";
+            ctx.shadowOffsetX = sl.shadow?.offsetX ?? 0;
+            ctx.shadowOffsetY = sl.shadow?.offsetY ?? 20;
+          }
         };
 
         const rawColorName = mockup?.color || "black";
@@ -793,6 +795,15 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         const hw  = sl.width / 2;
         const hh  = sl.height / 2;
 
+        // Apply rotation around the shape's center
+        const shapeDeg = sl.rotation ?? 0;
+        if (shapeDeg !== 0) {
+          ctx.save();
+          ctx.translate(cx2, cy2);
+          ctx.rotate((shapeDeg * Math.PI) / 180);
+          ctx.translate(-cx2, -cy2);
+        }
+
         const applyStroke = () => {
           if (sl.stroke && sl.strokeWidth) {
             ctx.strokeStyle = sl.stroke;
@@ -926,6 +937,11 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             ctx.lineWidth = sl.strokeWidth;
             ctx.strokeRect(sl.x, sl.y, sl.width, sl.height);
           }
+        }
+
+        // Restore context after rotation
+        if (shapeDeg !== 0) {
+          ctx.restore();
         }
       }
 

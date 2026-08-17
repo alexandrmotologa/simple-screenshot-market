@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local artifacts & scratch files
+figma_data.json
+figma_outline.txt
+test.py

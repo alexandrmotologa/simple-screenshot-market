@@ -372,7 +372,7 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-secondary/70 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
           >
             <CopyCheck className="w-3.5 h-3.5" />
-            Apply to all
+            Sync Styles to all Platforms
           </button>
         )}
 

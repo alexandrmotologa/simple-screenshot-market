@@ -5,7 +5,7 @@ import { useEditorStore } from "@/lib/store/editorStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface IconDef {
   name: string;
@@ -49,10 +49,10 @@ const POPULAR_BRANDS: IconDef[] = [
   { name: "Dropbox", slug: "dropbox", color: "0061FF" },
   { name: "React", slug: "react", color: "61DAFB" },
   { name: "Next.js", slug: "nextjs", color: "000000" },
-  { name: "Vue.js", slug: "vuejs", color: "4FC08D" },
+  { name: "Vue.js", slug: "vuedotjs", color: "4FC08D" },
   { name: "Tailwind CSS", slug: "tailwindcss", color: "06B6D4" },
   { name: "TypeScript", slug: "typescript", color: "3178C6" },
-  { name: "Node.js", slug: "node-dot-js", color: "339933" },
+  { name: "Node.js", slug: "nodedotjs", color: "339933" },
   { name: "Python", slug: "python", color: "3776AB" },
   { name: "Android", slug: "android", color: "3DDC84" },
   { name: "Google Play", slug: "googleplay", color: "414141" },
@@ -63,50 +63,52 @@ const POPULAR_BRANDS: IconDef[] = [
   { name: "PostgreSQL", slug: "postgresql", color: "4169E1" },
 ];
 
-const POPULAR_MATERIAL: IconDef[] = [
-  "home", "settings", "search", "user", "star", "heart", "check", "close", "info", "warning",
-  "camera", "image", "video", "music", "mic", "bell", "calendar", "clock", "location", "map",
-  "phone", "mail", "message", "chat", "send", "share", "link", "download", "upload", "cloud",
+const UI_ICONS = [
+  "home", "settings", "search", "user", "star", "heart", "check", "x", "info", "alert-triangle",
+  "camera", "image", "video", "music", "mic", "bell", "calendar", "clock", "map-pin", "map",
+  "phone", "mail", "message-circle", "message-square", "send", "share", "link", "download", "upload", "cloud",
   "lock", "unlock", "key", "shield", "power", "battery", "wifi", "bluetooth", "cast", "play",
-  "pause", "stop", "menu", "grid", "list", "filter", "sort", "edit", "trash", "save",
-  "folder", "file", "document", "paperclip", "bookmark", "tag", "cart", "credit-card", "wallet",
-  "gift", "shopping-bag", "truck", "airplane", "car", "bus", "train", "bike", "walk", "run"
+  "pause", "square", "menu", "grid", "list", "filter", "arrow-up-down", "edit", "trash", "save",
+  "folder", "file", "file-text", "paperclip", "bookmark", "tag", "shopping-cart", "credit-card", "wallet",
+  "gift", "shopping-bag", "truck", "plane", "car", "bus", "train", "bike", "navigation", "compass"
 ].map(slug => ({ name: slug.replace(/-/g, " "), slug, color: "000000" }));
+
+type Library = "brands" | "lucide" | "phosphor" | "material";
 
 export function BrandIconsPanel() {
   const [query, setQuery] = useState("");
-  const [tab, setTab] = useState<"brands" | "material">("brands");
+  const [tab, setTab] = useState<Library>("brands");
   const { getActiveSet, getActiveScreen, addLayer } = useEditorStore();
 
-  const filteredBrands = useMemo(() => {
-    if (!query.trim()) return POPULAR_BRANDS;
+  const filteredIcons = useMemo(() => {
+    const source = tab === "brands" ? POPULAR_BRANDS : UI_ICONS;
+    if (!query.trim()) return source;
     const q = query.toLowerCase();
-    return POPULAR_BRANDS.filter((b) => b.name.toLowerCase().includes(q) || b.slug.toLowerCase().includes(q));
-  }, [query]);
+    return source.filter((b) => b.name.toLowerCase().includes(q) || b.slug.toLowerCase().includes(q));
+  }, [query, tab]);
 
-  const filteredMaterial = useMemo(() => {
-    if (!query.trim()) return POPULAR_MATERIAL;
-    const q = query.toLowerCase();
-    return POPULAR_MATERIAL.filter((b) => b.name.toLowerCase().includes(q) || b.slug.toLowerCase().includes(q));
-  }, [query]);
-
-  const getIconUrl = (library: "brands" | "material", slug: string, color: string) => {
-    if (library === "brands") {
-      // Use icongr.am for brands (simple icons) as it has better fallbacks for missing slugs
-      return `https://icongr.am/simple/${slug}.svg?color=${color}`;
-    } else {
-      // Use icongr.am for material design
-      return `https://icongr.am/material/${slug}.svg?color=${color}`;
+  const getIconUrl = (library: Library, slug: string, color: string) => {
+    const hex = color.replace("#", "");
+    switch (library) {
+      case "brands":
+        return `https://api.iconify.design/simple-icons/${slug}.svg?color=%23${hex}`;
+      case "lucide":
+        return `https://api.iconify.design/lucide/${slug}.svg?color=%23${hex}`;
+      case "phosphor":
+        return `https://api.iconify.design/ph/${slug}.svg?color=%23${hex}`;
+      case "material":
+        // simple mapping for common names, material might differ slightly from lucide but iconify has fuzzy matching on search, we'll just try direct
+        // for better results, using `mdi` namespace
+        return `https://api.iconify.design/mdi/${slug.replace(/-/g, "")}.svg?color=%23${hex}`;
     }
   };
 
-  const handleAdd = (brand: IconDef) => {
+  const handleAdd = (icon: IconDef) => {
     const set = getActiveSet();
     const screen = getActiveScreen();
     if (!set || !screen) return;
 
-    const url = getIconUrl(tab, brand.slug, brand.color);
-    // Use Next.js proxy to allow CORS downloading if needed, or just insert direct url
+    const url = getIconUrl(tab, icon.slug, icon.color);
     const proxyUrl = `/_next/image?url=${encodeURIComponent(url)}&w=256&q=75`;
 
     addLayer(set.id, screen.id, {
@@ -118,6 +120,7 @@ export function BrandIconsPanel() {
       height: 240,
       rotation: 0,
       opacity: 1,
+      cornerRadius: 0,
     } as Parameters<typeof addLayer>[2]);
   };
 
@@ -126,9 +129,11 @@ export function BrandIconsPanel() {
       {/* Header Tabs */}
       <div className="p-3 border-b border-border/40">
         <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="w-full">
-          <TabsList className="w-full grid grid-cols-2">
-            <TabsTrigger value="brands" className="text-[10px]">Brand Icons</TabsTrigger>
-            <TabsTrigger value="material" className="text-[10px]">Material</TabsTrigger>
+          <TabsList className="w-full grid grid-cols-4 h-auto py-1">
+            <TabsTrigger value="brands" className="text-[10px] py-1">Brands</TabsTrigger>
+            <TabsTrigger value="lucide" className="text-[10px] py-1">Lucide</TabsTrigger>
+            <TabsTrigger value="phosphor" className="text-[10px] py-1">Phosphor</TabsTrigger>
+            <TabsTrigger value="material" className="text-[10px] py-1">Material</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -150,7 +155,7 @@ export function BrandIconsPanel() {
       {/* Grid */}
       <ScrollArea className="flex-1 min-h-0">
         <div className="p-3 grid grid-cols-3 gap-2">
-          {(tab === "brands" ? filteredBrands : filteredMaterial).map((icon) => (
+          {filteredIcons.map((icon) => (
             <button
               key={icon.slug}
               onClick={() => handleAdd(icon)}
@@ -168,8 +173,8 @@ export function BrandIconsPanel() {
             </button>
           ))}
         </div>
-        <p className="text-[10px] text-muted-foreground text-center pb-4">
-          Powered by icongr.am
+        <p className="text-[10px] text-muted-foreground text-center pb-4 pt-4">
+          Powered by Iconify
         </p>
       </ScrollArea>
     </div>

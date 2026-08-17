@@ -653,7 +653,7 @@ export function FloatingToolbar() {
                 className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 text-xs font-medium transition-colors shrink-0"
               >
                 <RefreshCw className="w-3 h-3" />
-                Sync
+                Sync Style to All
               </TooltipTrigger>
               <TooltipContent>Copy this text to all screens in set</TooltipContent>
             </Tooltip>

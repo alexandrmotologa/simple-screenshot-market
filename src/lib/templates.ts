@@ -476,47 +476,84 @@ export const LAYOUT_META: Record<string, { icon: string; label: string; descript
 import { FIGMA_TEMPLATES } from "./figmaTemplates";
 
 const mappedFigmaTemplates: Template[] = FIGMA_TEMPLATES.map((ft) => {
-  // We determine how many screens this template has by finding the max screenIndex
   const maxScreenIndex = ft.screens.reduce((max, s) => Math.max(max, s.screenIndex), -1);
-  const totalScreens = Math.max(5, maxScreenIndex + 1); // Ensure at least 5 screens are mapped if possible
+  const totalScreens = Math.max(5, maxScreenIndex + 1);
+
+  // Derive a preview color from the background
+  const previewColor =
+    ft.background.type === "solid"
+      ? (ft.background.color ?? "#1a1a2e")
+      : ft.background.gradient?.stops?.[0]?.color ?? "#1a1a2e";
 
   const templateScreens: TemplateScreen[] = [];
   for (let i = 0; i < totalScreens; i++) {
-    // Find mockups for this screen
-    const screenMockups = ft.screens.filter((m) => m.screenIndex === i);
-    
-    // Convert them to ScreenshotLayer
-    const layers = screenMockups.map((m) => {
-      // Basic rotation parsing from SVG transform="rotate(-45 x y)"
-      let rotation = 0;
-      if (m.transform && m.transform.includes("rotate")) {
-        const match = m.transform.match(/rotate\(([-0-9.]+)/);
-        if (match) rotation = parseFloat(match[1]);
-      }
-      return {
-        type: "screenshot" as const,
-        src: undefined,
-        x: m.x,
-        y: m.y,
-        width: m.width,
-        height: m.height,
-        rotation: rotation,
-        opacity: 1,
-        objectFit: "cover" as const,
-        cornerRadius: 40,
-        showDeviceFrame: false,
-        label: "Drop your screenshot here",
+    const screenData = ft.screens.find((s) => s.screenIndex === i);
+
+    let allLayers: import("@/lib/types").Layer[] = [];
+
+    if (screenData) {
+      // Map each Figma device zone as a ScreenshotLayer
+      const mockupLayers = screenData.mockups.map((m, mIdx) => {
+        let rotation = 0;
+        if (m.transform && m.transform.includes("rotate")) {
+          const match = m.transform.match(/rotate\(([-0-9.]+)/);
+          if (match) rotation = parseFloat(match[1]);
+        }
+
+        // The zone dimensions from Figma are the inner screen (no device frame).
+        // We show the device frame around this zone, so cornerRadius should match
+        // an iPhone 16 Pro screen (roughly 40px at our scale).
+        return {
+          id: `mockup_${ft.id}_s${i}_${mIdx}`,
+          type: "screenshot" as const,
+          src: undefined,
+          x: m.x,
+          y: m.y,
+          width: m.width,
+          height: m.height,
+          rotation: rotation,
+          opacity: 1,
+          objectFit: "cover" as const,
+          cornerRadius: 54,
+          showDeviceFrame: true,
+          shadow: { blur: 80, spread: 0, color: "rgba(0,0,0,0.35)", offsetX: 0, offsetY: 20 },
+          label: "Drop your screenshot here",
+        };
+      });
+
+      // Layers from Figma: bg_shapes first, then texts/logo (already ordered by script)
+      allLayers = [...mockupLayers, ...screenData.layers];
+    }
+
+    // Build background from Figma data — prefer per-screen background override
+    // Each screen in Figma can have its own background color (different from the global frame color).
+    // screenData.background is the correct per-screen color extracted by the Python script.
+    // This is fully editable by the user through the Background panel in the editor.
+    const figBg = screenData?.background ?? ft.background;
+
+    let screenBg: import("@/lib/types").Background;
+    if (figBg.type === "gradient" && figBg.gradient) {
+      screenBg = {
+        type: "gradient",
+        gradient: {
+          direction: figBg.gradient.direction as import("@/lib/types").GradientDirection,
+          stops: figBg.gradient.stops.map((s) => ({
+            color: s.color,
+            position: s.position,
+          })),
+        },
       };
-    });
+    } else {
+      screenBg = {
+        type: "solid",
+        color: figBg.color ?? "#1a1a2e",
+      };
+    }
 
     templateScreens.push({
       name: `Screen ${i + 1}`,
-      background: {
-        type: "image",
-        imageUrl: ft.backgroundUrl,
-        imageSlice: { x: i * 1290, y: 0, width: 1290, height: 2796 },
-      },
-      layers,
+      background: screenBg,
+      layers: allLayers,
     });
   }
 
@@ -526,7 +563,7 @@ const mappedFigmaTemplates: Template[] = FIGMA_TEMPLATES.map((ft) => {
     description: "Imported from Figma",
     category: "Figma",
     tags: ["Figma", "Imported"],
-    previewColor: "#e5e7eb",
+    previewColor,
     layout: "screenshot-full",
     screens: templateScreens,
   };

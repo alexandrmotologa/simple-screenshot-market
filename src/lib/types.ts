@@ -97,6 +97,8 @@ export interface Background {
   imageSlice?: { x: number; y: number; width: number; height: number };
   /** Mesh gradient — 4-corner colors */
   mesh?: MeshGradient;
+  /** Background solid color to render behind image */
+  backgroundColor?: string;
   /** Overlay pattern on top of any background */
   pattern?: BackgroundPattern;
 }

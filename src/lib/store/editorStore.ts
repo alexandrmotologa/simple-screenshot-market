@@ -678,6 +678,8 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         const existingSrcs = ss.screens.flatMap((s) =>
           s.layers.filter((l) => l.type === "screenshot" && (l as any).src).map((l) => (l as any).src)
         );
+        let srcIndex = 0;
+        
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const newScreens = template.screens.map((tScreen: any, idx: number) => ({
           id: nanoid(),
@@ -689,8 +691,10 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           layers: (tScreen.layers ?? []).map((l: any): Layer => {
             const id = nanoid();
-            if (l.type === "screenshot" && existingSrcs[idx]) {
-              return { ...l, id, src: existingSrcs[idx] } as Layer;
+            if (l.type === "screenshot") {
+              const src = existingSrcs[srcIndex] || undefined;
+              srcIndex++;
+              return { ...l, id, src } as Layer;
             }
             return { ...l, id } as Layer;
           }),
