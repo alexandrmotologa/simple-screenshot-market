@@ -119,9 +119,9 @@ export function AssetsPanel() {
   , 0);
 
   return (
-    <div className="flex flex-col h-full">
-      <ScrollArea className="flex-1">
-        <div className="p-4 space-y-4">
+    <div className="flex flex-col h-full min-h-0 overflow-hidden">
+      <ScrollArea className="flex-1 min-h-0 overflow-hidden">
+        <div className="p-4 space-y-4 pb-20">
 
           {/* Status indicator */}
           {screenshotLayersCount > 0 && (
