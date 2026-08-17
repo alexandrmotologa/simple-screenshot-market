@@ -57,6 +57,7 @@ interface EditorStore {
 
   // Actions: layers
   addLayer: (setId: string, screenId: string, layer: any) => void;
+  addLayers: (setId: string, screenId: string, layers: any[]) => void;
   updateLayer: (setId: string, screenId: string, layerId: string, updates: Partial<Layer>) => void;
   deleteLayer: (setId: string, screenId: string, layerId: string) => void;
   deleteSelectedLayers: () => void;
@@ -353,6 +354,26 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
             }
       ),
       activeLayerId: newLayer.id,
+    }));
+    get().recordHistory();
+  },
+
+  addLayers: (setId, screenId, layers) => {
+    const newLayers = layers.map((l) => ({ ...l, id: l.id || nanoid() })) as Layer[];
+    set((state: any) => ({
+      screenSets: state.screenSets.map((ss: any) =>
+        ss.id !== setId
+          ? ss
+          : {
+              ...ss,
+              screens: ss.screens.map((s: any) =>
+                s.id !== screenId
+                  ? s
+                  : { ...s, layers: [...s.layers, ...newLayers] }
+              ),
+            }
+      ),
+      activeLayerId: newLayers[newLayers.length - 1]?.id ?? null,
     }));
     get().recordHistory();
   },
