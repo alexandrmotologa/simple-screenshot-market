@@ -5,10 +5,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import {
   ArrowLeft, Undo2, Redo2, Download,
   Share2, ZoomIn, ZoomOut, Upload, Sparkles, Film,
-  Copy, Keyboard, Check, ChevronDown
+  Copy, Keyboard, Check, ChevronDown, Eye
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { KeyboardShortcutsModal } from "@/components/editor/KeyboardShortcutsModal";
+import { StorePreviewModal } from "@/components/editor/StorePreviewModal";
 import { toast } from "@/lib/store/toastStore";
 import { Separator } from "@/components/ui/separator";
 import { useEditorStore } from "@/lib/store/editorStore";
@@ -69,6 +70,7 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
   const screenSets = useEditorStore((s) => s.screenSets);
   const [showExport, setShowExport] = useState(false);
   const [showGif, setShowGif] = useState(false);
+  const [showStorePreview, setShowStorePreview] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [zoomOpen, setZoomOpen] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
@@ -390,6 +392,17 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
           {/* Theme Toggle */}
           <ThemeToggle />
 
+          {/* Store Simulator Preview */}
+          <button
+            type="button"
+            onClick={() => setShowStorePreview(true)}
+            className="h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs font-semibold border border-border/60 bg-secondary/60 hover:bg-secondary text-foreground transition-all cursor-pointer shadow-xs"
+            title="Live App Store & Google Play Simulator"
+          >
+            <Eye className="w-3.5 h-3.5 text-primary" />
+            <span className="hidden sm:inline">Store Preview</span>
+          </button>
+
           {/* Export Button */}
           <button
             id="export-btn"
@@ -422,6 +435,14 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
         </div>
       </div>
 
+      {/* Store Preview simulator modal */}
+      {showStorePreview && (
+        <StorePreviewModal
+          open={showStorePreview}
+          onOpenChange={setShowStorePreview}
+          appName={project?.name || "My Awesome App"}
+        />
+      )}
       {/* Export modal */}
       {showExport && (
         <ExportModal projectId={projectId} onClose={() => setShowExport(false)} />

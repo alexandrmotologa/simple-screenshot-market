@@ -79,8 +79,11 @@ export function ScreenVerticalMenu({ screen, screenSet }: ScreenVerticalMenuProp
   const W = screen.width;
   const H = screen.height;
 
-  // ── Apply 1, 2, or 3 Phone Mockups ──────────────────────────────────────────
-  const applyMockupLayout = (count: 1 | 2 | 3, style: "angled" | "straight" = "angled") => {
+  // ── Apply 1, 2, or 3 Phone Mockups with rich 3D perspectives ──────────────
+  const applyMockupLayout = (
+    count: 1 | 2 | 3,
+    style: "straight" | "tilted-left" | "tilted-right" | "peeking-bottom" | "angled" | "overlap" = "straight"
+  ) => {
     // Keep existing non-screenshot layers (texts, shapes, flags, etc.)
     const nonScreenshotLayers = screen.layers.filter((l) => l.type !== "screenshot");
 
@@ -92,26 +95,121 @@ export function ScreenVerticalMenu({ screen, screenSet }: ScreenVerticalMenuProp
     let newMockups: ScreenshotLayer[] = [];
 
     if (count === 1) {
-      newMockups = [
-        {
-          id: existingScreenshots[0]?.id || `mockup_${nanoid()}`,
-          type: "screenshot",
-          src: src0,
-          x: Math.round(W * 0.08),
-          y: Math.round(H * 0.28),
-          width: Math.round(W * 0.84),
-          height: Math.round(H * 0.72),
-          rotation: 0,
-          opacity: 1,
-          objectFit: "cover",
-          cornerRadius: 54,
-          showDeviceFrame: true,
-          shadow: { blur: 80, spread: 0, color: "rgba(0,0,0,0.35)", offsetX: 0, offsetY: 20 },
-          label: "Drop your screenshot here",
-        },
-      ];
+      if (style === "tilted-left") {
+        newMockups = [
+          {
+            id: existingScreenshots[0]?.id || `mockup_${nanoid()}`,
+            type: "screenshot",
+            src: src0,
+            x: Math.round(W * 0.04),
+            y: Math.round(H * 0.28),
+            width: Math.round(W * 0.86),
+            height: Math.round(H * 0.72),
+            rotation: -12,
+            opacity: 1,
+            objectFit: "cover",
+            cornerRadius: 54,
+            showDeviceFrame: true,
+            shadow: { blur: 90, spread: 0, color: "rgba(0,0,0,0.40)", offsetX: -12, offsetY: 26 },
+            label: "Drop your screenshot here",
+          },
+        ];
+      } else if (style === "tilted-right") {
+        newMockups = [
+          {
+            id: existingScreenshots[0]?.id || `mockup_${nanoid()}`,
+            type: "screenshot",
+            src: src0,
+            x: Math.round(W * 0.08),
+            y: Math.round(H * 0.28),
+            width: Math.round(W * 0.86),
+            height: Math.round(H * 0.72),
+            rotation: 12,
+            opacity: 1,
+            objectFit: "cover",
+            cornerRadius: 54,
+            showDeviceFrame: true,
+            shadow: { blur: 90, spread: 0, color: "rgba(0,0,0,0.40)", offsetX: 12, offsetY: 26 },
+            label: "Drop your screenshot here",
+          },
+        ];
+      } else if (style === "peeking-bottom") {
+        newMockups = [
+          {
+            id: existingScreenshots[0]?.id || `mockup_${nanoid()}`,
+            type: "screenshot",
+            src: src0,
+            x: Math.round(W * 0.05),
+            y: Math.round(H * 0.38),
+            width: Math.round(W * 0.90),
+            height: Math.round(H * 0.82),
+            rotation: 0,
+            opacity: 1,
+            objectFit: "cover",
+            cornerRadius: 56,
+            showDeviceFrame: true,
+            shadow: { blur: 100, spread: 0, color: "rgba(0,0,0,0.45)", offsetX: 0, offsetY: 30 },
+            label: "Drop your screenshot here",
+          },
+        ];
+      } else {
+        // Straight Center
+        newMockups = [
+          {
+            id: existingScreenshots[0]?.id || `mockup_${nanoid()}`,
+            type: "screenshot",
+            src: src0,
+            x: Math.round(W * 0.08),
+            y: Math.round(H * 0.28),
+            width: Math.round(W * 0.84),
+            height: Math.round(H * 0.72),
+            rotation: 0,
+            opacity: 1,
+            objectFit: "cover",
+            cornerRadius: 54,
+            showDeviceFrame: true,
+            shadow: { blur: 80, spread: 0, color: "rgba(0,0,0,0.35)", offsetX: 0, offsetY: 20 },
+            label: "Drop your screenshot here",
+          },
+        ];
+      }
     } else if (count === 2) {
-      if (style === "straight") {
+      if (style === "overlap") {
+        newMockups = [
+          {
+            id: existingScreenshots[0]?.id || `mockup_${nanoid()}`,
+            type: "screenshot",
+            src: src0,
+            x: Math.round(W * 0.04),
+            y: Math.round(H * 0.35),
+            width: Math.round(W * 0.58),
+            height: Math.round(H * 0.64),
+            rotation: -4,
+            opacity: 0.95,
+            objectFit: "cover",
+            cornerRadius: 54,
+            showDeviceFrame: true,
+            shadow: { blur: 70, spread: 0, color: "rgba(0,0,0,0.30)", offsetX: -8, offsetY: 20 },
+            label: "Screenshot 1",
+          },
+          {
+            id: existingScreenshots[1]?.id || `mockup_${nanoid()}`,
+            type: "screenshot",
+            src: src1,
+            x: Math.round(W * 0.35),
+            y: Math.round(H * 0.28),
+            width: Math.round(W * 0.62),
+            height: Math.round(H * 0.70),
+            rotation: 3,
+            opacity: 1,
+            objectFit: "cover",
+            cornerRadius: 54,
+            showDeviceFrame: true,
+            shadow: { blur: 95, spread: 0, color: "rgba(0,0,0,0.45)", offsetX: 10, offsetY: 28 },
+            label: "Screenshot 2",
+          },
+        ];
+      } else if (style === "straight") {
         newMockups = [
           {
             id: existingScreenshots[0]?.id || `mockup_${nanoid()}`,
@@ -157,7 +255,7 @@ export function ScreenVerticalMenu({ screen, screenSet }: ScreenVerticalMenuProp
             y: Math.round(H * 0.32),
             width: Math.round(W * 0.58),
             height: Math.round(H * 0.66),
-            rotation: -5,
+            rotation: -6,
             opacity: 1,
             objectFit: "cover",
             cornerRadius: 54,
@@ -173,7 +271,7 @@ export function ScreenVerticalMenu({ screen, screenSet }: ScreenVerticalMenuProp
             y: Math.round(H * 0.35),
             width: Math.round(W * 0.58),
             height: Math.round(H * 0.66),
-            rotation: 5,
+            rotation: 6,
             opacity: 1,
             objectFit: "cover",
             cornerRadius: 54,
@@ -251,7 +349,7 @@ export function ScreenVerticalMenu({ screen, screenSet }: ScreenVerticalMenuProp
             objectFit: "cover",
             cornerRadius: 54,
             showDeviceFrame: true,
-            shadow: { blur: 60, spread: 0, color: "rgba(0,0,0,0.28)", offsetX: -10, offsetY: 18 },
+            shadow: { blur: 65, spread: 0, color: "rgba(0,0,0,0.30)", offsetX: -8, offsetY: 20 },
             label: "Screenshot 1",
           },
           {
@@ -267,17 +365,17 @@ export function ScreenVerticalMenu({ screen, screenSet }: ScreenVerticalMenuProp
             objectFit: "cover",
             cornerRadius: 54,
             showDeviceFrame: true,
-            shadow: { blur: 60, spread: 0, color: "rgba(0,0,0,0.28)", offsetX: 10, offsetY: 18 },
+            shadow: { blur: 65, spread: 0, color: "rgba(0,0,0,0.30)", offsetX: 8, offsetY: 20 },
             label: "Screenshot 3",
           },
           {
             id: existingScreenshots[1]?.id || `mockup_${nanoid()}`,
             type: "screenshot",
             src: src1,
-            x: Math.round(W * 0.23),
-            y: Math.round(H * 0.29),
-            width: Math.round(W * 0.54),
-            height: Math.round(H * 0.68),
+            x: Math.round(W * 0.22),
+            y: Math.round(H * 0.28),
+            width: Math.round(W * 0.56),
+            height: Math.round(H * 0.70),
             rotation: 0,
             opacity: 1,
             objectFit: "cover",
@@ -310,8 +408,16 @@ export function ScreenVerticalMenu({ screen, screenSet }: ScreenVerticalMenuProp
       useEditorStore.getState().recordHistory();
       return;
     }
-    const nextCount = (mockupCount - 1) as 1 | 2;
+    const nextCount = (Math.max(1, mockupCount - 1)) as 1 | 2 | 3;
     applyMockupLayout(nextCount);
+  };
+
+  const handleSetSolidBg = (color: string) => {
+    updateScreenBackground(screenSet.id, screen.id, {
+      type: "solid",
+      color,
+    });
+    useEditorStore.getState().recordHistory();
   };
 
   // ── Add Text Layer ─────────────────────────────────────────────────────────
@@ -375,7 +481,7 @@ export function ScreenVerticalMenu({ screen, screenSet }: ScreenVerticalMenuProp
         className="absolute -right-11 top-4 flex flex-col gap-1.5 p-1 bg-card/95 backdrop-blur-md border border-border/70 rounded-xl shadow-xl shadow-black/25 z-40 animate-in fade-in zoom-in-95 duration-150 select-none"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* ── 1. MOCKUPS POPUP (1 to 3 phones) ─────────────────────────────────── */}
+        {/* ── 1. MOCKUPS POPUP (1 to 3 phones + 3D Perspectives) ───────────────── */}
         <Popover open={mockupPopoverOpen} onOpenChange={setMockupPopoverOpen}>
           <Tooltip>
             <PopoverTrigger
@@ -393,48 +499,109 @@ export function ScreenVerticalMenu({ screen, screenSet }: ScreenVerticalMenuProp
               </span>
             </PopoverTrigger>
             <TooltipContent side="right">
-              <p className="font-semibold">Mockup Layout ({mockupCount}/3 Phones)</p>
-              <p className="text-[10px] text-muted-foreground">Add up to 3 phone frames</p>
+              <p className="font-semibold">Mockup Layout & Angles ({mockupCount}/3 Phones)</p>
+              <p className="text-[10px] text-muted-foreground">Perspectives, tilts & multi-phone frames</p>
             </TooltipContent>
           </Tooltip>
 
-          <PopoverContent side="right" align="start" className="w-72 p-3 shadow-2xl z-50">
+          <PopoverContent side="right" align="start" className="w-80 p-3 shadow-2xl z-50">
             <div className="space-y-3">
               <div className="flex items-center justify-between pb-1 border-b border-border/50">
                 <div className="flex items-center gap-1.5">
                   <Smartphone className="w-4 h-4 text-primary" />
-                  <span className="text-xs font-bold text-foreground">Phone Mockups</span>
+                  <span className="text-xs font-bold text-foreground">Phone Angles & Layouts</span>
                 </div>
                 <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
                   {mockupCount} / 3 Max
                 </span>
               </div>
 
-              {/* Quick Preset Layouts */}
+              {/* Single Phone Perspective Presets */}
               <div className="space-y-1.5">
                 <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  Layout Presets
+                  1 Phone Perspectives
                 </label>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {/* 1 Phone */}
+                <div className="grid grid-cols-4 gap-1.5">
+                  {/* Straight */}
                   <button
                     type="button"
                     onClick={() => {
-                      applyMockupLayout(1);
+                      applyMockupLayout(1, "straight");
                       setMockupPopoverOpen(false);
                     }}
                     className={cn(
-                      "flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-all",
-                      mockupCount === 1
+                      "flex flex-col items-center justify-center p-1.5 rounded-lg border text-center transition-all cursor-pointer",
+                      mockupCount === 1 && existingScreenshots[0]?.rotation === 0
                         ? "border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary/40"
                         : "border-border/60 hover:bg-secondary text-muted-foreground hover:text-foreground"
                     )}
+                    title="Center Straight"
                   >
-                    <div className="w-4 h-7 border-2 border-current rounded-sm mb-1 opacity-80" />
-                    <span className="text-[11px]">1 Phone</span>
+                    <div className="w-3.5 h-6 border-2 border-current rounded-sm mb-1 opacity-80" />
+                    <span className="text-[9.5px]">Straight</span>
                   </button>
 
-                  {/* 2 Phones */}
+                  {/* Tilt Left */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      applyMockupLayout(1, "tilted-left");
+                      setMockupPopoverOpen(false);
+                    }}
+                    className={cn(
+                      "flex flex-col items-center justify-center p-1.5 rounded-lg border text-center transition-all cursor-pointer",
+                      mockupCount === 1 && (existingScreenshots[0]?.rotation || 0) < -5
+                        ? "border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary/40"
+                        : "border-border/60 hover:bg-secondary text-muted-foreground hover:text-foreground"
+                    )}
+                    title="Tilt Left (-12°)"
+                  >
+                    <div className="w-3.5 h-6 border-2 border-current rounded-sm mb-1 -rotate-12 opacity-80" />
+                    <span className="text-[9.5px]">Tilt Left</span>
+                  </button>
+
+                  {/* Tilt Right */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      applyMockupLayout(1, "tilted-right");
+                      setMockupPopoverOpen(false);
+                    }}
+                    className={cn(
+                      "flex flex-col items-center justify-center p-1.5 rounded-lg border text-center transition-all cursor-pointer",
+                      mockupCount === 1 && (existingScreenshots[0]?.rotation || 0) > 5
+                        ? "border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary/40"
+                        : "border-border/60 hover:bg-secondary text-muted-foreground hover:text-foreground"
+                    )}
+                    title="Tilt Right (+12°)"
+                  >
+                    <div className="w-3.5 h-6 border-2 border-current rounded-sm mb-1 rotate-12 opacity-80" />
+                    <span className="text-[9.5px]">Tilt Right</span>
+                  </button>
+
+                  {/* Peeking Bottom */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      applyMockupLayout(1, "peeking-bottom");
+                      setMockupPopoverOpen(false);
+                    }}
+                    className="flex flex-col items-center justify-center p-1.5 rounded-lg border border-border/60 hover:bg-secondary text-muted-foreground hover:text-foreground text-center transition-all cursor-pointer"
+                    title="Large Peeking Phone from Bottom"
+                  >
+                    <div className="w-4 h-5 border-2 border-current border-b-0 rounded-t-sm mb-1 opacity-80 mt-1" />
+                    <span className="text-[9.5px]">Peeking</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Multi-Phone Layouts */}
+              <div className="space-y-1.5 pt-1 border-t border-border/40">
+                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  Multi-Phone Layouts
+                </label>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {/* 2 Phones Angled Duo */}
                   <button
                     type="button"
                     onClick={() => {
@@ -442,20 +609,36 @@ export function ScreenVerticalMenu({ screen, screenSet }: ScreenVerticalMenuProp
                       setMockupPopoverOpen(false);
                     }}
                     className={cn(
-                      "flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-all",
+                      "flex flex-col items-center justify-center p-1.5 rounded-lg border text-center transition-all cursor-pointer",
                       mockupCount === 2
                         ? "border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary/40"
                         : "border-border/60 hover:bg-secondary text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <div className="flex items-center gap-0.5 mb-1 opacity-80">
-                      <div className="w-3.5 h-6 border-2 border-current rounded-sm -rotate-6" />
-                      <div className="w-3.5 h-6 border-2 border-current rounded-sm rotate-6" />
+                      <div className="w-3 h-5 border-2 border-current rounded-sm -rotate-6" />
+                      <div className="w-3 h-5 border-2 border-current rounded-sm rotate-6" />
                     </div>
-                    <span className="text-[11px]">2 Phones</span>
+                    <span className="text-[10px]">Angled Duo</span>
                   </button>
 
-                  {/* 3 Phones */}
+                  {/* 2 Phones Overlap */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      applyMockupLayout(2, "overlap");
+                      setMockupPopoverOpen(false);
+                    }}
+                    className="flex flex-col items-center justify-center p-1.5 rounded-lg border border-border/60 hover:bg-secondary text-muted-foreground hover:text-foreground text-center transition-all cursor-pointer"
+                  >
+                    <div className="relative w-7 h-5 mb-1 opacity-80 flex items-center justify-center">
+                      <div className="absolute left-0 w-3 h-5 border border-current rounded-sm opacity-60" />
+                      <div className="absolute right-0 w-3.5 h-5.5 border-2 border-current rounded-sm z-10 bg-card" />
+                    </div>
+                    <span className="text-[10px]">Overlap Duo</span>
+                  </button>
+
+                  {/* 3 Phones Cascade */}
                   <button
                     type="button"
                     onClick={() => {
@@ -463,18 +646,18 @@ export function ScreenVerticalMenu({ screen, screenSet }: ScreenVerticalMenuProp
                       setMockupPopoverOpen(false);
                     }}
                     className={cn(
-                      "flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-all",
+                      "flex flex-col items-center justify-center p-1.5 rounded-lg border text-center transition-all cursor-pointer",
                       mockupCount === 3
                         ? "border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary/40"
                         : "border-border/60 hover:bg-secondary text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <div className="flex items-center gap-0.5 mb-1 opacity-80">
-                      <div className="w-3 h-5 border border-current rounded-sm -rotate-6" />
-                      <div className="w-3.5 h-6 border-2 border-current rounded-sm z-10 scale-105" />
-                      <div className="w-3 h-5 border border-current rounded-sm rotate-6" />
+                      <div className="w-2.5 h-4 border border-current rounded-sm -rotate-6" />
+                      <div className="w-3 h-5 border-2 border-current rounded-sm z-10" />
+                      <div className="w-2.5 h-4 border border-current rounded-sm rotate-6" />
                     </div>
-                    <span className="text-[11px]">3 Phones</span>
+                    <span className="text-[10px]">3P Cascade</span>
                   </button>
                 </div>
               </div>

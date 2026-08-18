@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { findModel } from "@/lib/deviceModels";
 import { ALL_DEVICES } from "@/lib/devices";
 import { AppleStoreIcon, GooglePlayIcon, APP_STORE_LABEL, GOOGLE_PLAY_LABEL } from "@/components/icons/StoreIcons";
-import { CheckCircle2, AlertTriangle, XCircle, ShieldCheck, Smartphone, Info, ChevronDown } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, ShieldCheck, Smartphone, Info, ChevronDown, Eye } from "lucide-react";
 import { Screen, ScreenshotLayer, ImageLayer, FrameType } from "@/lib/types";
 import {
   DropdownMenu,
@@ -19,9 +19,11 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { FRAME_STYLES_LIST, FullBorderStyle } from "@/components/editor/ScreenSetRow";
+import { StorePreviewModal } from "@/components/editor/StorePreviewModal";
 
 export function PlatformsPanel() {
   const { screenSets, addScreenSet, removeScreenSet, updateMockup } = useEditorStore();
+  const [showSimulator, setShowSimulator] = useState(false);
 
   const iosSet = screenSets.find((s) => s.store === "ios");
   const androidSet = screenSets.find((s) => s.store === "android");
@@ -193,17 +195,28 @@ export function PlatformsPanel() {
     <div className="flex flex-col h-full min-h-0 overflow-hidden">
       <ScrollArea className="flex-1 min-h-0">
         <div className="p-3.5 space-y-4">
-          {/* Header Description */}
-          <div>
-            <div className="flex items-center gap-1.5 mb-1">
-              <ShieldCheck className="w-4 h-4 text-primary" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                Platforms & Store Readiness
-              </h3>
+          {/* Header Description & Simulator button */}
+          <div className="space-y-2.5">
+            <div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <ShieldCheck className="w-4 h-4 text-primary" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                  Platforms & Store Readiness
+                </h3>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Manage target platforms, frame styles, and verify App Store & Google Play pre-submission guidelines in real-time.
+              </p>
             </div>
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Manage target platforms, frame styles, and verify App Store & Google Play pre-submission guidelines in real-time.
-            </p>
+
+            <button
+              type="button"
+              onClick={() => setShowSimulator(true)}
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 text-xs font-bold transition-all shadow-xs active:scale-[0.98] cursor-pointer"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>Preview in Live Store Simulator</span>
+            </button>
           </div>
 
           {/* Platform 1: App Store (iOS) */}
@@ -481,6 +494,10 @@ export function PlatformsPanel() {
           </div>
         </div>
       </ScrollArea>
+
+      {showSimulator && (
+        <StorePreviewModal open={showSimulator} onOpenChange={setShowSimulator} />
+      )}
     </div>
   );
 }

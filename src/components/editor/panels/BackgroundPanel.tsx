@@ -1,13 +1,135 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useEditorStore } from "@/lib/store/editorStore";
+import { toast } from "@/lib/store/toastStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { GradientDirection } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { ColorInput } from "@/components/ui/color-input";
+import { Upload, Sparkles, Wand2, Layers, Image as ImageIcon } from "lucide-react";
+
+type Tab = "color" | "gradient" | "mesh" | "panoramic";
+
+const PANORAMIC_PRESETS = [
+  {
+    id: "cosmic-wave",
+    name: "Cosmic Neon Flow",
+    desc: "Purple & magenta glowing undulating wave",
+    preview: "linear-gradient(to right, #090a16, #7928ca, #ff0080, #00dfd8, #090a16)",
+    render: (ctx: CanvasRenderingContext2D, W: number, H: number) => {
+      // Base dark bg
+      const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+      bgGrad.addColorStop(0, "#090a16");
+      bgGrad.addColorStop(0.5, "#150d2a");
+      bgGrad.addColorStop(1, "#070c1e");
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Continuous wavy flowing ribbon across all screens
+      ctx.beginPath();
+      ctx.moveTo(0, H * 0.7);
+      ctx.bezierCurveTo(W * 0.25, H * 0.4, W * 0.5, H * 0.85, W * 0.75, H * 0.45);
+      ctx.bezierCurveTo(W * 0.88, H * 0.3, W * 0.95, H * 0.6, W, H * 0.5);
+      ctx.lineTo(W, H);
+      ctx.lineTo(0, H);
+      ctx.closePath();
+
+      const waveGrad = ctx.createLinearGradient(0, 0, W, 0);
+      waveGrad.addColorStop(0, "rgba(121, 40, 202, 0.75)");
+      waveGrad.addColorStop(0.35, "rgba(255, 0, 128, 0.85)");
+      waveGrad.addColorStop(0.7, "rgba(0, 223, 216, 0.75)");
+      waveGrad.addColorStop(1, "rgba(121, 40, 202, 0.8)");
+      ctx.fillStyle = waveGrad;
+      ctx.fill();
+
+      // Top glowing stroke
+      ctx.beginPath();
+      ctx.moveTo(0, H * 0.7);
+      ctx.bezierCurveTo(W * 0.25, H * 0.4, W * 0.5, H * 0.85, W * 0.75, H * 0.45);
+      ctx.bezierCurveTo(W * 0.88, H * 0.3, W * 0.95, H * 0.6, W, H * 0.5);
+      ctx.lineWidth = 14;
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.stroke();
+    },
+  },
+  {
+    id: "sunset-horizon",
+    name: "Golden Sunset Horizon",
+    desc: "Warm crimson to blazing gold horizon flow",
+    preview: "linear-gradient(to right, #1a0b2e, #7c2d12, #f97316, #fbbf24, #1a0b2e)",
+    render: (ctx: CanvasRenderingContext2D, W: number, H: number) => {
+      const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+      bgGrad.addColorStop(0, "#12072b");
+      bgGrad.addColorStop(0.6, "#2e0854");
+      bgGrad.addColorStop(1, "#0a0418");
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Glowing horizon arc across all screens
+      const sunGrad = ctx.createRadialGradient(W * 0.5, H * 0.6, 50, W * 0.5, H * 0.6, W * 0.6);
+      sunGrad.addColorStop(0, "rgba(251, 191, 36, 0.95)");
+      sunGrad.addColorStop(0.3, "rgba(249, 115, 22, 0.7)");
+      sunGrad.addColorStop(0.7, "rgba(236, 72, 153, 0.4)");
+      sunGrad.addColorStop(1, "rgba(18, 7, 43, 0)");
+      ctx.fillStyle = sunGrad;
+      ctx.fillRect(0, 0, W, H);
+    },
+  },
+  {
+    id: "emerald-aurora",
+    name: "Oceanic Aurora Flow",
+    desc: "Luminescent teal & emerald ribbons across screens",
+    preview: "linear-gradient(to right, #031b26, #0d9488, #10b981, #3b82f6, #031b26)",
+    render: (ctx: CanvasRenderingContext2D, W: number, H: number) => {
+      ctx.fillStyle = "#031b26";
+      ctx.fillRect(0, 0, W, H);
+
+      const auroraGrad = ctx.createLinearGradient(0, 0, W, 0);
+      auroraGrad.addColorStop(0, "#0f766e");
+      auroraGrad.addColorStop(0.3, "#10b981");
+      auroraGrad.addColorStop(0.6, "#06b6d4");
+      auroraGrad.addColorStop(1, "#3b82f6");
+
+      ctx.beginPath();
+      ctx.moveTo(0, H * 0.5);
+      ctx.bezierCurveTo(W * 0.3, H * 0.2, W * 0.6, H * 0.7, W, H * 0.4);
+      ctx.lineTo(W, H);
+      ctx.lineTo(0, H);
+      ctx.closePath();
+      ctx.fillStyle = auroraGrad;
+      ctx.globalAlpha = 0.5;
+      ctx.fill();
+      ctx.globalAlpha = 1.0;
+    },
+  },
+  {
+    id: "titanium-modern",
+    name: "Titanium Cyber Flow",
+    desc: "Ultra-sleek dark steel & subtle metallic curves",
+    preview: "linear-gradient(to right, #09090b, #27272a, #52525b, #18181b, #09090b)",
+    render: (ctx: CanvasRenderingContext2D, W: number, H: number) => {
+      ctx.fillStyle = "#09090b";
+      ctx.fillRect(0, 0, W, H);
+
+      const flowGrad = ctx.createLinearGradient(0, 0, W, H);
+      flowGrad.addColorStop(0, "rgba(255,255,255,0.06)");
+      flowGrad.addColorStop(0.5, "rgba(255,255,255,0.18)");
+      flowGrad.addColorStop(1, "rgba(255,255,255,0.04)");
+
+      ctx.beginPath();
+      ctx.moveTo(0, H * 0.6);
+      ctx.bezierCurveTo(W * 0.35, H * 0.3, W * 0.65, H * 0.8, W, H * 0.5);
+      ctx.lineTo(W, H);
+      ctx.lineTo(0, H);
+      ctx.closePath();
+      ctx.fillStyle = flowGrad;
+      ctx.fill();
+    },
+  },
+];
 
 const PRESET_COLORS = [
   // Neutrals
@@ -43,8 +165,6 @@ const GRADIENT_PRESETS: { name: string; from: string; to: string; dir: GradientD
   { name: "Lava",      from: "#7c2d12", to: "#f97316", dir: "to-tr" },
 ];
 
-type Tab = "color" | "gradient" | "mesh";
-
 const MESH_PRESETS: { name: string; tl: string; tr: string; bl: string; br: string }[] = [
   { name: "Nebula",    tl: "#6d28d9", tr: "#1a56db", bl: "#ec4899", br: "#14b8a6" },
   { name: "Sunrise",   tl: "#f97316", tr: "#fbbf24", bl: "#be185d", br: "#f97316" },
@@ -58,12 +178,13 @@ const MESH_PRESETS: { name: string; tl: string; tr: string; bl: string; br: stri
 ];
 
 export function BackgroundPanel() {
-  const { getActiveSet, getActiveScreen, updateScreenBackground, updateAllScreensBackground } = useEditorStore();
+  const { getActiveSet, getActiveScreen, updateScreenBackground, updateAllScreensBackground, applyPanoramicBackground } = useEditorStore();
   const [tab, setTab] = useState<Tab>("color");
   const [applyAll, setApplyAll] = useState(false);
   const [patternEnabled, setPatternEnabled] = useState(false);
   const [patternType, setPatternType] = useState<"dots" | "lines" | "grid" | "noise">("dots");
   const [patternOpacity, setPatternOpacity] = useState(0.15);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const set = getActiveSet();
   const screen = getActiveScreen();
@@ -78,6 +199,38 @@ export function BackgroundPanel() {
     }
   };
 
+  const handlePanoramicUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !set) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      const img = new Image();
+      img.onload = () => {
+        applyPanoramicBackground(set.id, dataUrl, img.naturalWidth, img.naturalHeight);
+        toast.success(`Panoramic background connected across ${set.screens.length} screens!`);
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleApplyPanoramicPreset = (preset: typeof PANORAMIC_PRESETS[0]) => {
+    if (!set) return;
+    const canvas = document.createElement("canvas");
+    const W = 4000;
+    const H = 2796;
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    preset.render(ctx, W, H);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
+    applyPanoramicBackground(set.id, dataUrl, W, H);
+    toast.success(`Applied "${preset.name}" across all ${set.screens.length} screens!`);
+  };
+
   if (!set || !screen) {
     return <div className="flex items-center justify-center h-full text-muted-foreground text-sm">No screen selected</div>;
   }
@@ -85,24 +238,26 @@ export function BackgroundPanel() {
   return (
     <ScrollArea className="h-full">
       <div className="p-4 space-y-5">
-        {/* Apply to all toggle */}
-        <div className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-secondary/60">
-          <Label htmlFor="apply-all" className="text-xs cursor-pointer">Apply to all screens</Label>
-          <Switch id="apply-all" checked={applyAll} onCheckedChange={setApplyAll} />
-        </div>
+        {/* Apply to all toggle (hidden in panoramic tab since panoramic inherently spans all screens) */}
+        {tab !== "panoramic" && (
+          <div className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-secondary/60">
+            <Label htmlFor="apply-all" className="text-xs cursor-pointer">Apply to all screens</Label>
+            <Switch id="apply-all" checked={applyAll} onCheckedChange={setApplyAll} />
+          </div>
+        )}
 
         {/* Tab switcher */}
         <div className="flex rounded-xl bg-secondary p-1 gap-1">
-          {(["color", "gradient", "mesh"] as Tab[]).map((t) => (
+          {(["color", "gradient", "mesh", "panoramic"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={cn(
-                "flex-1 py-1.5 rounded-lg text-xs font-medium capitalize transition-all",
-                tab === t ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                "flex-1 py-1.5 rounded-lg text-xs font-medium capitalize transition-all cursor-pointer",
+                tab === t ? "bg-background text-foreground shadow-xs font-semibold" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              {t === "mesh" ? "✦ Mesh" : t === "gradient" ? "Gradient" : "Solid"}
+              {t === "panoramic" ? "🔗 Panoramic" : t === "mesh" ? "✦ Mesh" : t === "gradient" ? "Gradient" : "Solid"}
             </button>
           ))}
         </div>
@@ -309,6 +464,75 @@ export function BackgroundPanel() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {tab === "panoramic" && (
+          <div className="space-y-4">
+            {/* Header info */}
+            <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 space-y-1">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-primary">
+                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                <span>Multi-Screen Continuous Carousel</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Connects a seamless wide artwork across all {set.screens.length} screens in your project with pixel-perfect sliced continuity.
+              </p>
+            </div>
+
+            {/* Custom wide image upload */}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground block">Upload Custom Panorama / Wide Artwork</Label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handlePanoramicUpload}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full flex items-center justify-center gap-2 p-3.5 rounded-xl border border-dashed border-border/80 bg-secondary/40 hover:bg-secondary/70 hover:border-primary/60 transition-all cursor-pointer group"
+              >
+                <Upload className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-semibold text-foreground">Upload Ultra-Wide Image</span>
+              </button>
+            </div>
+
+            {/* Curated Panoramic Flow Presets */}
+            <div className="space-y-2.5 pt-1">
+              <Label className="text-xs text-muted-foreground block">Curated Continuous Flow Presets</Label>
+              <div className="space-y-2">
+                {PANORAMIC_PRESETS.map((preset) => (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => handleApplyPanoramicPreset(preset)}
+                    className="group relative w-full text-left rounded-xl overflow-hidden border border-border/50 hover:border-primary/80 transition-all shadow-xs hover:shadow-md cursor-pointer"
+                  >
+                    <div
+                      className="h-14 relative flex items-center justify-between px-3"
+                      style={{ background: preset.preview }}
+                    >
+                      {/* Visual screen slice dividers simulation */}
+                      <div className="absolute inset-0 flex justify-between pointer-events-none opacity-40">
+                        {Array.from({ length: Math.max(set.screens.length - 1, 1) }).map((_, i) => (
+                          <div key={i} className="h-full border-r border-dashed border-white/60" />
+                        ))}
+                      </div>
+                      <div className="relative z-10">
+                        <p className="text-xs font-bold text-white drop-shadow-md">{preset.name}</p>
+                        <p className="text-[9.5px] text-white/80 drop-shadow-sm">{preset.desc}</p>
+                      </div>
+                      <div className="relative z-10 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-[9px] font-semibold text-white/90 border border-white/20">
+                        Apply to {set.screens.length} Screens
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 

@@ -4,9 +4,10 @@ import { useState, useCallback } from "react";
 import {
   Layers, Type, Square, Flag,
   Cpu, Upload, Grid3X3, X, Palette, Smile, Globe, User,
-  Smartphone, LayoutList
+  Smartphone, LayoutList, LayoutTemplate
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { TemplatesPanel } from "@/components/editor/panels/TemplatesPanel";
 import { LayersPanel } from "@/components/editor/panels/LayersPanel";
 import { TextPanel } from "@/components/editor/panels/TextPanel";
 import { BackgroundPanel } from "@/components/editor/panels/BackgroundPanel";
@@ -23,6 +24,7 @@ import { StoreListingPanel } from "@/components/editor/panels/StoreListingPanel"
 import { cn } from "@/lib/utils";
 
 type PanelId =
+  | "templates"
   | "themes"
   | "platforms"
   | "layers"
@@ -54,6 +56,7 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
   {
     name: "Structure & Style",
     tools: [
+      { id: "templates", icon: LayoutTemplate, label: "Templates & Presets" },
       { id: "platforms", icon: Smartphone, label: "Platforms & Presets" },
       { id: "themes", icon: Palette, label: "Color Themes" },
       { id: "background", icon: Grid3X3, label: "Background & Mesh" },
@@ -82,6 +85,7 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
 ];
 
 const PANEL_TITLES: Record<NonNullable<PanelId>, string> = {
+  templates: "Templates & Presets",
   themes: "Color Themes",
   platforms: "Platforms & Devices",
   layers: "Layers",
@@ -99,6 +103,7 @@ const PANEL_TITLES: Record<NonNullable<PanelId>, string> = {
 
 function renderPanel(panel: NonNullable<PanelId>) {
   switch (panel) {
+    case "templates": return <TemplatesPanel />;
     case "themes": return <ThemesPanel />;
     case "platforms": return <PlatformsPanel />;
     case "layers": return <LayersPanel />;

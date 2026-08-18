@@ -55,6 +55,8 @@ interface EditorStore {
   updateBackground: (setId: string, screenId: string, background: Background) => void;
   updateScreenBackground: (setId: string, screenId: string, background: Background) => void;
   updateAllScreensBackground: (setId: string, background: Background) => void;
+  applyPanoramicBackground: (setId: string, imageUrl: string, naturalWidth: number, naturalHeight: number) => void;
+  autoFillScreenshots: (setId: string, urls: string[]) => void;
 
   // Actions: layers
   addLayer: (setId: string, screenId: string, layer: any) => void;
@@ -781,6 +783,83 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
           }),
         }));
         return { ...ss, screens: newScreens };
+      }),
+    });
+    get().recordHistory();
+  },
+
+  applyPanoramicBackground: (setId, imageUrl, naturalWidth, naturalHeight) => {
+    const { screenSets } = get();
+    set({
+      screenSets: screenSets.map((ss) => {
+        if (ss.id !== setId) return ss;
+        const count = ss.screens.length;
+        if (count === 0) return ss;
+        const sliceWidth = naturalWidth / count;
+        const sliceHeight = naturalHeight;
+        return {
+          ...ss,
+          screens: ss.screens.map((s, idx) => ({
+            ...s,
+            background: {
+              type: "image",
+              imageUrl,
+              imageSlice: {
+                x: Math.round(idx * sliceWidth),
+                y: 0,
+                width: Math.round(sliceWidth),
+                height: Math.round(sliceHeight),
+              },
+            },
+          })),
+        };
+      }),
+    });
+    get().recordHistory();
+  },
+
+  autoFillScreenshots: (setId, urls) => {
+    if (!urls || urls.length === 0) return;
+    const { screenSets } = get();
+    set({
+      screenSets: screenSets.map((ss) => {
+        if (ss.id !== setId) return ss;
+        let urlIndex = 0;
+        return {
+          ...ss,
+          screens: ss.screens.map((s) => {
+            const hasScreenshotLayer = s.layers.some((l) => l.type === "screenshot");
+            if (!hasScreenshotLayer && urlIndex < urls.length) {
+              const newLayer: import("@/lib/types").ScreenshotLayer = {
+                id: nanoid(),
+                type: "screenshot",
+                src: urls[urlIndex++],
+                x: Math.round(s.width * 0.1),
+                y: Math.round(s.height * 0.2),
+                width: Math.round(s.width * 0.8),
+                height: Math.round(s.height * 0.7),
+                rotation: 0,
+                opacity: 1,
+                objectFit: "cover",
+                cornerRadius: 40,
+                showDeviceFrame: true,
+                shadow: { blur: 80, spread: 0, color: "rgba(0,0,0,0.35)", offsetX: 0, offsetY: 20 },
+              };
+              return { ...s, layers: [...s.layers, newLayer] };
+            }
+            return {
+              ...s,
+              layers: s.layers.map((l) => {
+                if (l.type === "screenshot" && urlIndex < urls.length) {
+                  const updated = { ...l, src: urls[urlIndex] } as import("@/lib/types").ScreenshotLayer;
+                  urlIndex++;
+                  return updated;
+                }
+                return l;
+              }),
+            };
+          }),
+        };
       }),
     });
     get().recordHistory();

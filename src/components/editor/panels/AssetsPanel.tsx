@@ -2,10 +2,11 @@
 
 import { useRef, useState, useCallback } from "react";
 import { useEditorStore } from "@/lib/store/editorStore";
+import { toast } from "@/lib/store/toastStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Upload, X, ImagePlus, Smartphone, Layers,
-  ChevronRight, CheckCircle2, ArrowRight
+  ChevronRight, CheckCircle2, ArrowRight, Sparkles, Wand2
 } from "lucide-react";
 import { ScreenshotLayer } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -24,7 +25,7 @@ export function AssetsPanel() {
   const [applyingAll, setApplyingAll] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const {
-    getActiveSet, getActiveScreen, addLayer, updateLayer, screenSets,
+    getActiveSet, getActiveScreen, addLayer, updateLayer, autoFillScreenshots, screenSets,
   } = useEditorStore();
 
   // ── Load file → asset ───────────────────────────────────────────────────────
@@ -182,6 +183,35 @@ export function AssetsPanel() {
           {/* Assets grid */}
           {assets.length > 0 ? (
             <div className="space-y-3">
+              {/* 1-Click Auto Fill Banner */}
+              <div className="p-3 rounded-xl bg-gradient-to-br from-primary/15 via-primary/5 to-secondary border border-primary/30 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                    <Sparkles className="w-3.5 h-3.5 text-primary" />
+                    <span>Auto-Fill All Screens</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-muted-foreground">
+                    {assets.length} image{assets.length > 1 ? "s" : ""}
+                  </span>
+                </div>
+                <p className="text-[10.5px] text-muted-foreground leading-relaxed">
+                  Distributes uploaded screenshots sequentially: #1 ➔ Screen 1, #2 ➔ Screen 2, and so on.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const set = getActiveSet();
+                    if (!set || assets.length === 0) return;
+                    autoFillScreenshots(set.id, assets.map((a) => a.dataUrl));
+                    toast.success(`Auto-filled ${Math.min(assets.length, set.screens.length)} screens with your screenshots!`);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-all shadow-sm active:scale-[0.98] cursor-pointer"
+                >
+                  <Wand2 className="w-3.5 h-3.5" />
+                  <span>✨ Auto-Populate Project ({Math.min(assets.length, getActiveSet()?.screens.length || 0)} Screens)</span>
+                </button>
+              </div>
+
               <div className="flex items-center justify-between">
                 <p className="text-xs font-medium text-muted-foreground">
                   {assets.length} screenshot{assets.length > 1 ? "s" : ""} uploaded
