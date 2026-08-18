@@ -190,10 +190,12 @@ export interface FocusOverlay {
   cropBottom: number;
   borderWidth: number;
   borderColor: string;
-  roundedCorners: "none" | "sm" | "md" | "xl";
+  roundedCorners: "none" | "sm" | "md" | "xl" | number;
   blurBackground: boolean;
+  blurAmount?: number;
   overlayShadow: boolean;
   overlayColor?: string;
+  overlayOpacity?: number;
 }
 
 /**

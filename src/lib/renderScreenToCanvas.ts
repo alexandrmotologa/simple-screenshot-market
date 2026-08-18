@@ -2,7 +2,7 @@ import {
   Screen, ScreenSet, TextLayer, ShapeLayer,
   ImageLayer, ScreenshotLayer, FlagLayer, CharacterLayer
 } from "@/lib/types";
-import { ALL_DEVICES, COLOR_HEX_MAP } from "@/lib/devices";
+import { ALL_DEVICES, IOS_DEVICES, ANDROID_DEVICES, COLOR_HEX_MAP } from "@/lib/devices";
 
 export interface RenderOptions {
   scale?: number;
@@ -450,7 +450,9 @@ export async function renderScreenToCanvas(
       const sl = layer as ScreenshotLayer;
       const mockup = screenSet.mockup;
       const hasFrame = sl.showDeviceFrame && mockup?.showFrame !== false;
-      const device = ALL_DEVICES.find((d) => d.id === mockup?.device) || ALL_DEVICES[0];
+      const targetDeviceId = screenSet.deviceId || mockup?.device;
+      const defaultDevice = screenSet.store === "android" ? ANDROID_DEVICES[0] : IOS_DEVICES[0];
+      const device = ALL_DEVICES.find((d) => d.id === targetDeviceId) || defaultDevice;
 
       const physicalW = device.width;
       const physicalH = device.height;
@@ -487,7 +489,7 @@ export async function renderScreenToCanvas(
       }
 
       const applyShadow = () => {
-        if (mockup?.showShadow !== false) {
+        if (mockup?.showShadow === true) {
           ctx.shadowBlur = sl.shadow?.blur ?? 80;
           ctx.shadowColor = sl.shadow?.color ?? "rgba(0,0,0,0.35)";
           ctx.shadowOffsetX = sl.shadow?.offsetX ?? 0;
@@ -502,7 +504,7 @@ export async function renderScreenToCanvas(
         applyShadow();
         if (mockup.frameType === "titanium") {
           if (device.buttons) {
-            device.buttons.forEach((btn) => {
+            device.buttons.forEach((btn: any) => {
               const btnY = y + h * btn.yOffset;
               const btnH = h * btn.height;
               const btnW = (btn.thickness || 1) * (Math.min(w, h) * 0.009);
@@ -608,7 +610,7 @@ export async function renderScreenToCanvas(
           // 3D Realistic
           if (device.buttons) {
             ctx.fillStyle = baseHex;
-            device.buttons.forEach((btn) => {
+            device.buttons.forEach((btn: any) => {
               const btnY = y + h * btn.yOffset;
               const btnH = h * btn.height;
               const btnW = (btn.thickness || 1) * (Math.min(w, h) * 0.008);
@@ -757,6 +759,15 @@ export async function renderScreenToCanvas(
         }
       };
 
+      const overlay = sl.focusOverlay;
+
+      // 1. Draw base screenshot with optional blur
+      ctx.save();
+      if (overlay && overlay.enabled && overlay.blurBackground) {
+        const blurPx = overlay.blurAmount ?? 12;
+        ctx.filter = `blur(${blurPx}px)`;
+      }
+
       if (drawBaseImage) {
         drawBaseImage();
       } else {
@@ -770,6 +781,77 @@ export async function renderScreenToCanvas(
           drawPlaceholder(ctx, innerX, innerY, innerW, innerH, sl.label);
         }
       }
+      ctx.restore();
+
+      // 2. Draw overlay tint / dimming if enabled
+      if (overlay && overlay.enabled && overlay.overlayColor) {
+        ctx.save();
+        ctx.fillStyle = overlay.overlayColor;
+        ctx.fillRect(innerX, innerY, innerW, innerH);
+        ctx.restore();
+      }
+
+      // 3. Draw Focus Highlight Card (crisp unblurred slice with custom corner radius and border)
+      if (overlay && overlay.enabled && drawBaseImage) {
+        const fTop = ((overlay.cropTop ?? 25) / 100) * innerH;
+        const fBottom = ((overlay.cropBottom ?? 25) / 100) * innerH;
+        const fY = innerY + fTop;
+        const fH = Math.max(0, innerH - fTop - fBottom);
+
+        let fRadius = 24;
+        if (typeof overlay.roundedCorners === "number") {
+          fRadius = overlay.roundedCorners;
+        } else if (overlay.roundedCorners === "none") {
+          fRadius = 0;
+        } else if (overlay.roundedCorners === "sm") {
+          fRadius = 12;
+        } else if (overlay.roundedCorners === "md") {
+          fRadius = 24;
+        } else if (overlay.roundedCorners === "xl") {
+          fRadius = 40;
+        }
+
+        fRadius = Math.min(fRadius, fH / 2, innerW / 2);
+
+        // Draw shadow behind the focused card
+        if (overlay.overlayShadow) {
+          ctx.save();
+          ctx.shadowColor = "rgba(0,0,0,0.45)";
+          ctx.shadowBlur = 30;
+          ctx.shadowOffsetY = 12;
+          ctx.fillStyle = "#000000";
+          ctx.beginPath();
+          if (fRadius > 0) ctx.roundRect(innerX, fY, innerW, fH, fRadius);
+          else ctx.rect(innerX, fY, innerW, fH);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // Clip to the focused card's rounded rectangle and draw crisp unblurred image
+        ctx.save();
+        ctx.beginPath();
+        if (fRadius > 0) ctx.roundRect(innerX, fY, innerW, fH, fRadius);
+        else ctx.rect(innerX, fY, innerW, fH);
+        ctx.clip();
+
+        // Draw crisp original unblurred image
+        drawBaseImage();
+        ctx.restore();
+
+        // Stroke border on the focused card
+        if ((overlay.borderWidth ?? 0) > 0 && overlay.borderColor) {
+          ctx.save();
+          ctx.beginPath();
+          if (fRadius > 0) ctx.roundRect(innerX, fY, innerW, fH, fRadius);
+          else ctx.rect(innerX, fY, innerW, fH);
+          ctx.lineWidth = (overlay.borderWidth ?? 2) * 2;
+          ctx.strokeStyle = overlay.borderColor;
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      // 4. Draw Notch / Dynamic Island & Glass Reflection ON TOP of everything
       drawNotch();
       drawReflection();
 

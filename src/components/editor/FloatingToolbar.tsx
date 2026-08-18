@@ -831,100 +831,180 @@ export function FloatingToolbar() {
                   <Switch
                     checked={sl.focusOverlay?.enabled ?? false}
                     onCheckedChange={(checked) => {
-                      if (!checked) update({ focusOverlay: { ...sl.focusOverlay, enabled: false } as NonNullable<ScreenshotLayer["focusOverlay"]> } as Partial<ScreenshotLayer>);
-                      else update({ focusOverlay: { enabled: true, cropTop: 0, cropBottom: 0, borderWidth: 2, borderColor: "#3b82f6", roundedCorners: "xl", blurBackground: true, overlayShadow: true, overlayColor: "#9b87f540" } } as Partial<ScreenshotLayer>);
+                      if (!checked) {
+                        update({ focusOverlay: { ...sl.focusOverlay, enabled: false } as NonNullable<ScreenshotLayer["focusOverlay"]> } as Partial<ScreenshotLayer>);
+                      } else {
+                        update({
+                          focusOverlay: {
+                            enabled: true,
+                            cropTop: 25,
+                            cropBottom: 25,
+                            borderWidth: 2,
+                            borderColor: "#3b82f6",
+                            roundedCorners: 24,
+                            blurBackground: true,
+                            blurAmount: 12,
+                            overlayShadow: true,
+                            overlayColor: "#9b87f540"
+                          }
+                        } as Partial<ScreenshotLayer>);
+                      }
+                      useEditorStore.getState().recordHistory();
                     }}
                   />
                 </div>
                 {sl.focusOverlay?.enabled && (
-                  <div className="flex flex-col gap-5 border-t pt-4">
+                  <div className="flex flex-col gap-4 border-t pt-4">
                     <div className="flex flex-col gap-2 items-center justify-center">
                       <label className="w-16 h-10 rounded-md cursor-pointer ring-1 ring-border overflow-hidden block hover:ring-foreground transition-all shadow-sm relative group">
                         <ColorInput
                           value={sl.focusOverlay.overlayColor?.slice(0, 7) || "#9b87f5"}
-                          onColorChange={(color) => update({ focusOverlay: { ...sl.focusOverlay!, overlayColor: color + "40" } } as Partial<ScreenshotLayer>)}
+                          onColorChange={(color) => {
+                            update({ focusOverlay: { ...sl.focusOverlay!, overlayColor: color + "40" } } as Partial<ScreenshotLayer>);
+                            useEditorStore.getState().recordHistory();
+                          }}
                           className="opacity-0 w-0 h-0 absolute"
                         />
                         <div className="w-full h-full flex items-center justify-center bg-checkerboard">
                           <div className="w-full h-full" style={{ background: sl.focusOverlay.overlayColor || "#9b87f540" }} />
                         </div>
                       </label>
-                      <span className="text-[10px] text-muted-foreground font-medium">Overlay Color</span>
+                      <span className="text-[10px] text-muted-foreground font-medium">Overlay Tint</span>
                     </div>
                     <div className="flex gap-4">
-                      <div className="flex-1 flex flex-col gap-2">
-                        <span className="text-xs text-muted-foreground font-medium">Crop Top (%)</span>
+                      <div className="flex-1 flex flex-col gap-1.5">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-muted-foreground font-medium">Crop Top</span>
+                          <span className="text-xs font-mono text-foreground font-semibold">{sl.focusOverlay.cropTop}%</span>
+                        </div>
                         <NumInput
                           value={sl.focusOverlay.cropTop}
-                          onChange={(v) => update({ focusOverlay: { ...sl.focusOverlay!, cropTop: v } } as Partial<ScreenshotLayer>)}
+                          onChange={(v) => {
+                            update({ focusOverlay: { ...sl.focusOverlay!, cropTop: v } } as Partial<ScreenshotLayer>);
+                            useEditorStore.getState().recordHistory();
+                          }}
                           min={0} max={100} width="w-full"
                         />
                       </div>
-                      <div className="flex-1 flex flex-col gap-2">
-                        <span className="text-xs text-muted-foreground font-medium">Crop Bottom (%)</span>
+                      <div className="flex-1 flex flex-col gap-1.5">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-muted-foreground font-medium">Crop Bottom</span>
+                          <span className="text-xs font-mono text-foreground font-semibold">{sl.focusOverlay.cropBottom}%</span>
+                        </div>
                         <NumInput
                           value={sl.focusOverlay.cropBottom}
-                          onChange={(v) => update({ focusOverlay: { ...sl.focusOverlay!, cropBottom: v } } as Partial<ScreenshotLayer>)}
+                          onChange={(v) => {
+                            update({ focusOverlay: { ...sl.focusOverlay!, cropBottom: v } } as Partial<ScreenshotLayer>);
+                            useEditorStore.getState().recordHistory();
+                          }}
                           min={0} max={100} width="w-full"
                         />
                       </div>
                     </div>
                     <div className="flex gap-4">
-                      <div className="flex-1 flex flex-col gap-2">
+                      <div className="flex-1 flex flex-col gap-1.5">
                         <span className="text-xs text-muted-foreground font-medium">Border Width</span>
                         <NumInput
                           value={sl.focusOverlay.borderWidth}
-                          onChange={(v) => update({ focusOverlay: { ...sl.focusOverlay!, borderWidth: v } } as Partial<ScreenshotLayer>)}
+                          onChange={(v) => {
+                            update({ focusOverlay: { ...sl.focusOverlay!, borderWidth: v } } as Partial<ScreenshotLayer>);
+                            useEditorStore.getState().recordHistory();
+                          }}
                           min={0} max={50} width="w-full"
                         />
                       </div>
-                      <div className="flex-1 flex flex-col gap-2">
+                      <div className="flex-1 flex flex-col gap-1.5">
                         <span className="text-xs text-muted-foreground font-medium">Border Color</span>
                         <label className="h-8 rounded-md cursor-pointer ring-1 ring-border overflow-hidden block hover:ring-foreground transition-all shadow-sm">
                           <ColorInput
                             value={sl.focusOverlay.borderColor}
-                            onColorChange={(color) => update({ focusOverlay: { ...sl.focusOverlay!, borderColor: color } } as Partial<ScreenshotLayer>)}
+                            onColorChange={(color) => {
+                              update({ focusOverlay: { ...sl.focusOverlay!, borderColor: color } } as Partial<ScreenshotLayer>);
+                              useEditorStore.getState().recordHistory();
+                            }}
                             className="opacity-0 w-0 h-0 absolute"
                           />
                           <div className="w-full h-full" style={{ background: sl.focusOverlay.borderColor }} />
                         </label>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <span className="text-xs text-muted-foreground font-medium">Rounded Corners</span>
-                      <div className="flex bg-secondary/50 p-1 rounded-lg">
-                        {(["none", "sm", "md", "xl"] as const).map((r) => (
-                          <button
-                            key={r}
-                            type="button"
-                            onClick={() => update({ focusOverlay: { ...sl.focusOverlay!, roundedCorners: r } } as Partial<ScreenshotLayer>)}
-                            className={cn(
-                              "flex-1 text-[11px] py-1.5 rounded-md transition-all font-medium uppercase",
-                              sl.focusOverlay?.roundedCorners === r
-                                ? "bg-background text-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
-                            )}
-                          >
-                            {r}
-                          </button>
-                        ))}
+
+                    {/* Focus Card Radius Slider */}
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground font-medium">Focus Card Radius</span>
+                        <span className="text-xs font-mono text-foreground font-semibold">
+                          {typeof sl.focusOverlay.roundedCorners === "number"
+                            ? `${sl.focusOverlay.roundedCorners}px`
+                            : sl.focusOverlay.roundedCorners === "none" ? "0px"
+                            : sl.focusOverlay.roundedCorners === "sm" ? "12px"
+                            : sl.focusOverlay.roundedCorners === "md" ? "24px"
+                            : "40px"}
+                        </span>
                       </div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={80}
+                        step={1}
+                        value={
+                          typeof sl.focusOverlay.roundedCorners === "number"
+                            ? sl.focusOverlay.roundedCorners
+                            : sl.focusOverlay.roundedCorners === "none" ? 0
+                            : sl.focusOverlay.roundedCorners === "sm" ? 12
+                            : sl.focusOverlay.roundedCorners === "md" ? 24
+                            : 40
+                        }
+                        onChange={(e) => {
+                          update({ focusOverlay: { ...sl.focusOverlay!, roundedCorners: parseInt(e.target.value, 10) } } as Partial<ScreenshotLayer>);
+                          useEditorStore.getState().recordHistory();
+                        }}
+                        className="w-full h-1.5 accent-primary cursor-pointer"
+                      />
                     </div>
-                    <div className="flex flex-col gap-3">
+
+                    {/* Blur Background + Blur Slider */}
+                    <div className="flex flex-col gap-2 pt-1 border-t border-border/40">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm">Blur background</span>
+                        <span className="text-xs font-medium">Blur Background</span>
                         <Switch
                           size="sm"
                           checked={sl.focusOverlay.blurBackground}
-                          onCheckedChange={(c) => update({ focusOverlay: { ...sl.focusOverlay!, blurBackground: c } } as Partial<ScreenshotLayer>)}
+                          onCheckedChange={(c) => {
+                            update({ focusOverlay: { ...sl.focusOverlay!, blurBackground: c } } as Partial<ScreenshotLayer>);
+                            useEditorStore.getState().recordHistory();
+                          }}
                         />
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Overlay shadow</span>
+                      {sl.focusOverlay.blurBackground && (
+                        <div className="flex flex-col gap-1 pl-2 border-l-2 border-primary/40">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[11px] text-muted-foreground">Blur Intensity</span>
+                            <span className="text-[11px] font-mono text-foreground font-semibold">{sl.focusOverlay.blurAmount ?? 12}px</span>
+                          </div>
+                          <input
+                            type="range"
+                            min={2}
+                            max={40}
+                            step={1}
+                            value={sl.focusOverlay.blurAmount ?? 12}
+                            onChange={(e) => {
+                              update({ focusOverlay: { ...sl.focusOverlay!, blurAmount: parseInt(e.target.value, 10) } } as Partial<ScreenshotLayer>);
+                              useEditorStore.getState().recordHistory();
+                            }}
+                            className="w-full h-1 accent-primary cursor-pointer"
+                          />
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-xs font-medium">Overlay Shadow</span>
                         <Switch
                           size="sm"
                           checked={sl.focusOverlay.overlayShadow}
-                          onCheckedChange={(c) => update({ focusOverlay: { ...sl.focusOverlay!, overlayShadow: c } } as Partial<ScreenshotLayer>)}
+                          onCheckedChange={(c) => {
+                            update({ focusOverlay: { ...sl.focusOverlay!, overlayShadow: c } } as Partial<ScreenshotLayer>);
+                            useEditorStore.getState().recordHistory();
+                          }}
                         />
                       </div>
                     </div>

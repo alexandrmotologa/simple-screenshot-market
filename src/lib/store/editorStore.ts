@@ -622,7 +622,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       color: "black",
       showFrame: true,
       showReflection: false,
-      showShadow: true,
+      showShadow: false,
       frameType: "3d",
     };
     set((state) => ({
@@ -778,12 +778,21 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
           if (l.type === "screenshot") {
             const src = existingSrcs[srcIndex] || undefined;
             srcIndex++;
-            return { ...l, id, src } as Layer;
+            return {
+              ...l,
+              id,
+              src,
+              focusOverlay: l.focusOverlay?.enabled ? l.focusOverlay : undefined,
+            } as Layer;
           }
           return { ...l, id } as Layer;
         }),
       }));
-      return { ...ss, screens: newScreens };
+      return {
+        ...ss,
+        mockup: { ...ss.mockup, showShadow: false },
+        screens: newScreens,
+      };
     });
 
     const activeSetAfter = updatedSets.find((s) => s.id === activeSetId) || updatedSets[0];
@@ -912,7 +921,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         color: "black",
         showFrame: true,
         showReflection: true,
-        showShadow: true,
+        showShadow: false,
         frameType: "3d",
       },
       screens: [

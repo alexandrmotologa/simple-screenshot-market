@@ -589,18 +589,28 @@ function ScreenLayoutProperties({ screen, onUpdate }: { screen: import("@/lib/ty
 function ScreenshotProperties({ layer, onUpdate }: { layer: import("@/lib/types").ScreenshotLayer; onUpdate: (updates: Record<string, unknown>) => void }) {
   const overlay = layer.focusOverlay || {
     enabled: false,
-    cropTop: 0,
-    cropBottom: 0,
-    borderWidth: 0,
-    borderColor: "#ffffff",
-    roundedCorners: "none",
-    blurBackground: false,
-    overlayShadow: false
+    cropTop: 25,
+    cropBottom: 25,
+    borderWidth: 2,
+    borderColor: "#3b82f6",
+    roundedCorners: 24,
+    blurBackground: true,
+    blurAmount: 12,
+    overlayShadow: true,
+    overlayColor: "#9b87f540"
   };
 
   const updateOverlay = (updates: Partial<typeof overlay>) => {
     onUpdate({ focusOverlay: { ...overlay, ...updates } });
   };
+
+  const roundingValue =
+    typeof overlay.roundedCorners === "number"
+      ? overlay.roundedCorners
+      : overlay.roundedCorners === "none" ? 0
+      : overlay.roundedCorners === "sm" ? 12
+      : overlay.roundedCorners === "md" ? 24
+      : 40;
 
   return (
     <div className="space-y-4">
@@ -610,7 +620,24 @@ function ScreenshotProperties({ layer, onUpdate }: { layer: import("@/lib/types"
           variant={overlay.enabled ? "default" : "outline"}
           size="sm"
           className="h-6 text-[10px] px-2"
-          onClick={() => updateOverlay({ enabled: !overlay.enabled })}
+          onClick={() => {
+            if (!overlay.enabled) {
+              updateOverlay({
+                enabled: true,
+                cropTop: 25,
+                cropBottom: 25,
+                borderWidth: 2,
+                borderColor: "#3b82f6",
+                roundedCorners: 24,
+                blurBackground: true,
+                blurAmount: 12,
+                overlayShadow: true,
+                overlayColor: "#9b87f540"
+              });
+            } else {
+              updateOverlay({ enabled: false });
+            }
+          }}
         >
           {overlay.enabled ? "Enabled" : "Enable"}
         </Button>
@@ -681,18 +708,18 @@ function ScreenshotProperties({ layer, onUpdate }: { layer: import("@/lib/types"
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Rounding</Label>
-            <Select value={overlay.roundedCorners} onValueChange={(v: any) => updateOverlay({ roundedCorners: v })}>
-              <SelectTrigger className="h-8 text-xs bg-secondary border-0">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                <SelectItem value="sm">Small</SelectItem>
-                <SelectItem value="md">Medium</SelectItem>
-                <SelectItem value="xl">Large</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex justify-between">
+              <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Focus Card Radius</Label>
+              <span className="text-[10px] text-muted-foreground font-mono">{roundingValue}px</span>
+            </div>
+            <Slider
+              value={[roundingValue]}
+              min={0}
+              max={80}
+              step={1}
+              onValueChange={(v: any) => updateOverlay({ roundedCorners: v[0] })}
+              className="h-1.5"
+            />
           </div>
 
           <div className="space-y-2 pt-2 border-t border-border/50">
@@ -705,6 +732,22 @@ function ScreenshotProperties({ layer, onUpdate }: { layer: import("@/lib/types"
               </div>
               <Label className="text-xs font-medium cursor-pointer">Blur Background</Label>
             </div>
+            {overlay.blurBackground && (
+              <div className="space-y-1 pl-5">
+                <div className="flex justify-between">
+                  <span className="text-[10px] text-muted-foreground">Blur Intensity</span>
+                  <span className="text-[10px] text-muted-foreground font-mono">{overlay.blurAmount ?? 12}px</span>
+                </div>
+                <Slider
+                  value={[overlay.blurAmount ?? 12]}
+                  min={2}
+                  max={40}
+                  step={1}
+                  onValueChange={(v: any) => updateOverlay({ blurAmount: v[0] })}
+                  className="h-1.5"
+                />
+              </div>
+            )}
             <div
               className="flex items-center gap-2 cursor-pointer"
               onClick={() => updateOverlay({ overlayShadow: !overlay.overlayShadow })}

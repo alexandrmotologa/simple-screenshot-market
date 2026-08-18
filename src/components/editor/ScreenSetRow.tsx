@@ -86,7 +86,7 @@ export function ScreenSetRow({ screenSet, isDragging = false }: ScreenSetRowProp
   const getHex = (name: string) => COLOR_HEX_MAP[name.toLowerCase()] ?? "#888";
 
   const isFrameOn = screenSet.mockup?.showFrame !== false;
-  const isShadowOn = screenSet.mockup?.showShadow !== false;
+  const isShadowOn = screenSet.mockup?.showShadow === true;
   const isSquircle = screenSet.mockup?.squircle === true;
   const isShowingScreenshots = screenSet.mockup?.showScreenshots !== false;
 

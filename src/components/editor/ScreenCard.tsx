@@ -7,7 +7,7 @@ import {
   Screen, ScreenSet, TextLayer, ShapeLayer,
   ImageLayer, ScreenshotLayer, FlagLayer, Layer
 } from "@/lib/types";
-import { ALL_DEVICES, COLOR_HEX_MAP } from "@/lib/devices";
+import { ALL_DEVICES, IOS_DEVICES, ANDROID_DEVICES, COLOR_HEX_MAP } from "@/lib/devices";
 import { cn, loadGoogleFont } from "@/lib/utils";
 import { Draggable } from "@hello-pangea/dnd";
 import { ScreenVerticalMenu } from "@/components/editor/ScreenVerticalMenu";
@@ -450,8 +450,10 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         const mockup = screenSet.mockup;
         const hasFrame = sl.showDeviceFrame && mockup?.showFrame !== false;
         
-        // Find the active device model, fallback to first iOS device if not found
-        const device = ALL_DEVICES.find((d) => d.id === mockup?.device) || ALL_DEVICES[0];
+        // Find the active device model, fallback to correct store default
+        const targetDeviceId = screenSet.deviceId || mockup?.device;
+        const defaultDevice = screenSet.store === "android" ? ANDROID_DEVICES[0] : IOS_DEVICES[0];
+        const device = ALL_DEVICES.find((d) => d.id === targetDeviceId) || defaultDevice;
 
         // 1. Calculate aspect-ratio perfect physical bounds
         const physicalW = device.width;
@@ -499,7 +501,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
 
         // Apply shadow parameters
         const applyShadow = () => {
-          if (mockup?.showShadow !== false) {
+          if (mockup?.showShadow === true) {
             ctx.shadowBlur = sl.shadow?.blur ?? 80;
             ctx.shadowColor = sl.shadow?.color ?? "rgba(0,0,0,0.35)";
             ctx.shadowOffsetX = sl.shadow?.offsetX ?? 0;
@@ -516,7 +518,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           if (mockup.frameType === "titanium") {
             // ── Titanium Precision ──
             if (device.buttons) {
-               device.buttons.forEach((btn) => {
+               device.buttons.forEach((btn: any) => {
                   const btnY = y + h * btn.yOffset;
                   const btnH = h * btn.height;
                   const btnW = (btn.thickness || 1) * (Math.min(w, h) * 0.009);
@@ -686,7 +688,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             // ── 3D Realistic (Default) ──
             if (device.buttons) {
                 ctx.fillStyle = baseHex;
-                device.buttons.forEach((btn) => {
+                device.buttons.forEach((btn: any) => {
                    const btnY = y + h * btn.yOffset;
                    const btnH = h * btn.height;
                    const btnW = (btn.thickness || 1) * (Math.min(w, h) * 0.008);
@@ -901,28 +903,89 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
 
         const overlay = sl.focusOverlay;
 
-        // 2. Draw base screenshot, notch, reflection (with optional blur)
+        // 2. Draw base screenshot with optional blur
         ctx.save();
         if (overlay && overlay.enabled && overlay.blurBackground) {
-            ctx.filter = "blur(12px)";
+          const blurPx = overlay.blurAmount ?? 12;
+          ctx.filter = `blur(${blurPx}px)`;
         }
         
         if (drawBaseImage) {
-            drawBaseImage();
+          drawBaseImage();
         } else {
-            drawPlaceholder(ctx, innerX, innerY, innerW, innerH, sl.label);
+          drawPlaceholder(ctx, innerX, innerY, innerW, innerH, sl.label);
         }
-        drawNotch();
-        drawReflection();
         ctx.restore();
 
         // 3. Draw overlay tint color (if focus overlay is enabled)
         if (overlay && overlay.enabled && overlay.overlayColor) {
-            ctx.save();
-            ctx.fillStyle = overlay.overlayColor;
-            ctx.fillRect(innerX, innerY, innerW, innerH);
-            ctx.restore();
+          ctx.save();
+          ctx.fillStyle = overlay.overlayColor;
+          ctx.fillRect(innerX, innerY, innerW, innerH);
+          ctx.restore();
         }
+
+        // 4. Draw Focus Highlight Card (crisp unblurred slice with custom corner radius and border)
+        if (overlay && overlay.enabled && drawBaseImage) {
+          const fTop = ((overlay.cropTop ?? 25) / 100) * innerH;
+          const fBottom = ((overlay.cropBottom ?? 25) / 100) * innerH;
+          const fY = innerY + fTop;
+          const fH = Math.max(0, innerH - fTop - fBottom);
+          
+          let fRadius = 24;
+          if (typeof overlay.roundedCorners === "number") {
+            fRadius = overlay.roundedCorners;
+          } else if (overlay.roundedCorners === "none") {
+            fRadius = 0;
+          } else if (overlay.roundedCorners === "sm") {
+            fRadius = 12;
+          } else if (overlay.roundedCorners === "md") {
+            fRadius = 24;
+          } else if (overlay.roundedCorners === "xl") {
+            fRadius = 40;
+          }
+          
+          fRadius = Math.min(fRadius, fH / 2, innerW / 2);
+
+          // Shadow
+          if (overlay.overlayShadow) {
+            ctx.save();
+            ctx.shadowColor = "rgba(0,0,0,0.45)";
+            ctx.shadowBlur = 30;
+            ctx.shadowOffsetY = 12;
+            ctx.fillStyle = "#000000"; 
+            ctx.beginPath();
+            if (fRadius > 0) ctx.roundRect(innerX, fY, innerW, fH, fRadius);
+            else ctx.rect(innerX, fY, innerW, fH);
+            ctx.fill();
+            ctx.restore();
+          }
+          
+          // Clip to focused card and draw crisp image
+          ctx.save();
+          ctx.beginPath();
+          if (fRadius > 0) ctx.roundRect(innerX, fY, innerW, fH, fRadius);
+          else ctx.rect(innerX, fY, innerW, fH);
+          ctx.clip();
+          drawBaseImage();
+          ctx.restore();
+          
+          // Stroke border
+          if ((overlay.borderWidth ?? 0) > 0 && overlay.borderColor) {
+            ctx.save();
+            ctx.beginPath();
+            if (fRadius > 0) ctx.roundRect(innerX, fY, innerW, fH, fRadius);
+            else ctx.rect(innerX, fY, innerW, fH);
+            ctx.lineWidth = (overlay.borderWidth ?? 2) * 2;
+            ctx.strokeStyle = overlay.borderColor;
+            ctx.stroke();
+            ctx.restore();
+          }
+        }
+
+        // 5. Draw Notch / Dynamic Island and Glass Reflection on top
+        drawNotch();
+        drawReflection();
 
         ctx.restore(); // END CLIP INNER (we can now draw outside the inner screen)
 
@@ -947,57 +1010,6 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             ctx.lineWidth = 1;
             ctx.strokeStyle = "rgba(255,255,255,0.15)";
             ctx.stroke();
-        }
-
-        // 4. Draw Focus Window (Pops out in front)
-        if (overlay && overlay.enabled && drawBaseImage) {
-            const fTop = (overlay.cropTop / 100) * innerH;
-            const fBottom = (overlay.cropBottom / 100) * innerH;
-            const fY = innerY + fTop;
-            const fH = Math.max(0, innerH - fTop - fBottom);
-            
-            let fRadius = 0;
-            if (overlay.roundedCorners === "sm") fRadius = innerW * 0.02;
-            if (overlay.roundedCorners === "md") fRadius = innerW * 0.05;
-            if (overlay.roundedCorners === "xl") fRadius = innerW * 0.1;
-            
-            const popScale = 1.15; // Scale up by 15% to overflow the device bezel
-            const cx = innerX + innerW / 2;
-            const cy = fY + fH / 2;
-            
-            ctx.save();
-            // Translate to center, scale, translate back
-            ctx.translate(cx, cy);
-            ctx.scale(popScale, popScale);
-            ctx.translate(-cx, -cy);
-            
-            ctx.beginPath();
-            ctx.roundRect(innerX, fY, innerW, fH, fRadius);
-            
-            // Shadow
-            if (overlay.overlayShadow) {
-                ctx.save();
-                ctx.shadowColor = "rgba(0,0,0,0.3)";
-                ctx.shadowBlur = innerW * 0.08;
-                ctx.shadowOffsetY = innerW * 0.03;
-                ctx.fillStyle = "#ffffff"; 
-                ctx.fill();
-                ctx.restore();
-            }
-            
-            ctx.clip();
-            drawBaseImage();
-            
-            // Optional: redraw notch inside focus area? No, original app doesn't show notch in focus window
-            
-            if (overlay.borderWidth > 0) {
-                ctx.beginPath();
-                ctx.roundRect(innerX, fY, innerW, fH, fRadius);
-                ctx.lineWidth = overlay.borderWidth * (innerW / 1000) / popScale;
-                ctx.strokeStyle = overlay.borderColor;
-                ctx.stroke();
-            }
-            ctx.restore();
         }
       }
 
