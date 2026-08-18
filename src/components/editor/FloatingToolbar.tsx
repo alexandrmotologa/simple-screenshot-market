@@ -643,12 +643,23 @@ export function FloatingToolbar() {
 
         {/* ── ROTATION ───────────────────────────────────────────────────── */}
         <div className="flex items-center gap-1 shrink-0" title="Rotation angle (-360° to 360°)">
-          <RotateCcw className="w-3.5 h-3.5 text-muted-foreground" />
+          <button
+            type="button"
+            onClick={() => {
+              update({ rotation: 0 });
+              useEditorStore.getState().recordHistory();
+            }}
+            className="w-7 h-7 rounded-lg hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+            title="Reset angle to 0°"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
           <button
             type="button"
             onClick={() => {
               const next = Math.round((layer.rotation ?? 0) - 15);
               update({ rotation: next < -180 ? next + 360 : next });
+              useEditorStore.getState().recordHistory();
             }}
             className="w-5 h-5 rounded hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground text-[11px] font-bold"
             title="-15°"
@@ -657,7 +668,10 @@ export function FloatingToolbar() {
           </button>
           <NumInput
             value={layer.rotation ?? 0}
-            onChange={(v) => update({ rotation: v })}
+            onChange={(v) => {
+              update({ rotation: v });
+              useEditorStore.getState().recordHistory();
+            }}
             min={-360} max={360} unit="°" width="w-14"
           />
           <button
@@ -665,6 +679,7 @@ export function FloatingToolbar() {
             onClick={() => {
               const next = Math.round((layer.rotation ?? 0) + 15);
               update({ rotation: next > 180 ? next - 360 : next });
+              useEditorStore.getState().recordHistory();
             }}
             className="w-5 h-5 rounded hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground text-[11px] font-bold"
             title="+15°"
@@ -673,7 +688,10 @@ export function FloatingToolbar() {
           </button>
           <button
             type="button"
-            onClick={() => update({ rotation: 0 })}
+            onClick={() => {
+              update({ rotation: 0 });
+              useEditorStore.getState().recordHistory();
+            }}
             className="text-[10px] font-medium text-muted-foreground hover:text-primary px-1.5 py-0.5 rounded hover:bg-secondary transition-colors"
             title="Reset rotation to 0°"
           >
@@ -708,13 +726,15 @@ export function FloatingToolbar() {
               {sl.objectFit === "cover" ? <Maximize2 className="w-3.5 h-3.5" /> : <Minimize2 className="w-3.5 h-3.5" />}
             </Btn>
 
-            {/* Corner radius */}
-            <div className="flex items-center gap-1 shrink-0 bg-secondary/40 px-1.5 py-0.5 rounded-lg border border-border/40" title="Screenshot Corner Radius (0px - 200px)">
-              <span className="text-[10px] font-semibold text-muted-foreground">Radius:</span>
-              <button type="button" onClick={() => update({ cornerRadius: Math.max(0, (sl.cornerRadius ?? 0) - 10) } as Partial<ScreenshotLayer>)} className="w-5 h-5 rounded hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground"><Minus className="w-3 h-3" /></button>
-              <NumInput value={sl.cornerRadius ?? 0} onChange={(v) => update({ cornerRadius: v } as Partial<ScreenshotLayer>)} min={0} max={200} unit="px" width="w-12" />
-              <button type="button" onClick={() => update({ cornerRadius: Math.min(200, (sl.cornerRadius ?? 0) + 10) } as Partial<ScreenshotLayer>)} className="w-5 h-5 rounded hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground"><Plus className="w-3 h-3" /></button>
-            </div>
+            {/* Corner radius - only relevant when device frame is NOT active (borderless/minimal squircle) */}
+            {(!sl.showDeviceFrame || set.mockup?.showFrame === false) && (
+              <div className="flex items-center gap-1 shrink-0 bg-secondary/40 px-1.5 py-0.5 rounded-lg border border-border/40" title="Screenshot Corner Radius (0px - 200px)">
+                <span className="text-[10px] font-semibold text-muted-foreground">Radius:</span>
+                <button type="button" onClick={() => update({ cornerRadius: Math.max(0, (sl.cornerRadius ?? 0) - 10) } as Partial<ScreenshotLayer>)} className="w-5 h-5 rounded hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground"><Minus className="w-3 h-3" /></button>
+                <NumInput value={sl.cornerRadius ?? 0} onChange={(v) => update({ cornerRadius: v } as Partial<ScreenshotLayer>)} min={0} max={200} unit="px" width="w-12" />
+                <button type="button" onClick={() => update({ cornerRadius: Math.min(200, (sl.cornerRadius ?? 0) + 10) } as Partial<ScreenshotLayer>)} className="w-5 h-5 rounded hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground"><Plus className="w-3 h-3" /></button>
+              </div>
+            )}
 
             <Btn
               active={!!sl.showDeviceFrame}
