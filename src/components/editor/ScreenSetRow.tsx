@@ -33,17 +33,42 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { AppleStoreIcon, GooglePlayIcon, APP_STORE_LABEL, GOOGLE_PLAY_LABEL } from "@/components/icons/StoreIcons";
 
+export type FullBorderStyle =
+  | "3D Realistic"
+  | "Titanium Precision"
+  | "Clay Matte"
+  | "Liquid Glass"
+  | "Neon Glow"
+  | "Minimal Wireframe"
+  | "Flat Frame"
+  | "Minimal"
+  | "Borderless";
+
+export const FRAME_STYLES_LIST: { id: FullBorderStyle; label: string; desc: string }[] = [
+  { id: "3D Realistic", label: "3D Realistic", desc: "Metallic bezel with buttons" },
+  { id: "Titanium Precision", label: "Titanium Precision", desc: "Brushed metal & chamfers" },
+  { id: "Clay Matte", label: "Clay Matte", desc: "Soft tactile 3D clay" },
+  { id: "Liquid Glass", label: "Liquid Glass", desc: "Translucent frosted glass" },
+  { id: "Neon Glow", label: "Neon Glow", desc: "Vibrant glowing outline" },
+  { id: "Minimal Wireframe", label: "Minimal Wireframe", desc: "Clean 2px vector contour" },
+  { id: "Flat Frame", label: "Flat Frame", desc: "Solid 2D border rim" },
+  { id: "Minimal", label: "Minimal (Squircle)", desc: "Rounded screenshot, no frame" },
+  { id: "Borderless", label: "Borderless", desc: "Raw screenshot, crisp edges" },
+];
+
 interface ScreenSetRowProps {
   screenSet: ScreenSet;
+  isDragging?: boolean;
 }
 
-export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
-  const [showSyncConfirm, setShowSyncConfirm] = useState(false);
+export function ScreenSetRow({ screenSet, isDragging = false }: ScreenSetRowProps) {
   const {
     activeSetId, setActiveSet, setActiveScreen, addScreen, zoom,
-    updateDevice, updateMockup, screenSets, updateLayer, reorderScreens,
-    updateScreen, updateAllScreensBackground,
+    updateDevice, updateMockup, screenSets, updateLayer, 
+    updateScreen,
   } = useEditorStore();
+
+  const [showSyncConfirm, setShowSyncConfirm] = useState(false);
 
   const isActive = activeSetId === screenSet.id;
   const BASE_CARD_WIDTH = 300;
@@ -65,33 +90,34 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
   const isSquircle = screenSet.mockup?.squircle === true;
   const isShowingScreenshots = screenSet.mockup?.showScreenshots !== false;
 
-  const fileRef = useRef<HTMLInputElement>(null);
-
   const handleAddScreen = () => {
     if (screenSet.screens.length >= 10) return;
     setActiveSet(screenSet.id);
     addScreen(screenSet.id);
   };
 
-  const toggleFrame      = () => { updateMockup(screenSet.id, { showFrame: !isFrameOn }); useEditorStore.getState().recordHistory(); }
-  const toggleShadow     = () => { updateMockup(screenSet.id, { showShadow: !isShadowOn }); useEditorStore.getState().recordHistory(); }
-  const toggleSquircle   = () => { updateMockup(screenSet.id, { squircle: !isSquircle }); useEditorStore.getState().recordHistory(); }
-  const toggleScreenshots = () => { updateMockup(screenSet.id, { showScreenshots: !isShowingScreenshots }); useEditorStore.getState().recordHistory(); }
-
-  // Border style logic
-  // "Borderless" = !showFrame && !squircle
-  // "Minimal" = squircle && !showFrame
-  // "Flat Frame" = showFrame && frameType !== "3d"
-  // "3D Realistic" = showFrame && frameType === "3d"
-  const borderStyle = isFrameOn 
-    ? (screenSet.mockup?.frameType === "3d" ? "3D Realistic" : "Flat Frame")
+  const borderStyle: FullBorderStyle = isFrameOn 
+    ? (
+        screenSet.mockup?.frameType === "titanium" ? "Titanium Precision" :
+        screenSet.mockup?.frameType === "clay" ? "Clay Matte" :
+        screenSet.mockup?.frameType === "glass" ? "Liquid Glass" :
+        screenSet.mockup?.frameType === "neon" ? "Neon Glow" :
+        screenSet.mockup?.frameType === "wireframe" ? "Minimal Wireframe" :
+        screenSet.mockup?.frameType === "2d" ? "Flat Frame" :
+        "3D Realistic"
+      )
     : isSquircle ? "Minimal" : "Borderless";
     
-  const setBorderStyle = (style: "Borderless" | "Minimal" | "Flat Frame" | "3D Realistic") => {
+  const setBorderStyle = (style: FullBorderStyle) => {
     if (style === "Borderless") updateMockup(screenSet.id, { showFrame: false, squircle: false });
     else if (style === "Minimal") updateMockup(screenSet.id, { showFrame: false, squircle: true });
     else if (style === "Flat Frame") updateMockup(screenSet.id, { showFrame: true, squircle: false, frameType: "2d" });
     else if (style === "3D Realistic") updateMockup(screenSet.id, { showFrame: true, squircle: false, frameType: "3d" });
+    else if (style === "Titanium Precision") updateMockup(screenSet.id, { showFrame: true, squircle: false, frameType: "titanium" });
+    else if (style === "Clay Matte") updateMockup(screenSet.id, { showFrame: true, squircle: false, frameType: "clay" });
+    else if (style === "Liquid Glass") updateMockup(screenSet.id, { showFrame: true, squircle: false, frameType: "glass" });
+    else if (style === "Neon Glow") updateMockup(screenSet.id, { showFrame: true, squircle: false, frameType: "neon" });
+    else if (style === "Minimal Wireframe") updateMockup(screenSet.id, { showFrame: true, squircle: false, frameType: "wireframe" });
     useEditorStore.getState().recordHistory();
   };
 
@@ -102,6 +128,7 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
   const toggleNotch = () => { updateMockup(screenSet.id, { notch: !isNotchOn }); useEditorStore.getState().recordHistory(); }
   const toggleIsland = () => { updateMockup(screenSet.id, { dynamicIsland: !isIslandOn }); useEditorStore.getState().recordHistory(); }
   const toggleReflection = () => { updateMockup(screenSet.id, { reflection: !isReflectionOn }); useEditorStore.getState().recordHistory(); }
+  const toggleScreenshots = () => { updateMockup(screenSet.id, { showScreenshots: !isShowingScreenshots }); useEditorStore.getState().recordHistory(); }
 
   // Sync mockup settings to ALL sets
   const syncAll = () => {
@@ -133,29 +160,17 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
-    if (result.source.index === result.destination.index) return;
-
-    const newScreens = Array.from(screenSet.screens);
-    const [moved] = newScreens.splice(result.source.index, 1);
-    newScreens.splice(result.destination.index, 0, moved);
-
-    reorderScreens(screenSet.id, newScreens.map(s => s.id));
-  };
-
-  // Replace screenshot in ALL screens of this set
-  const handleReplaceScreenshot = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const src = e.target?.result as string;
-      for (const screen of screenSet.screens) {
-        const zone = screen.layers.find((l) => l.type === "screenshot") as ScreenshotLayer | undefined;
-        if (zone) {
-          updateLayer(screenSet.id, screen.id, zone.id, { src } as Partial<ScreenshotLayer>);
-        }
-      }
-      useEditorStore.getState().recordHistory();
-    };
-    reader.readAsDataURL(file);
+    const { source, destination } = result;
+    if (source.index === destination.index) return;
+    const reordered = Array.from(screenSet.screens);
+    const [moved] = reordered.splice(source.index, 1);
+    reordered.splice(destination.index, 0, moved);
+    useEditorStore.setState((state) => ({
+      screenSets: state.screenSets.map((ss) =>
+        ss.id === screenSet.id ? { ...ss, screens: reordered } : ss
+      ),
+    }));
+    useEditorStore.getState().recordHistory();
   };
 
   const isIOS = screenSet.store === "ios";
@@ -166,9 +181,14 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
   const storeColorInactive = "bg-secondary text-muted-foreground hover:text-foreground border border-border/50";
 
   return (
-    <div className="space-y-2.5">
+    <div
+      className={cn(
+        "flex flex-col gap-4 p-4 rounded-2xl transition-all select-none",
+        isDragging && "opacity-60 ring-2 ring-primary shadow-2xl bg-card"
+      )}
+    >
       {/* ── Device Controls Row ──────────────────────────────────────────────── */}
-      <div className="flex items-center gap-1.5 flex-wrap">
+      <div className="flex items-center gap-2 flex-wrap">
 
         {/* Store badge & count */}
         <button
@@ -206,10 +226,10 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
 
         {/* Device model dropdown */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/60 bg-card hover:bg-secondary text-[13px] text-foreground transition-colors outline-none max-w-[280px]">
+          <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/60 bg-card hover:bg-secondary text-[13px] text-foreground transition-colors outline-none max-w-56">
             <Smartphone className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-            <span className="truncate">{currentDevice?.name ?? "Select device"} &middot; {currentDevice?.width} × {currentDevice?.height}</span>
-            <ChevronDown className="w-3.5 h-3.5 shrink-0 text-muted-foreground ml-1" />
+            <span className="truncate">{currentDevice?.name ?? "Select device"}</span>
+            <ChevronDown className="w-3.5 h-3.5 text-muted-foreground ml-auto shrink-0" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-60 max-h-80 overflow-y-auto">
             <DropdownMenuGroup>
@@ -220,10 +240,12 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
               {devices.map((device) => (
                 <DropdownMenuItem
                   key={device.id}
-                  className={cn("text-xs gap-2 cursor-pointer", screenSet.deviceId === device.id && "text-primary bg-primary/5")}
+                  className={cn(
+                    "text-xs gap-2 cursor-pointer",
+                    screenSet.deviceId === device.id && "text-primary bg-primary/5 font-semibold"
+                  )}
                   onClick={() => {
                     updateDevice(screenSet.id, device.id);
-                    // Also check if current color is valid for new device
                     if (screenSet.mockup?.color && !device.colors.includes(screenSet.mockup.color)) {
                       updateMockup(screenSet.id, { color: device.colors[0] });
                     }
@@ -248,18 +270,24 @@ export function ScreenSetRow({ screenSet }: ScreenSetRowProps) {
             <span>{borderStyle}</span>
             <ChevronDown className="w-3.5 h-3.5 shrink-0 text-muted-foreground ml-1" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-40">
+          <DropdownMenuContent align="start" className="w-56">
             <DropdownMenuGroup>
               <DropdownMenuLabel className="text-xs">Frame Style</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {(["Borderless", "Minimal", "Flat Frame", "3D Realistic"] as const).map((style) => (
+              {FRAME_STYLES_LIST.map((styleItem) => (
                 <DropdownMenuItem
-                  key={style}
-                  className={cn("text-xs gap-2 cursor-pointer", borderStyle === style && "text-primary bg-primary/5")}
-                  onClick={() => setBorderStyle(style)}
+                  key={styleItem.id}
+                  className={cn(
+                    "text-xs cursor-pointer flex items-center justify-between py-1.5",
+                    borderStyle === styleItem.id && "text-primary bg-primary/5 font-semibold"
+                  )}
+                  onClick={() => setBorderStyle(styleItem.id)}
                 >
-                  {style}
-                  {borderStyle === style && <span className="ml-auto text-primary">✓</span>}
+                  <div className="flex flex-col min-w-0">
+                    <span className="truncate">{styleItem.label}</span>
+                    <span className="text-[10px] text-muted-foreground font-normal truncate">{styleItem.desc}</span>
+                  </div>
+                  {borderStyle === styleItem.id && <span className="text-primary shrink-0 ml-2">✓</span>}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuGroup>

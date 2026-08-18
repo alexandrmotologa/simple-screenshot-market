@@ -300,11 +300,13 @@ export type Layer = TextLayer | ImageLayer | ScreenshotLayer | ShapeLayer | Flag
 // Device mockup definitions
 export type DeviceColor = string; // e.g. "black", "white", "titanium-natural", "obsidian" etc.
 
+export type FrameType = "3d" | "2d" | "clay" | "glass" | "neon" | "titanium" | "wireframe";
+
 export interface MockupSettings {
   device: string;
   color: DeviceColor;
   showFrame: boolean;
-  frameType?: "2d" | "3d";
+  frameType?: FrameType;
   showReflection: boolean;
   showShadow: boolean;
   /** Squircle (iOS-style rounded) corners for the card */

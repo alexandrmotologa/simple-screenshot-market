@@ -7,11 +7,21 @@ import { Switch } from "@/components/ui/switch";
 import { findModel } from "@/lib/deviceModels";
 import { ALL_DEVICES } from "@/lib/devices";
 import { AppleStoreIcon, GooglePlayIcon, APP_STORE_LABEL, GOOGLE_PLAY_LABEL } from "@/components/icons/StoreIcons";
-import { CheckCircle2, AlertTriangle, XCircle, ShieldCheck, Smartphone, Info, Layers, Image as ImageIcon } from "lucide-react";
-import { Screen, ScreenshotLayer, ImageLayer } from "@/lib/types";
+import { CheckCircle2, AlertTriangle, XCircle, ShieldCheck, Smartphone, Info, ChevronDown } from "lucide-react";
+import { Screen, ScreenshotLayer, ImageLayer, FrameType } from "@/lib/types";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { FRAME_STYLES_LIST, FullBorderStyle } from "@/components/editor/ScreenSetRow";
 
 export function PlatformsPanel() {
-  const { screenSets, addScreenSet, removeScreenSet } = useEditorStore();
+  const { screenSets, addScreenSet, removeScreenSet, updateMockup } = useEditorStore();
 
   const iosSet = screenSets.find((s) => s.store === "ios");
   const androidSet = screenSets.find((s) => s.store === "android");
@@ -151,6 +161,34 @@ export function PlatformsPanel() {
     };
   }, [androidSet]);
 
+  const getFrameStyle = (set: typeof iosSet): FullBorderStyle => {
+    if (!set) return "3D Realistic";
+    const isFrameOn = set.mockup?.showFrame !== false;
+    const isSquircle = set.mockup?.squircle === true;
+    if (!isFrameOn) return isSquircle ? "Minimal" : "Borderless";
+    const ft = set.mockup?.frameType;
+    if (ft === "titanium") return "Titanium Precision";
+    if (ft === "clay") return "Clay Matte";
+    if (ft === "glass") return "Liquid Glass";
+    if (ft === "neon") return "Neon Glow";
+    if (ft === "wireframe") return "Minimal Wireframe";
+    if (ft === "2d") return "Flat Frame";
+    return "3D Realistic";
+  };
+
+  const handleFrameStyleChange = (setId: string, style: FullBorderStyle) => {
+    if (style === "Borderless") updateMockup(setId, { showFrame: false, squircle: false });
+    else if (style === "Minimal") updateMockup(setId, { showFrame: false, squircle: true });
+    else if (style === "Flat Frame") updateMockup(setId, { showFrame: true, squircle: false, frameType: "2d" });
+    else if (style === "3D Realistic") updateMockup(setId, { showFrame: true, squircle: false, frameType: "3d" });
+    else if (style === "Titanium Precision") updateMockup(setId, { showFrame: true, squircle: false, frameType: "titanium" });
+    else if (style === "Clay Matte") updateMockup(setId, { showFrame: true, squircle: false, frameType: "clay" });
+    else if (style === "Liquid Glass") updateMockup(setId, { showFrame: true, squircle: false, frameType: "glass" });
+    else if (style === "Neon Glow") updateMockup(setId, { showFrame: true, squircle: false, frameType: "neon" });
+    else if (style === "Minimal Wireframe") updateMockup(setId, { showFrame: true, squircle: false, frameType: "wireframe" });
+    useEditorStore.getState().recordHistory();
+  };
+
   return (
     <div className="flex flex-col h-full min-h-0 overflow-hidden">
       <ScrollArea className="flex-1 min-h-0">
@@ -164,7 +202,7 @@ export function PlatformsPanel() {
               </h3>
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Manage target platforms and verify App Store & Google Play pre-submission guidelines in real-time.
+              Manage target platforms, frame styles, and verify App Store & Google Play pre-submission guidelines in real-time.
             </p>
           </div>
 
@@ -253,13 +291,46 @@ export function PlatformsPanel() {
                       {iosValidation.allUploaded ? (
                         <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       ) : (
-                        <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400 shrink-0" />
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                       )}
                       App Screenshots
                     </span>
                     <span className={`font-medium ${iosValidation.allUploaded ? "text-foreground" : "text-amber-600 dark:text-amber-400 font-semibold"}`}>
                       {iosValidation.mediaStatus}
                     </span>
+                  </div>
+
+                  {/* Frame Style Control */}
+                  <div className="flex items-center justify-between pt-2 border-t border-border/40 text-[11px]">
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      <Smartphone className="w-3 h-3 text-muted-foreground shrink-0" />
+                      Frame Style
+                    </span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger className="flex items-center gap-1 px-2 py-0.5 rounded-lg border border-border/60 bg-secondary/60 hover:bg-secondary text-[11px] font-medium text-foreground transition-colors outline-none cursor-pointer">
+                        <span className="max-w-28 truncate">{getFrameStyle(iosSet)}</span>
+                        <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-52">
+                        <DropdownMenuGroup>
+                          <DropdownMenuLabel className="text-xs">Frame Style</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          {FRAME_STYLES_LIST.map((item) => (
+                            <DropdownMenuItem
+                              key={item.id}
+                              className="text-xs cursor-pointer flex items-center justify-between py-1.5"
+                              onClick={() => handleFrameStyleChange(iosSet.id, item.id)}
+                            >
+                              <div className="flex flex-col min-w-0">
+                                <span className="font-medium truncate">{item.label}</span>
+                                <span className="text-[9.5px] text-muted-foreground font-normal truncate">{item.desc}</span>
+                              </div>
+                              {getFrameStyle(iosSet) === item.id && <span className="text-primary font-bold ml-1">✓</span>}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuGroup>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
 
                   {/* Apple Guidelines Note */}
@@ -342,7 +413,7 @@ export function PlatformsPanel() {
                       {androidValidation.resValid ? (
                         <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       ) : (
-                        <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400 shrink-0" />
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                       )}
                       Resolution & Ratio
                     </span>
@@ -357,13 +428,46 @@ export function PlatformsPanel() {
                       {androidValidation.allUploaded ? (
                         <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       ) : (
-                        <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400 shrink-0" />
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                       )}
                       App Screenshots
                     </span>
                     <span className={`font-medium ${androidValidation.allUploaded ? "text-foreground" : "text-amber-600 dark:text-amber-400 font-semibold"}`}>
                       {androidValidation.mediaStatus}
                     </span>
+                  </div>
+
+                  {/* Frame Style Control */}
+                  <div className="flex items-center justify-between pt-2 border-t border-border/40 text-[11px]">
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      <Smartphone className="w-3 h-3 text-muted-foreground shrink-0" />
+                      Frame Style
+                    </span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger className="flex items-center gap-1 px-2 py-0.5 rounded-lg border border-border/60 bg-secondary/60 hover:bg-secondary text-[11px] font-medium text-foreground transition-colors outline-none cursor-pointer">
+                        <span className="max-w-28 truncate">{getFrameStyle(androidSet)}</span>
+                        <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-52">
+                        <DropdownMenuGroup>
+                          <DropdownMenuLabel className="text-xs">Frame Style</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          {FRAME_STYLES_LIST.map((item) => (
+                            <DropdownMenuItem
+                              key={item.id}
+                              className="text-xs cursor-pointer flex items-center justify-between py-1.5"
+                              onClick={() => handleFrameStyleChange(androidSet.id, item.id)}
+                            >
+                              <div className="flex flex-col min-w-0">
+                                <span className="font-medium truncate">{item.label}</span>
+                                <span className="text-[9.5px] text-muted-foreground font-normal truncate">{item.desc}</span>
+                              </div>
+                              {getFrameStyle(androidSet) === item.id && <span className="text-primary font-bold ml-1">✓</span>}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuGroup>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
 
                   {/* Google Play Guidelines Note */}

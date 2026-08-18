@@ -513,61 +513,202 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
         // 1. Draw outer device frame OR minimal shadow
         if (hasFrame) {
           applyShadow();
-          
-          if (mockup.frameType === "3d" || mockup.frameType === undefined) {
-            // Draw Hardware Buttons First (underneath the rim)
+          if (mockup.frameType === "titanium") {
+            // ── Titanium Precision ──
             if (device.buttons) {
-               ctx.fillStyle = baseHex;
                device.buttons.forEach((btn) => {
                   const btnY = y + h * btn.yOffset;
                   const btnH = h * btn.height;
-                  const btnW = (btn.thickness || 1) * (Math.min(w, h) * 0.008);
-                  let btnX = 0;
+                  const btnW = (btn.thickness || 1) * (Math.min(w, h) * 0.009);
                   const btnRadius = btnW / 2;
-                  
-                  if (btn.side === "left") {
-                     btnX = x - btnW + 1; // +1 to overlap and hide gap
-                     ctx.beginPath();
-                     ctx.roundRect(btnX, btnY, btnW, btnH, [btnRadius, 0, 0, btnRadius]);
-                     ctx.fill();
-                     // Button highlight
-                     ctx.fillStyle = "rgba(255,255,255,0.15)";
-                     ctx.beginPath();
-                     ctx.roundRect(btnX, btnY, btnW, btnH, [btnRadius, 0, 0, btnRadius]);
-                     ctx.fill();
-                  } else if (btn.side === "right") {
-                     btnX = x + w - 1;
-                     ctx.beginPath();
-                     ctx.roundRect(btnX, btnY, btnW, btnH, [0, btnRadius, btnRadius, 0]);
-                     ctx.fill();
-                     ctx.fillStyle = "rgba(255,255,255,0.15)";
-                     ctx.beginPath();
-                     ctx.roundRect(btnX, btnY, btnW, btnH, [0, btnRadius, btnRadius, 0]);
-                     ctx.fill();
-                  } else if (btn.side === "top") {
-                     const tBtnW = h * btn.height; 
-                     const tBtnX = x + w * btn.yOffset;
-                     const tBtnY = y - btnW + 1;
-                     ctx.beginPath();
-                     ctx.roundRect(tBtnX, tBtnY, tBtnW, btnW, [btnRadius, btnRadius, 0, 0]);
-                     ctx.fill();
-                     ctx.fillStyle = "rgba(255,255,255,0.15)";
-                     ctx.beginPath();
-                     ctx.roundRect(tBtnX, tBtnY, tBtnW, btnW, [btnRadius, btnRadius, 0, 0]);
-                     ctx.fill();
-                  }
+                  const btnGrad = ctx.createLinearGradient(x, btnY, x, btnY + btnH);
+                  btnGrad.addColorStop(0, "#d1d5db");
+                  btnGrad.addColorStop(0.5, "#6b7280");
+                  btnGrad.addColorStop(1, "#374151");
+                  ctx.fillStyle = btnGrad;
+                  const btnX = btn.side === "left" ? x - btnW + 1 : x + w - 1;
+                  ctx.beginPath();
+                  ctx.roundRect(btnX, btnY, btnW, btnH, [btnRadius, btnRadius, btnRadius, btnRadius]);
+                  ctx.fill();
                });
             }
 
             ctx.beginPath();
             if (r > 0) ctx.roundRect(x, y, w, h, r);
             else ctx.rect(x, y, w, h);
-            
-            // -- 3D Realistic Frame --
             ctx.fillStyle = baseHex;
             ctx.fill();
 
-            // 1b. Metallic Rim Gradient
+            // Multi-stop brushed titanium gradient rim
+            const titGrad = ctx.createLinearGradient(x, y, x + w, y + h);
+            titGrad.addColorStop(0, "rgba(243, 244, 246, 0.95)");
+            titGrad.addColorStop(0.2, "rgba(156, 163, 175, 0.4)");
+            titGrad.addColorStop(0.4, "rgba(75, 85, 99, 0.8)");
+            titGrad.addColorStop(0.6, "rgba(229, 231, 235, 0.85)");
+            titGrad.addColorStop(0.8, "rgba(107, 114, 128, 0.3)");
+            titGrad.addColorStop(1, "rgba(209, 213, 219, 0.95)");
+            ctx.lineWidth = bezel * 0.45;
+            ctx.strokeStyle = titGrad;
+            ctx.stroke();
+
+            // Chamfered micro-bevel groove
+            ctx.beginPath();
+            if (r > 0) ctx.roundRect(x + 2, y + 2, w - 4, h - 4, Math.max(r - 2, 0));
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+            ctx.stroke();
+
+            // Inner glass shadow
+            ctx.beginPath();
+            if (r > 0) ctx.roundRect(innerX - 1, innerY - 1, innerW + 2, innerH + 2, innerR);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "rgba(0,0,0,0.9)";
+            ctx.stroke();
+
+          } else if (mockup.frameType === "clay") {
+            // ── Clay Matte ──
+            ctx.beginPath();
+            if (r > 0) ctx.roundRect(x - 2, y - 2, w + 4, h + 4, r + 2);
+            else ctx.rect(x - 2, y - 2, w + 4, h + 4);
+            ctx.fillStyle = baseHex;
+            ctx.fill();
+
+            // Soft tactile ambient clay lighting
+            const clayGrad = ctx.createLinearGradient(x, y, x, y + h);
+            clayGrad.addColorStop(0, "rgba(255, 255, 255, 0.22)");
+            clayGrad.addColorStop(0.3, "rgba(255, 255, 255, 0.05)");
+            clayGrad.addColorStop(0.7, "rgba(0, 0, 0, 0.08)");
+            clayGrad.addColorStop(1, "rgba(0, 0, 0, 0.25)");
+            ctx.fillStyle = clayGrad;
+            ctx.fill();
+
+            // Soft clay outer pill outline
+            ctx.beginPath();
+            if (r > 0) ctx.roundRect(x - 2, y - 2, w + 4, h + 4, r + 2);
+            ctx.lineWidth = bezel * 0.35;
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+            ctx.stroke();
+
+            // Inner soft recession bevel
+            ctx.beginPath();
+            if (r > 0) ctx.roundRect(innerX, innerY, innerW, innerH, innerR);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "rgba(0, 0, 0, 0.25)";
+            ctx.stroke();
+
+          } else if (mockup.frameType === "glass") {
+            // ── Liquid Glass (Frosted Glassmorphism) ──
+            ctx.beginPath();
+            if (r > 0) ctx.roundRect(x, y, w, h, r);
+            else ctx.rect(x, y, w, h);
+            
+            const glassGrad = ctx.createLinearGradient(x, y, x + w, y + h);
+            glassGrad.addColorStop(0, "rgba(255, 255, 255, 0.25)");
+            glassGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.08)");
+            glassGrad.addColorStop(1, "rgba(255, 255, 255, 0.18)");
+            ctx.fillStyle = glassGrad;
+            ctx.fill();
+
+            // Iridescent glass refractive rim
+            const rimGrad = ctx.createLinearGradient(x, y, x + w, y + h);
+            rimGrad.addColorStop(0, "rgba(255, 255, 255, 0.85)");
+            rimGrad.addColorStop(0.3, "rgba(147, 197, 253, 0.5)");
+            rimGrad.addColorStop(0.7, "rgba(216, 180, 254, 0.5)");
+            rimGrad.addColorStop(1, "rgba(255, 255, 255, 0.75)");
+            ctx.lineWidth = bezel * 0.4;
+            ctx.strokeStyle = rimGrad;
+            ctx.stroke();
+
+            // Corner specular glints
+            if (r > 0) {
+              ctx.beginPath();
+              ctx.arc(x + r, y + r, r * 0.8, Math.PI, 1.5 * Math.PI);
+              ctx.lineWidth = 3;
+              ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
+              ctx.stroke();
+            }
+
+          } else if (mockup.frameType === "neon") {
+            // ── Neon Glow ──
+            ctx.beginPath();
+            if (r > 0) ctx.roundRect(x, y, w, h, r);
+            else ctx.rect(x, y, w, h);
+            ctx.fillStyle = "#09090e";
+            ctx.fill();
+
+            // Multi-color neon glow border
+            const neonGrad = ctx.createLinearGradient(x, y, x + w, y + h);
+            neonGrad.addColorStop(0, "#a855f7");
+            neonGrad.addColorStop(0.35, "#3b82f6");
+            neonGrad.addColorStop(0.7, "#06b6d4");
+            neonGrad.addColorStop(1, "#ec4899");
+            ctx.lineWidth = bezel * 0.4;
+            ctx.strokeStyle = neonGrad;
+            ctx.stroke();
+
+            // Glowing inner border
+            ctx.beginPath();
+            if (r > 0) ctx.roundRect(innerX - 1, innerY - 1, innerW + 2, innerH + 2, innerR);
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = "#a855f7";
+            ctx.stroke();
+
+          } else if (mockup.frameType === "wireframe") {
+            // ── Minimal Wireframe ──
+            ctx.beginPath();
+            if (r > 0) ctx.roundRect(x, y, w, h, r);
+            else ctx.rect(x, y, w, h);
+            
+            const isDarkBg = baseHex === "#ffffff" || baseHex === "#f5f5f7";
+            ctx.lineWidth = 2.5;
+            ctx.strokeStyle = isDarkBg ? "rgba(0, 0, 0, 0.85)" : "rgba(255, 255, 255, 0.85)";
+            ctx.stroke();
+
+          } else if (mockup.frameType === "2d") {
+            // ── 2D Flat Frame ──
+            ctx.beginPath();
+            if (r > 0) ctx.roundRect(x, y, w, h, r);
+            else ctx.rect(x, y, w, h);
+
+            ctx.fillStyle = baseHex;
+            ctx.fill();
+            
+            ctx.beginPath();
+            if (r > 0) ctx.roundRect(x + 2, y + 2, w - 4, h - 4, Math.max(r - 2, 0));
+            else ctx.rect(x + 2, y + 2, w - 4, h - 4);
+            
+            const isWhite = baseHex === "#f5f5f7" || baseHex === "#ffffff" || baseHex === "#f8f8f8";
+            ctx.strokeStyle = isWhite ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.15)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+          } else {
+            // ── 3D Realistic (Default) ──
+            if (device.buttons) {
+                ctx.fillStyle = baseHex;
+                device.buttons.forEach((btn) => {
+                   const btnY = y + h * btn.yOffset;
+                   const btnH = h * btn.height;
+                   const btnW = (btn.thickness || 1) * (Math.min(w, h) * 0.008);
+                   const btnRadius = btnW / 2;
+                   const btnX = btn.side === "left" ? x - btnW + 1 : x + w - 1;
+                   ctx.beginPath();
+                   ctx.roundRect(btnX, btnY, btnW, btnH, [btnRadius, btnRadius, btnRadius, btnRadius]);
+                   ctx.fill();
+                   ctx.fillStyle = "rgba(255,255,255,0.15)";
+                   ctx.beginPath();
+                   ctx.roundRect(btnX, btnY, btnW, btnH, [btnRadius, btnRadius, btnRadius, btnRadius]);
+                   ctx.fill();
+                });
+            }
+
+            ctx.beginPath();
+            if (r > 0) ctx.roundRect(x, y, w, h, r);
+            else ctx.rect(x, y, w, h);
+            
+            ctx.fillStyle = baseHex;
+            ctx.fill();
+
             const isDark = baseHex === "#1a1a1c" || baseHex === "#000000" || baseHex === "#111111" || baseHex === "#111827" || baseHex === "#2d2d2d";
             const rimGrad = ctx.createLinearGradient(x, y, x + w, y + h);
             if (isDark) {
@@ -584,12 +725,10 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
               rimGrad.addColorStop(1, "rgba(255, 255, 255, 0.8)");
             }
             
-            // Draw rim outer edge
             ctx.lineWidth = bezel * 0.4;
             ctx.strokeStyle = rimGrad;
             ctx.stroke();
 
-            // 1c. Inner screen depth shadow (glass edge)
             ctx.beginPath();
             if (r > 0) ctx.roundRect(innerX - 1, innerY - 1, innerW + 2, innerH + 2, innerR);
             else ctx.rect(innerX - 1, innerY - 1, innerW + 2, innerH + 2);
@@ -597,38 +736,19 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
             ctx.strokeStyle = "rgba(0,0,0,0.8)";
             ctx.stroke();
             
-            // 1d. Corner highlights (shiny metal reflection)
             if (r > 0) {
               ctx.beginPath();
-              ctx.arc(x + r, y + r, r, Math.PI, 1.5 * Math.PI); // Top-left
+              ctx.arc(x + r, y + r, r, Math.PI, 1.5 * Math.PI);
               ctx.lineWidth = 2;
               ctx.strokeStyle = "rgba(255,255,255,0.6)";
               ctx.stroke();
               
               ctx.beginPath();
-              ctx.arc(x + w - r, y + h - r, r, 0, 0.5 * Math.PI); // Bottom-right
+              ctx.arc(x + w - r, y + h - r, r, 0, 0.5 * Math.PI);
               ctx.lineWidth = 1.5;
               ctx.strokeStyle = "rgba(255,255,255,0.3)";
               ctx.stroke();
             }
-          } else {
-            // -- 2D Flat Frame --
-            ctx.beginPath();
-            if (r > 0) ctx.roundRect(x, y, w, h, r);
-            else ctx.rect(x, y, w, h);
-
-            ctx.fillStyle = baseHex;
-            ctx.fill();
-            
-            // Simple rim
-            ctx.beginPath();
-            if (r > 0) ctx.roundRect(x + 2, y + 2, w - 4, h - 4, r - 2);
-            else ctx.rect(x + 2, y + 2, w - 4, h - 4);
-            
-            const isWhite = baseHex === "#f5f5f7" || baseHex === "#ffffff" || baseHex === "#f8f8f8";
-            ctx.strokeStyle = isWhite ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.15)";
-            ctx.lineWidth = 2;
-            ctx.stroke();
           }
           // Reset shadow after drawing frame
           ctx.shadowBlur = 0;
