@@ -1486,6 +1486,475 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           ctx.arc(cx, cy, r, 0, Math.PI * 2);
           ctx.fill();
 
+        } else if (sl.shape === "dynamic-island") {
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const br = bh / 2;
+
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? "#000000";
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          } else {
+            ctx.strokeStyle = "rgba(255,255,255,0.15)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
+
+          const iconR = bh * 0.32;
+          const iconX = bx + bh * 0.45;
+          const iconY = by + bh / 2;
+          ctx.beginPath();
+          ctx.arc(iconX, iconY, iconR, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(99,102,241,0.25)";
+          ctx.fill();
+          ctx.font = `${bh * 0.36}px serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("🎵", iconX, iconY + 1);
+
+          const textLeft = iconX + iconR + bh * 0.22;
+          const maxTextW = bw - (textLeft - bx) - bh * 1.1;
+          drawAutoFitText(
+            ctx,
+            sl.text || "Now Playing · Starboy",
+            textLeft,
+            by + bh / 2,
+            maxTextW,
+            bh * 0.28,
+            600,
+            '"Inter", sans-serif',
+            "#FFFFFF",
+            "left"
+          );
+
+          const rightX = bx + bw - bh * 0.55;
+          const barW = bh * 0.07;
+          const barGap = bh * 0.05;
+          const heights = [0.25, 0.55, 0.40, 0.65];
+          ctx.fillStyle = "#34D399";
+          heights.forEach((hFactor, idx) => {
+            const bH = bh * hFactor;
+            const bX = rightX - (3 - idx) * (barW + barGap);
+            const bY = by + (bh - bH) / 2;
+            ctx.beginPath();
+            ctx.roundRect(bX, bY, barW, bH, barW / 2);
+            ctx.fill();
+          });
+
+        } else if (sl.shape === "live-activity") {
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const br = Math.min(32, bh * 0.22);
+
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? "rgba(15,23,42,0.94)";
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          } else {
+            ctx.strokeStyle = "rgba(255,255,255,0.15)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
+
+          const iconSize = bh * 0.44;
+          const iconX = bx + bh * 0.16;
+          const iconY = by + bh * 0.16;
+          ctx.beginPath();
+          ctx.roundRect(iconX, iconY, iconSize, iconSize, iconSize * 0.25);
+          ctx.fillStyle = "#F97316";
+          ctx.fill();
+          ctx.font = `${iconSize * 0.58}px serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("🏃", iconX + iconSize / 2, iconY + iconSize / 2 + 1);
+
+          const textLeft = iconX + iconSize + bh * 0.14;
+          ctx.textAlign = "left";
+          ctx.textBaseline = "middle";
+          ctx.font = `700 ${bh * 0.18}px "Inter", sans-serif`;
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillText(sl.text || "Workout in progress", textLeft, by + bh * 0.26);
+
+          ctx.font = `600 ${bh * 0.15}px "Inter", sans-serif`;
+          ctx.fillStyle = "#38BDF8";
+          ctx.fillText(sl.subtext || "32:15 min · 420 kcal 🔥", textLeft, by + bh * 0.48);
+
+          const progX = bx + bh * 0.16;
+          const progY = by + bh * 0.74;
+          const progW = bw - bh * 0.32;
+          const progH = bh * 0.10;
+          ctx.beginPath();
+          ctx.roundRect(progX, progY, progW, progH, progH / 2);
+          ctx.fillStyle = "rgba(255,255,255,0.12)";
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.roundRect(progX, progY, progW * 0.68, progH, progH / 2);
+          ctx.fillStyle = "#F97316";
+          ctx.fill();
+
+        } else if (sl.shape === "ios-toggle") {
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const br = Math.min(28, bh * 0.24);
+
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? "rgba(15,23,42,0.92)";
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          } else {
+            ctx.strokeStyle = "rgba(255,255,255,0.12)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
+
+          const iconSize = bh * 0.46;
+          const iconX = bx + bh * 0.16;
+          const iconY = by + (bh - iconSize) / 2;
+          ctx.beginPath();
+          ctx.roundRect(iconX, iconY, iconSize, iconSize, iconSize * 0.25);
+          ctx.fillStyle = "rgba(99,102,241,0.2)";
+          ctx.fill();
+          ctx.font = `${iconSize * 0.55}px serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("✨", iconX + iconSize / 2, iconY + iconSize / 2 + 1);
+
+          const textLeft = iconX + iconSize + bh * 0.14;
+          ctx.textAlign = "left";
+          ctx.textBaseline = "middle";
+          ctx.font = `700 ${bh * 0.20}px "Inter", sans-serif`;
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillText(sl.text || "AI Smart Assistant", textLeft, by + bh * 0.38);
+
+          ctx.font = `500 ${bh * 0.14}px "Inter", sans-serif`;
+          ctx.fillStyle = "#94A3B8";
+          ctx.fillText(sl.subtext || "Active & Listening", textLeft, by + bh * 0.64);
+
+          const swW = bh * 0.54;
+          const swH = bh * 0.32;
+          const swX = bx + bw - swW - bh * 0.16;
+          const swY = by + (bh - swH) / 2;
+          ctx.beginPath();
+          ctx.roundRect(swX, swY, swW, swH, swH / 2);
+          ctx.fillStyle = "#34C759";
+          ctx.fill();
+
+          const knobR = (swH - 4) / 2;
+          const knobX = swX + swW - knobR - 2;
+          const knobY = swY + swH / 2;
+          ctx.beginPath();
+          ctx.arc(knobX, knobY, knobR, 0, Math.PI * 2);
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fill();
+
+        } else if (sl.shape === "editors-choice-badge") {
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const br = Math.min(bw, bh) / 2;
+
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? "#0B132B";
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          } else {
+            ctx.strokeStyle = "rgba(251,191,36,0.65)";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+          }
+
+          ctx.font = `${bh * 0.45}px serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("🌿", bx + bh * 0.42, by + bh / 2);
+          ctx.fillText("🌿", bx + bw - bh * 0.42, by + bh / 2);
+
+          drawAutoFitText(
+            ctx,
+            sl.text || "App Store Editors' Choice",
+            bx + bw / 2,
+            by + bh / 2,
+            bw - bh * 1.2,
+            bh * 0.34,
+            800,
+            '"Inter", sans-serif',
+            "#FBBF24",
+            "center"
+          );
+
+        } else if (sl.shape === "design-award-badge") {
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const br = Math.min(bw, bh) / 2;
+
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? "#18181B";
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          } else {
+            ctx.strokeStyle = "rgba(255,255,255,0.3)";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+          }
+
+          ctx.font = `${bh * 0.42}px serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("💎", bx + bh * 0.45, by + bh / 2);
+
+          drawAutoFitText(
+            ctx,
+            sl.text || "Apple Design Award Winner",
+            bx + bw * 0.56,
+            by + bh / 2,
+            bw - bh * 1.0,
+            bh * 0.34,
+            700,
+            '"Inter", sans-serif',
+            "#FAFAFA",
+            "center"
+          );
+
+        } else if (sl.shape === "streak-badge") {
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const br = Math.min(bw, bh) / 2;
+
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? "#EA580C";
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          } else {
+            ctx.strokeStyle = "rgba(254,215,170,0.5)";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+          }
+
+          ctx.font = `${bh * 0.48}px serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("🔥", bx + bh * 0.45, by + bh / 2);
+
+          drawAutoFitText(
+            ctx,
+            sl.text || "30-Day Streak · On Fire!",
+            bx + bw * 0.56,
+            by + bh / 2,
+            bw - bh * 1.0,
+            bh * 0.35,
+            800,
+            '"Inter", sans-serif',
+            "#FFFFFF",
+            "center"
+          );
+
+        } else if (sl.shape === "guarantee-badge") {
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const br = Math.min(bw, bh) / 2;
+
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? "rgba(6,78,59,0.92)";
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          } else {
+            ctx.strokeStyle = "rgba(52,211,153,0.6)";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+          }
+
+          ctx.font = `${bh * 0.45}px serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("🛡️", bx + bh * 0.45, by + bh / 2);
+
+          drawAutoFitText(
+            ctx,
+            sl.text || "30-Day Money Back Guarantee",
+            bx + bw * 0.56,
+            by + bh / 2,
+            bw - bh * 1.0,
+            bh * 0.33,
+            700,
+            '"Inter", sans-serif',
+            "#6EE7B7",
+            "center"
+          );
+
+        } else if (sl.shape === "growth-stat-card") {
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const br = Math.min(28, bh * 0.22);
+
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? "rgba(15,23,42,0.92)";
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          } else {
+            ctx.strokeStyle = "rgba(16,185,129,0.4)";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+          }
+
+          ctx.textAlign = "left";
+          ctx.textBaseline = "middle";
+          ctx.font = `800 ${bh * 0.34}px "Inter", sans-serif`;
+          ctx.fillStyle = "#34D399";
+          ctx.fillText("📈 +142%", bx + bh * 0.20, by + bh * 0.38);
+
+          ctx.font = `600 ${bh * 0.16}px "Inter", sans-serif`;
+          ctx.fillStyle = "#E2E8F0";
+          ctx.fillText(sl.text || "Productivity & Speed Boost", bx + bh * 0.20, by + bh * 0.72);
+
+          const spX = bx + bw - bh * 0.9;
+          const spY = by + bh * 0.5;
+          ctx.beginPath();
+          ctx.moveTo(spX, spY + bh * 0.15);
+          ctx.lineTo(spX + bh * 0.22, spY + bh * 0.05);
+          ctx.lineTo(spX + bh * 0.44, spY + bh * 0.10);
+          ctx.lineTo(spX + bh * 0.70, spY - bh * 0.22);
+          ctx.strokeStyle = "#34D399";
+          ctx.lineWidth = 4;
+          ctx.lineCap = "round";
+          ctx.stroke();
+
+        } else if (sl.shape === "comparison-card") {
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const br = Math.min(bw, bh) / 2;
+
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? "rgba(15,23,42,0.92)";
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          } else {
+            ctx.strokeStyle = "rgba(255,255,255,0.2)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
+
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = `600 ${bh * 0.28}px "Inter", sans-serif`;
+          ctx.fillStyle = "#F87171";
+          ctx.fillText("❌ " + (sl.subtext || "Without App"), bx + bw * 0.28, by + bh / 2);
+
+          ctx.strokeStyle = "rgba(255,255,255,0.2)";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(bx + bw * 0.5, by + bh * 0.2);
+          ctx.lineTo(bx + bw * 0.5, by + bh * 0.8);
+          ctx.stroke();
+
+          ctx.font = `700 ${bh * 0.28}px "Inter", sans-serif`;
+          ctx.fillStyle = "#34D399";
+          ctx.fillText("✨ " + (sl.text || "With Our App"), bx + bw * 0.73, by + bh / 2);
+
+        } else if (sl.shape === "curved-arrow") {
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const color = sl.fill || sl.stroke || "#F59E0B";
+
+          ctx.save();
+          ctx.strokeStyle = color;
+          ctx.fillStyle = color;
+          ctx.lineWidth = Math.max(3, bh * 0.08);
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+
+          ctx.beginPath();
+          ctx.moveTo(bx + bw * 0.1, by + bh * 0.15);
+          ctx.bezierCurveTo(
+            bx + bw * 0.7, by + bh * 0.1,
+            bx + bw * 0.9, by + bh * 0.5,
+            bx + bw * 0.85, by + bh * 0.85
+          );
+          ctx.stroke();
+
+          const endX = bx + bw * 0.85;
+          const endY = by + bh * 0.85;
+          const arrowSize = Math.max(12, bh * 0.22);
+          ctx.beginPath();
+          ctx.moveTo(endX, endY);
+          ctx.lineTo(endX - arrowSize * 0.8, endY - arrowSize * 0.3);
+          ctx.lineTo(endX - arrowSize * 0.3, endY - arrowSize * 0.8);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+
+        } else if (sl.shape === "handwritten-callout") {
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          const br = Math.min(18, bh * 0.28);
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, br);
+          ctx.fillStyle = sl.fill ?? "#FEF08A";
+          ctx.fill();
+          if (sl.stroke && sl.strokeWidth) {
+            ctx.strokeStyle = sl.stroke;
+            ctx.lineWidth = sl.strokeWidth;
+            ctx.stroke();
+          } else {
+            ctx.strokeStyle = "#FACC15";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+          }
+
+          drawAutoFitText(
+            ctx,
+            sl.text || "✨ Swipe to explore",
+            bx + bw / 2,
+            by + bh / 2,
+            bw * 0.88,
+            bh * 0.38,
+            700,
+            '"Inter", cursive, sans-serif',
+            "#713F12",
+            "center"
+          );
+          ctx.restore();
+
+        } else if (sl.shape === "marker-highlight") {
+          const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+          ctx.save();
+          ctx.fillStyle = sl.fill ?? "rgba(250, 204, 21, 0.45)";
+          ctx.beginPath();
+          ctx.moveTo(bx, by + bh * 0.2);
+          ctx.lineTo(bx + bw, by);
+          ctx.lineTo(bx + bw * 0.96, by + bh);
+          ctx.lineTo(bx + bw * 0.02, by + bh * 0.9);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+
         } else if (sl.shape === "rounded-rectangle" || sl.shape === "rectangle" || r2 > 0) {
           const effectiveR = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, Math.min(sl.width, sl.height) / 2) : r2;
           ctx.beginPath();

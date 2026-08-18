@@ -275,6 +275,45 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
               ctx.textAlign = "left"; ctx.textBaseline = "middle";
               ctx.font = `${bh * 0.38}px serif`; ctx.fillText("🔍", bx + 24, by + bh / 2);
               ctx.font = `500 ${bh * 0.32}px "Inter", sans-serif`; ctx.fillStyle = "rgba(255,255,255,0.75)"; ctx.fillText("Search songs, artists, albums...", bx + 70, by + bh / 2);
+            } else if (sl.shape === "dynamic-island") {
+              const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+              ctx.beginPath();
+              ctx.roundRect(bx, by, bw, bh, bh * 0.5);
+              ctx.fillStyle = sl.fill ?? "#000000";
+              ctx.fill();
+              ctx.strokeStyle = "rgba(255,255,255,0.15)"; ctx.lineWidth = 2; ctx.stroke();
+              ctx.font = `${bh * 0.36}px serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+              ctx.fillText("🎵", bx + bh * 0.45, by + bh / 2);
+              drawAutoFitText(ctx, sl.text || "Now Playing · Starboy", bx + bh * 0.85, by + bh / 2, bw - bh * 1.6, bh * 0.28, 600, '"Inter", sans-serif', "#FFFFFF", "left");
+            } else if (sl.shape === "live-activity") {
+              const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+              ctx.beginPath();
+              ctx.roundRect(bx, by, bw, bh, 28);
+              ctx.fillStyle = sl.fill ?? "rgba(15,23,42,0.94)";
+              ctx.fill();
+              ctx.strokeStyle = "rgba(255,255,255,0.15)"; ctx.lineWidth = 2; ctx.stroke();
+              ctx.font = `${bh * 0.26}px serif`; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+              ctx.fillText("🏃", bx + 20, by + bh * 0.35);
+              ctx.font = `700 ${bh * 0.18}px "Inter", sans-serif`; ctx.fillStyle = "#FFFFFF";
+              ctx.fillText(sl.text || "Workout in progress", bx + 55, by + bh * 0.28);
+              ctx.font = `600 ${bh * 0.15}px "Inter", sans-serif`; ctx.fillStyle = "#38BDF8";
+              ctx.fillText(sl.subtext || "32:15 min · 420 kcal 🔥", bx + 55, by + bh * 0.50);
+            } else if (sl.shape === "editors-choice-badge" || sl.shape === "design-award-badge" || sl.shape === "streak-badge" || sl.shape === "guarantee-badge") {
+              const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+              ctx.beginPath();
+              ctx.roundRect(bx, by, bw, bh, bh * 0.5);
+              ctx.fillStyle = sl.fill ?? "#0B132B";
+              ctx.fill();
+              if (sl.stroke && sl.strokeWidth) { ctx.strokeStyle = sl.stroke; ctx.lineWidth = sl.strokeWidth; ctx.stroke(); }
+              drawAutoFitText(ctx, sl.text || "Award Badge", bx + bw / 2, by + bh / 2, bw * 0.85, bh * 0.35, 700, '"Inter", sans-serif', "#FFFFFF", "center");
+            } else if (sl.shape === "growth-stat-card" || sl.shape === "comparison-card") {
+              const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+              ctx.beginPath();
+              ctx.roundRect(bx, by, bw, bh, 24);
+              ctx.fillStyle = sl.fill ?? "rgba(15,23,42,0.92)";
+              ctx.fill();
+              if (sl.stroke && sl.strokeWidth) { ctx.strokeStyle = sl.stroke; ctx.lineWidth = sl.strokeWidth; ctx.stroke(); }
+              drawAutoFitText(ctx, sl.text || "Growth Metric", bx + bw / 2, by + bh / 2, bw * 0.85, bh * 0.32, 700, '"Inter", sans-serif', "#34D399", "center");
             } else if (sl.shape === "glow-orb") {
               const cx = sl.x + sl.width / 2;
               const cy = sl.y + sl.height / 2;
@@ -587,4 +626,29 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
       </div>
     </div>
   );
+}
+
+function drawAutoFitText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  baseFontSize: number,
+  fontWeight: number | string = 700,
+  fontFamily: string = '"Inter", sans-serif',
+  color: string = "#FFFFFF",
+  align: CanvasTextAlign = "center"
+) {
+  let fontSize = baseFontSize;
+  ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+  const measured = ctx.measureText(text).width;
+  if (measured > maxWidth && maxWidth > 0) {
+    fontSize = Math.max(10, fontSize * (maxWidth / measured));
+    ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+  }
+  ctx.fillStyle = color;
+  ctx.textAlign = align;
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, x, y);
 }

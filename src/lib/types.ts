@@ -59,6 +59,18 @@ export type ShapeType =
   | "notification-badge"
   | "search-badge"
   | "glow-orb"
+  | "dynamic-island"
+  | "live-activity"
+  | "ios-toggle"
+  | "editors-choice-badge"
+  | "design-award-badge"
+  | "streak-badge"
+  | "guarantee-badge"
+  | "growth-stat-card"
+  | "comparison-card"
+  | "curved-arrow"
+  | "handwritten-callout"
+  | "marker-highlight"
   | (string & {});
 
 export type TextAlign = "left" | "center" | "right";
