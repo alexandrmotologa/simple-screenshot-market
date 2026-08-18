@@ -796,6 +796,23 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
                    sy = (imgObj.height - sh) / 2;
                 }
                 ctx.drawImage(imgObj, sx, sy, sw, sh, innerX, innerY, innerW, innerH);
+              } else if (sl.objectFit === "contain") {
+                const imgRatio = imgObj.width / imgObj.height;
+                const zoneRatio = innerW / innerH;
+                let dw = innerW;
+                let dh = innerH;
+                let dx = innerX;
+                let dy = innerY;
+                if (imgRatio > zoneRatio) {
+                  dh = innerW / imgRatio;
+                  dy = innerY + (innerH - dh) / 2;
+                } else {
+                  dw = innerH * imgRatio;
+                  dx = innerX + (innerW - dw) / 2;
+                }
+                ctx.fillStyle = "#0a0a0c";
+                ctx.fillRect(innerX, innerY, innerW, innerH);
+                ctx.drawImage(imgObj, 0, 0, imgObj.width, imgObj.height, dx, dy, dw, dh);
               } else {
                 ctx.drawImage(imgObj, innerX, innerY, innerW, innerH);
               }
