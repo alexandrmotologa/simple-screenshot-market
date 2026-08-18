@@ -10,6 +10,7 @@ import { useEditorStore } from "@/lib/store/editorStore";
 import { useProjectStore } from "@/lib/store/projectStore";
 import { cn } from "@/lib/utils";
 import type { TextLayer, ShapeLayer, ImageLayer } from "@/lib/types";
+import { renderScreenToCanvas } from "@/lib/renderScreenToCanvas";
 
 interface GifExportModalProps {
   projectId: string;
@@ -17,162 +18,6 @@ interface GifExportModalProps {
 }
 
 type Step = "config" | "exporting" | "done" | "error";
-
-// ── Canvas renderer (simplified, reused from ExportModal) ─────────────────────
-async function renderScreenToCanvas(
-  screen: import("@/lib/types").Screen,
-  scale: number
-): Promise<HTMLCanvasElement> {
-  const W = screen.width * scale;
-  const H = screen.height * scale;
-  const canvas = document.createElement("canvas");
-  canvas.width = W;
-  canvas.height = H;
-  const ctx = canvas.getContext("2d")!;
-  ctx.scale(scale, scale);
-
-  const bg = screen.background;
-  const sw = screen.width, sh = screen.height;
-
-  if (bg.type === "solid" && bg.color) {
-    ctx.fillStyle = bg.color;
-    ctx.fillRect(0, 0, sw, sh);
-  } else if (bg.type === "gradient" && bg.gradient) {
-    const dirs: Record<string, [number, number, number, number]> = {
-      "to-b": [0, 0, 0, sh], "to-r": [0, 0, sw, 0],
-      "to-br": [0, 0, sw, sh], "to-bl": [sw, 0, 0, sh],
-      "to-tr": [0, sh, sw, 0],
-    };
-    const [x0, y0, x1, y1] = dirs[bg.gradient.direction] ?? [0, 0, 0, sh];
-    const grad = ctx.createLinearGradient(x0, y0, x1, y1);
-    for (const s of bg.gradient.stops) grad.addColorStop(s.position / 100, s.color);
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, sw, sh);
-  } else if (bg.type === "mesh" && bg.mesh) {
-    const { topLeft: tl, topRight: tr, bottomLeft: bl, bottomRight: br } = bg.mesh;
-    const hyp = Math.hypot(sw, sh);
-    const g1 = ctx.createRadialGradient(0, 0, 0, 0, 0, hyp);
-    g1.addColorStop(0, tl + "cc"); g1.addColorStop(1, tl + "00");
-    ctx.fillStyle = g1; ctx.fillRect(0, 0, sw, sh);
-    const g2 = ctx.createRadialGradient(sw, 0, 0, sw, 0, hyp);
-    g2.addColorStop(0, tr + "cc"); g2.addColorStop(1, tr + "00");
-    ctx.fillStyle = g2; ctx.fillRect(0, 0, sw, sh);
-    const g3 = ctx.createRadialGradient(0, sh, 0, 0, sh, hyp);
-    g3.addColorStop(0, bl + "cc"); g3.addColorStop(1, bl + "00");
-    ctx.fillStyle = g3; ctx.fillRect(0, 0, sw, sh);
-    const g4 = ctx.createRadialGradient(sw, sh, 0, sw, sh, hyp);
-    g4.addColorStop(0, br + "cc"); g4.addColorStop(1, br + "00");
-    ctx.fillStyle = g4; ctx.fillRect(0, 0, sw, sh);
-  } else if (bg.type === "image" && bg.imageUrl) {
-    try {
-      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-        const i = new Image();
-        i.crossOrigin = "anonymous";
-        i.onload = () => resolve(i);
-        i.onerror = reject;
-        i.src = bg.imageUrl!;
-      });
-      if (bg.imageSlice) {
-        const { x, y, width, height } = bg.imageSlice;
-        ctx.drawImage(img, x, y, width, height, 0, 0, sw, sh);
-      } else {
-        ctx.drawImage(img, 0, 0, sw, sh);
-      }
-    } catch {
-      ctx.fillStyle = "#1a1a2e";
-      ctx.fillRect(0, 0, sw, sh);
-    }
-  } else {
-    ctx.fillStyle = "#1a1a2e";
-    ctx.fillRect(0, 0, sw, sh);
-  }
-
-  const loadImg = (src: string) =>
-    new Promise<HTMLImageElement>((res, rej) => {
-      const img = new Image(); img.crossOrigin = "anonymous";
-      img.onload = () => res(img); img.onerror = rej; img.src = src;
-    });
-
-  for (const layer of screen.layers) {
-    ctx.save();
-    ctx.globalAlpha = layer.opacity ?? 1;
-    if (layer.rotation) {
-      const cx = layer.x + layer.width / 2;
-      const cy = layer.y + layer.height / 2;
-      ctx.translate(cx, cy);
-      ctx.rotate((layer.rotation * Math.PI) / 180);
-      ctx.translate(-cx, -cy);
-    }
-
-    if (layer.type === "text") {
-      const tl2 = layer as TextLayer;
-      const fontSize = tl2.fontSize * (tl2.scale ?? 1);
-      ctx.font = `${tl2.fontWeight ?? 600} ${fontSize}px "${tl2.fontFamily ?? "Inter"}", sans-serif`;
-      ctx.fillStyle = tl2.color;
-      ctx.textAlign = (tl2.textAlign as CanvasTextAlign) ?? "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(tl2.content, tl2.x + tl2.width / 2, tl2.y + tl2.height / 2);
-    } else if (layer.type === "shape") {
-      const sl = layer as ShapeLayer;
-      ctx.fillStyle = sl.fill;
-      const r = sl.cornerRadius ?? (sl.shape.includes("badge") ? sl.height / 2 : 0);
-      ctx.beginPath();
-      if (sl.shape === "circle") {
-        ctx.arc(sl.x + sl.width / 2, sl.y + sl.height / 2, Math.min(sl.width, sl.height) / 2, 0, Math.PI * 2);
-        ctx.fill();
-      } else if (sl.shape === "glow-orb") {
-        const cx = sl.x + sl.width / 2;
-        const cy = sl.y + sl.height / 2;
-        const rad = Math.min(sl.width, sl.height) / 2;
-        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
-        grad.addColorStop(0, sl.fill || "rgba(139,92,246,0.6)");
-        grad.addColorStop(0.6, "rgba(139,92,246,0.2)");
-        grad.addColorStop(1, "transparent");
-        ctx.fillStyle = grad;
-        ctx.arc(cx, cy, rad, 0, Math.PI * 2);
-        ctx.fill();
-      } else if (r > 0) {
-        ctx.roundRect(sl.x, sl.y, sl.width, sl.height, r);
-        ctx.fill();
-      } else {
-        ctx.rect(sl.x, sl.y, sl.width, sl.height);
-        ctx.fill();
-      }
-    } else if (layer.type === "image") {
-      const il = layer as ImageLayer;
-      if (il.src) {
-        try { const img = await loadImg(il.src); ctx.drawImage(img, il.x, il.y, il.width, il.height); } catch {/**/}
-      }
-    } else if (layer.type === "character") {
-      const cl = layer as import("@/lib/types").CharacterLayer;
-      if (cl.svgContent) {
-        try {
-          let imgUrl = cl.svgContent;
-          let needsRevoke = false;
-
-          if (cl.svgContent.startsWith("<") || cl.svgContent.includes("<svg") || cl.svgContent.includes("<g")) {
-            const fullSvg = cl.svgContent.startsWith("<svg")
-              ? cl.svgContent
-              : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500">${cl.svgContent}</svg>`;
-            const blob = new Blob([fullSvg], { type: "image/svg+xml" });
-            imgUrl = URL.createObjectURL(blob);
-            needsRevoke = true;
-          } else if (cl.svgContent.startsWith("http://") || cl.svgContent.startsWith("https://")) {
-            imgUrl = `/api/proxy-svg?url=${encodeURIComponent(cl.svgContent)}`;
-          }
-
-          const img = await loadImg(imgUrl);
-          ctx.drawImage(img, cl.x, cl.y, cl.width, cl.height);
-          if (needsRevoke) {
-            URL.revokeObjectURL(imgUrl);
-          }
-        } catch {/**/}
-      }
-    }
-    ctx.restore();
-  }
-  return canvas;
-}
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 export function GifExportModal({ projectId, onClose }: GifExportModalProps) {
@@ -190,7 +35,7 @@ export function GifExportModal({ projectId, onClose }: GifExportModalProps) {
   const [errorMsg, setErrorMsg] = useState("");
   const progressRef = useRef(0);
 
-  const activeSet = screenSets.find((s) => s.id === selectedSet);
+  const activeSet = screenSets.find((s) => s.id === selectedSet) || screenSets[0];
   const screens = activeSet?.screens ?? [];
 
   const handleExport = async () => {
@@ -203,7 +48,8 @@ export function GifExportModal({ projectId, onClose }: GifExportModalProps) {
       setStatusMsg("Rendering screens...");
       const pngBlobs: Blob[] = [];
       for (let i = 0; i < screens.length; i++) {
-        const canvas = await renderScreenToCanvas(screens[i], scale);
+        const canvas = document.createElement("canvas");
+        await renderScreenToCanvas(canvas, screens[i], activeSet, { scale, isExport: true });
         const blob = await new Promise<Blob>((res) =>
           canvas.toBlob((b) => res(b!), "image/png")
         );
