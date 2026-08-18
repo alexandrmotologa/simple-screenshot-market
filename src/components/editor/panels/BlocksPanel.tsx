@@ -1496,7 +1496,7 @@ export function BlocksPanel() {
   const totalResults = filteredSections.reduce((acc, cat) => acc + cat.presets.length, 0);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0 overflow-hidden">
       {/* Top Search & Filter Controls */}
       <div className="p-3 border-b border-border/40 space-y-2.5 shrink-0 bg-background/50 backdrop-blur-xs">
         {/* Search input */}
@@ -1541,7 +1541,7 @@ export function BlocksPanel() {
       </div>
 
       {/* Main Presets Scrollable Area */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 min-h-0">
         <div className="p-3 space-y-4">
           {totalResults === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
