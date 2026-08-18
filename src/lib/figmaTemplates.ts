@@ -2457,7 +2457,7 @@ export const FIGMA_TEMPLATES: FigmaTemplate[] = [
             "y": 1470.7,
             "width": 473.62,
             "height": 128.41,
-            "fill": "#000000",
+            "fill": "#2563eb",
             "cornerRadius": 1005.5,
             "rotation": 0,
             "opacity": 1
@@ -2473,7 +2473,7 @@ export const FIGMA_TEMPLATES: FigmaTemplate[] = [
             "fontSize": 104.0,
             "fontFamily": "DM Sans",
             "fontWeight": 500,
-            "color": "#000000",
+            "color": "#ffffff",
             "align": "center",
             "lineHeight": 1.0,
             "letterSpacing": 0.0,

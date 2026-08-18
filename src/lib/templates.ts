@@ -2724,7 +2724,7 @@ export const COMMUNITY_TEMPLATES: Template[] = [
         background: { type: "solid", color: "#00c805" },
         layers: [
           textLayer("Built For\nPower Users", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
-            fontSize: 108, fontWeight: 900, align: "center", color: "#fefb32", lineHeight: 1.1, letterSpacing: -2
+            fontSize: 108, fontWeight: 900, align: "center", color: "#130f1e", lineHeight: 1.1, letterSpacing: -2
           }) as any,
           textLayer("Deep customization and powerful automation at your command", Math.round(W * 0.1), 400, Math.round(W * 0.8), 120, {
             fontSize: 46, fontWeight: 600, align: "center", color: "#ffffff", lineHeight: 1.3
@@ -2737,7 +2737,7 @@ export const COMMUNITY_TEMPLATES: Template[] = [
         background: { type: "solid", color: "#fefb32" },
         layers: [
           textLayer("Get Started\nIn Seconds", Math.round(W * 0.08), 160, Math.round(W * 0.84), 220, {
-            fontSize: 108, fontWeight: 900, align: "center", color: "#00c805", lineHeight: 1.1, letterSpacing: -2
+            fontSize: 108, fontWeight: 900, align: "center", color: "#130f1e", lineHeight: 1.1, letterSpacing: -2
           }) as any,
           textLayer("Join thousands of creators leveling up their mobile experience", Math.round(W * 0.1), 400, Math.round(W * 0.8), 120, {
             fontSize: 46, fontWeight: 600, align: "center", color: "#130f1e", lineHeight: 1.3
