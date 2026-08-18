@@ -215,18 +215,19 @@ export function StorePreviewModal({ open, onOpenChange, appName = "My Awesome Ap
                   {/* Horizontal Scrollable Carousel */}
                   <div
                     ref={scrollRef}
-                    className="flex gap-3 overflow-x-auto pb-4 pt-1 scroll-smooth snap-x snap-mandatory scrollbar-thin"
+                    className="flex gap-3.5 overflow-x-auto pb-4 pt-1 scroll-smooth snap-x snap-mandatory scrollbar-thin"
                   >
                     {screens.map((screen) => (
                       <div
                         key={screen.id}
-                        className="snap-start shrink-0 rounded-2xl overflow-hidden border border-zinc-800 shadow-md transition-transform hover:scale-[1.01]"
-                        style={{ width: "200px", aspectRatio: "9/19.5" }}
+                        className="snap-start shrink-0 rounded-2xl overflow-hidden border border-zinc-800/80 shadow-lg transition-transform hover:scale-[1.01] bg-card/60"
+                        style={{ width: "210px", height: "455px" }}
                       >
                         <ScreenThumbnailCanvas
                           screen={screen}
                           screenSet={activeSet}
-                          width={200}
+                          width={210}
+                          height={455}
                         />
                       </div>
                     ))}
@@ -339,18 +340,19 @@ export function StorePreviewModal({ open, onOpenChange, appName = "My Awesome Ap
                   {/* Horizontal Scrollable Carousel */}
                   <div
                     ref={scrollRef}
-                    className="flex gap-3 overflow-x-auto pb-4 pt-1 scroll-smooth snap-x snap-mandatory scrollbar-thin"
+                    className="flex gap-3.5 overflow-x-auto pb-4 pt-1 scroll-smooth snap-x snap-mandatory scrollbar-thin"
                   >
                     {screens.map((screen) => (
                       <div
                         key={screen.id}
-                        className="snap-start shrink-0 rounded-2xl overflow-hidden border border-zinc-800 shadow-md transition-transform hover:scale-[1.01]"
-                        style={{ width: "200px", aspectRatio: "9/19.5" }}
+                        className="snap-start shrink-0 rounded-2xl overflow-hidden border border-zinc-800/80 shadow-lg transition-transform hover:scale-[1.01] bg-card/60"
+                        style={{ width: "210px", height: "455px" }}
                       >
                         <ScreenThumbnailCanvas
                           screen={screen}
                           screenSet={activeSet}
-                          width={200}
+                          width={210}
+                          height={455}
                         />
                       </div>
                     ))}

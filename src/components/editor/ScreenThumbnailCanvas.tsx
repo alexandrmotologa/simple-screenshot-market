@@ -36,8 +36,8 @@ function loadCachedImage(src: string): Promise<HTMLImageElement> {
 export function ScreenThumbnailCanvas({
   screen,
   screenSet,
-  width = 44,
-  height = 80,
+  width,
+  height,
   className = "",
 }: ScreenThumbnailCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -50,9 +50,25 @@ export function ScreenThumbnailCanvas({
 
     const W = screen.width || 1290;
     const H = screen.height || 2796;
+    const aspectRatio = H / W;
     const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
-    const targetW = Math.round(width * dpr);
-    const targetH = Math.round(height * dpr);
+
+    let computedW = 44;
+    let computedH = Math.round(44 * aspectRatio);
+
+    if (width && height) {
+      computedW = width;
+      computedH = height;
+    } else if (width && !height) {
+      computedW = width;
+      computedH = Math.round(width * aspectRatio);
+    } else if (!width && height) {
+      computedH = height;
+      computedW = Math.round(height / aspectRatio);
+    }
+
+    const targetW = Math.round(computedW * dpr);
+    const targetH = Math.round(computedH * dpr);
 
     if (canvas.width !== targetW || canvas.height !== targetH) {
       canvas.width = targetW;
@@ -64,7 +80,7 @@ export function ScreenThumbnailCanvas({
     ctx.clearRect(0, 0, targetW, targetH);
     ctx.scale(scale, scale);
     ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "medium";
+    ctx.imageSmoothingQuality = "high";
 
     // ── 1. Background ──────────────────────────────────────────────────────────
     const bg = screen.background;
@@ -135,28 +151,32 @@ export function ScreenThumbnailCanvas({
       // ── Text Layer ──
       if (layer.type === "text") {
         const tl = layer as TextLayer;
-        ctx.font = `${tl.fontWeight || 500} ${tl.fontSize}px "${tl.fontFamily || "Inter"}", system-ui, sans-serif`;
+        ctx.font = `${tl.fontWeight || 600} ${tl.fontSize}px "${tl.fontFamily || "Inter"}", system-ui, sans-serif`;
         ctx.fillStyle = tl.color || "#ffffff";
         ctx.textAlign = (tl.align || "left") as CanvasTextAlign;
 
-        const words = (tl.content || "").split(" ");
+        // Break by explicit newlines, then wrap by width
+        const rawParagraphs = (tl.content || "").split("\n");
         const lines: string[] = [];
-        let currentLine = "";
 
-        for (let i = 0; i < words.length; i++) {
-          const testLine = currentLine + words[i] + " ";
-          const metrics = ctx.measureText(testLine);
-          if (metrics.width > tl.width && i > 0) {
-            lines.push(currentLine.trim());
-            currentLine = words[i] + " ";
-          } else {
-            currentLine = testLine;
+        for (const paragraph of rawParagraphs) {
+          const words = paragraph.split(" ");
+          let currentLine = "";
+
+          for (let i = 0; i < words.length; i++) {
+            const testLine = currentLine ? `${currentLine} ${words[i]}` : words[i];
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > tl.width && currentLine) {
+              lines.push(currentLine);
+              currentLine = words[i];
+            } else {
+              currentLine = testLine;
+            }
           }
+          if (currentLine) lines.push(currentLine);
         }
-        lines.push(currentLine.trim());
-        const finalLines = lines.flatMap((l) => l.split("\n"));
-        const lineH = tl.fontSize * (tl.lineHeight ?? 1.25);
 
+        const lineH = tl.fontSize * (tl.lineHeight ?? 1.15);
         const xPos =
           tl.align === "center"
             ? tl.x + tl.width / 2
@@ -164,8 +184,8 @@ export function ScreenThumbnailCanvas({
             ? tl.x + tl.width
             : tl.x;
 
-        finalLines.forEach((line, i) => {
-          ctx.fillText(line, xPos, tl.y + tl.fontSize + i * lineH, tl.width);
+        lines.forEach((line, i) => {
+          ctx.fillText(line, xPos, tl.y + tl.fontSize * 0.88 + i * lineH, tl.width);
         });
       }
 
