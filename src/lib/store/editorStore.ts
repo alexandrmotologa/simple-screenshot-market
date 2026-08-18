@@ -96,7 +96,7 @@ interface EditorStore {
   recordHistory: (immediate?: boolean) => void;
 
   // Actions: templates
-  applyTemplate: (setId: string, template: any) => void;
+  applyTemplate: (setId: string | "all", template: any) => void;
 
   // Actions: screen sets
   addScreenSet: (store: "ios" | "android") => void;
@@ -188,13 +188,13 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
 
   getActiveSet: () => {
     const { screenSets, activeSetId } = get();
-    return screenSets.find((s) => s.id === activeSetId);
+    return screenSets.find((s) => s.id === activeSetId) || screenSets[0];
   },
 
   getActiveScreen: () => {
     const { activeScreenId } = get();
     const set = get().getActiveSet();
-    return set?.screens.find((s) => s.id === activeScreenId);
+    return set?.screens.find((s) => s.id === activeScreenId) || set?.screens[0];
   },
 
   getActiveLayer: () => {
@@ -754,36 +754,47 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   canRedo: () => get().historyIndex < get().history.length - 1,
 
   applyTemplate: (setId, template) => {
-    const { screenSets } = get();
-    set({
-      screenSets: screenSets.map((ss) => {
-        if (ss.id !== setId) return ss;
-        const existingSrcs = ss.screens.flatMap((s) =>
-          s.layers.filter((l) => l.type === "screenshot" && (l as any).src).map((l) => (l as any).src)
-        );
-        let srcIndex = 0;
-        
+    const { screenSets, activeSetId } = get();
+    const isAll = setId === "all" || !setId;
+
+    const updatedSets = screenSets.map((ss) => {
+      if (!isAll && ss.id !== setId) return ss;
+      const existingSrcs = ss.screens.flatMap((s) =>
+        s.layers.filter((l) => l.type === "screenshot" && (l as any).src).map((l) => (l as any).src)
+      );
+      let srcIndex = 0;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const newScreens = template.screens.map((tScreen: any, idx: number) => ({
+        id: nanoid(),
+        name: tScreen.name ?? `Screen ${idx + 1}`,
+        width: ss.preset.width,
+        height: ss.preset.height,
+        caption: "",
+        background: tScreen.background ?? { type: "solid", color: "#1a1a2e" },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const newScreens = template.screens.map((tScreen: any, idx: number) => ({
-          id: nanoid(),
-          name: tScreen.name ?? `Screen ${idx + 1}`,
-          width: ss.preset.width,
-          height: ss.preset.height,
-          caption: "",
-          background: tScreen.background ?? { type: "solid", color: "#1a1a2e" },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          layers: (tScreen.layers ?? []).map((l: any): Layer => {
-            const id = nanoid();
-            if (l.type === "screenshot") {
-              const src = existingSrcs[srcIndex] || undefined;
-              srcIndex++;
-              return { ...l, id, src } as Layer;
-            }
-            return { ...l, id } as Layer;
-          }),
-        }));
-        return { ...ss, screens: newScreens };
-      }),
+        layers: (tScreen.layers ?? []).map((l: any): Layer => {
+          const id = nanoid();
+          if (l.type === "screenshot") {
+            const src = existingSrcs[srcIndex] || undefined;
+            srcIndex++;
+            return { ...l, id, src } as Layer;
+          }
+          return { ...l, id } as Layer;
+        }),
+      }));
+      return { ...ss, screens: newScreens };
+    });
+
+    const activeSetAfter = updatedSets.find((s) => s.id === activeSetId) || updatedSets[0];
+    const newActiveScreenId = activeSetAfter?.screens[0]?.id ?? null;
+
+    set({
+      screenSets: updatedSets,
+      activeSetId: activeSetAfter?.id ?? null,
+      activeScreenId: newActiveScreenId,
+      activeLayerId: null,
+      selectedLayerIds: [],
     });
     get().recordHistory();
   },

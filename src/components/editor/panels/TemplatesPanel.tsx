@@ -125,13 +125,13 @@ function TemplateCard({
 
 // ── Main panel ──────────────────────────────────────────────────────────────
 export function TemplatesPanel() {
-  const { getActiveSet, getActiveScreen, applyTemplate } = useEditorStore();
+  const { screenSets, getActiveSet, applyTemplate } = useEditorStore();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<Category>("All");
+  const [applyScope, setApplyScope] = useState<"all" | "active">("all");
   const [appliedId, setAppliedId] = useState<string | null>(null);
 
   const activeSet = getActiveSet();
-  const activeScreen = getActiveScreen();
 
   const filtered = useMemo(() => {
     return ALL_TEMPLATES.filter((t) => {
@@ -155,13 +155,14 @@ export function TemplatesPanel() {
   }, [query, category]);
 
   const handleApply = (template: Template) => {
-    if (!activeSet || !activeScreen) return;
     // Record template usage count (+1)
     recordTemplateSelection(template.id);
-    // Apply to ALL screens in the active set (replace layers and background with exact screen count)
-    applyTemplate(activeSet.id, template);
+    // Apply to all sets or active set
+    const target = applyScope === "all" ? "all" : (activeSet?.id || "all");
+    applyTemplate(target, template);
     setAppliedId(template.id);
-    toast.success(`Applied "${template.name}" (${template.screens?.length || 1} screens)`);
+    const scopeLabel = applyScope === "all" ? "all platforms (iOS & Android)" : (activeSet?.store === "android" ? "Google Play" : "App Store");
+    toast.success(`Applied "${template.name}" (${template.screens?.length || 1} screens) to ${scopeLabel}`);
     // Reset applied indicator after 2s
     setTimeout(() => setAppliedId(null), 2000);
   };
@@ -205,34 +206,57 @@ export function TemplatesPanel() {
         ))}
       </div>
 
-      {/* No active screen warning */}
-      {(!activeSet || !activeScreen) && (
-        <div className="flex flex-col items-center justify-center gap-2 flex-1 p-4 text-center">
-          <Sparkles className="w-8 h-8 text-muted-foreground/40" />
-          <p className="text-xs text-muted-foreground">Select a platform to apply a template</p>
+      {/* Scope Selector: All platforms vs Active */}
+      {screenSets.length > 1 && (
+        <div className="flex items-center justify-between px-3 py-1.5 bg-secondary/30 border-b border-border/30 text-[10.5px]">
+          <span className="text-muted-foreground font-medium">Apply To:</span>
+          <div className="flex items-center gap-1 bg-background/80 p-0.5 rounded-lg border border-border/40">
+            <button
+              type="button"
+              onClick={() => setApplyScope("all")}
+              className={cn(
+                "px-2 py-0.5 rounded-md font-semibold transition-all cursor-pointer",
+                applyScope === "all"
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              All Platforms (iOS & Android)
+            </button>
+            <button
+              type="button"
+              onClick={() => setApplyScope("active")}
+              className={cn(
+                "px-2 py-0.5 rounded-md font-semibold transition-all cursor-pointer",
+                applyScope === "active"
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {activeSet?.store === "android" ? "Android" : "iOS"} Only
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Template grid */}
-      {activeSet && activeScreen && (
-        <ScrollArea className="flex-1 min-h-0">
-          <div className="p-3 grid grid-cols-2 gap-2.5">
-            {filtered.length === 0 && (
-              <div className="col-span-2 text-center py-8 text-xs text-muted-foreground">
-                No templates found matching &ldquo;{query}&rdquo;
-              </div>
-            )}
-            {filtered.map((template) => (
-              <TemplateCard
-                key={template.id}
-                template={template}
-                isApplied={appliedId === template.id}
-                onApply={() => handleApply(template)}
-              />
-            ))}
-          </div>
-        </ScrollArea>
-      )}
+      {/* Template grid - Always rendered */}
+      <ScrollArea className="flex-1 min-h-0">
+        <div className="p-3 grid grid-cols-2 gap-2.5">
+          {filtered.length === 0 && (
+            <div className="col-span-2 text-center py-8 text-xs text-muted-foreground">
+              No templates found matching &ldquo;{query}&rdquo;
+            </div>
+          )}
+          {filtered.map((template) => (
+            <TemplateCard
+              key={template.id}
+              template={template}
+              isApplied={appliedId === template.id}
+              onApply={() => handleApply(template)}
+            />
+          ))}
+        </div>
+      </ScrollArea>
     </div>
   );
 }
