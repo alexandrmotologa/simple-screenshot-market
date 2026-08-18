@@ -169,11 +169,11 @@ export function PlatformsPanel() {
           </div>
 
           {/* Platform 1: App Store (iOS) */}
-          <div className="rounded-xl border border-border/50 bg-secondary/30 overflow-hidden transition-all">
+          <div className="rounded-xl border border-border/60 bg-card/60 dark:bg-secondary/30 overflow-hidden transition-all shadow-xs">
             {/* Platform Toggle Header */}
-            <div className="p-3 flex items-center justify-between bg-secondary/50 border-b border-border/40">
+            <div className="p-3 flex items-center justify-between bg-secondary/70 dark:bg-secondary/50 border-b border-border/40">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center text-foreground shadow-xs border border-border/40 shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center text-foreground shadow-xs border border-border/50 shrink-0">
                   <AppleStoreIcon className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col">
@@ -193,24 +193,24 @@ export function PlatformsPanel() {
 
             {/* Validation Checklist if Active */}
             {hasIOS && iosValidation && (
-              <div className="p-3 space-y-2.5 bg-card/40">
+              <div className="p-3 space-y-2.5 bg-card/90 dark:bg-card/40">
                 {/* Status Indicator Pill */}
                 <div
                   className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[10.5px] font-semibold border ${
                     iosValidation.isReady
-                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                      : "bg-amber-500/10 border-amber-500/30 text-amber-300"
+                      ? "bg-emerald-500/10 dark:bg-emerald-500/15 border-emerald-500/30 text-emerald-700 dark:text-emerald-400"
+                      : "bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-400"
                   }`}
                 >
                   <div className="flex items-center gap-1.5">
                     {iosValidation.isReady ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     ) : (
-                      <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                     )}
                     <span>{iosValidation.isReady ? "Ready for App Store Connect" : "Requires Attention"}</span>
                   </div>
-                  <span className="text-[9.5px] font-mono px-1.5 py-0.5 rounded bg-background/50 border border-current/20">
+                  <span className="text-[9.5px] font-mono px-1.5 py-0.5 rounded bg-background/80 dark:bg-background/50 border border-current/20">
                     iOS
                   </span>
                 </div>
@@ -221,13 +221,13 @@ export function PlatformsPanel() {
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="text-muted-foreground flex items-center gap-1.5">
                       {iosValidation.countValid ? (
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       ) : (
-                        <XCircle className="w-3 h-3 text-rose-400 shrink-0" />
+                        <XCircle className="w-3 h-3 text-rose-600 dark:text-rose-400 shrink-0" />
                       )}
                       Screen Count (2–10)
                     </span>
-                    <span className={`font-medium ${iosValidation.countValid ? "text-foreground" : "text-rose-400 font-semibold"}`}>
+                    <span className={`font-medium ${iosValidation.countValid ? "text-foreground" : "text-rose-600 dark:text-rose-400 font-semibold"}`}>
                       {iosValidation.countStatus}
                     </span>
                   </div>
@@ -236,9 +236,9 @@ export function PlatformsPanel() {
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="text-muted-foreground flex items-center gap-1.5">
                       {iosValidation.resValid ? (
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       ) : (
-                        <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0" />
+                        <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400 shrink-0" />
                       )}
                       Resolution & Ratio
                     </span>
@@ -251,20 +251,20 @@ export function PlatformsPanel() {
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="text-muted-foreground flex items-center gap-1.5">
                       {iosValidation.allUploaded ? (
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       ) : (
-                        <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0" />
+                        <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400 shrink-0" />
                       )}
                       App Screenshots
                     </span>
-                    <span className={`font-medium ${iosValidation.allUploaded ? "text-foreground" : "text-amber-400"}`}>
+                    <span className={`font-medium ${iosValidation.allUploaded ? "text-foreground" : "text-amber-600 dark:text-amber-400 font-semibold"}`}>
                       {iosValidation.mediaStatus}
                     </span>
                   </div>
 
                   {/* Apple Guidelines Note */}
-                  <div className="flex items-start gap-1.5 text-[10px] text-muted-foreground/75 pt-1 bg-secondary/30 p-2 rounded-lg border border-border/20">
-                    <Info className="w-3 h-3 text-sky-400 shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-1.5 text-[10px] text-muted-foreground pt-1 bg-sky-500/5 dark:bg-sky-500/10 p-2 rounded-lg border border-sky-500/20">
+                    <Info className="w-3 h-3 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
                     <span>App Store requires 72 DPI RGB images without transparency.</span>
                   </div>
                 </div>
@@ -273,11 +273,11 @@ export function PlatformsPanel() {
           </div>
 
           {/* Platform 2: Google Play (Android) */}
-          <div className="rounded-xl border border-border/50 bg-secondary/30 overflow-hidden transition-all">
+          <div className="rounded-xl border border-border/60 bg-card/60 dark:bg-secondary/30 overflow-hidden transition-all shadow-xs">
             {/* Platform Toggle Header */}
-            <div className="p-3 flex items-center justify-between bg-secondary/50 border-b border-border/40">
+            <div className="p-3 flex items-center justify-between bg-secondary/70 dark:bg-secondary/50 border-b border-border/40">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center text-foreground shadow-xs border border-border/40 shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center text-foreground shadow-xs border border-border/50 shrink-0">
                   <GooglePlayIcon className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col">
@@ -297,24 +297,24 @@ export function PlatformsPanel() {
 
             {/* Validation Checklist if Active */}
             {hasAndroid && androidValidation && (
-              <div className="p-3 space-y-2.5 bg-card/40">
+              <div className="p-3 space-y-2.5 bg-card/90 dark:bg-card/40">
                 {/* Status Indicator Pill */}
                 <div
                   className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[10.5px] font-semibold border ${
                     androidValidation.isReady
-                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                      : "bg-amber-500/10 border-amber-500/30 text-amber-300"
+                      ? "bg-emerald-500/10 dark:bg-emerald-500/15 border-emerald-500/30 text-emerald-700 dark:text-emerald-400"
+                      : "bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-400"
                   }`}
                 >
                   <div className="flex items-center gap-1.5">
                     {androidValidation.isReady ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     ) : (
-                      <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                     )}
                     <span>{androidValidation.isReady ? "Ready for Google Play Console" : "Requires Attention"}</span>
                   </div>
-                  <span className="text-[9.5px] font-mono px-1.5 py-0.5 rounded bg-background/50 border border-current/20">
+                  <span className="text-[9.5px] font-mono px-1.5 py-0.5 rounded bg-background/80 dark:bg-background/50 border border-current/20">
                     Android
                   </span>
                 </div>
@@ -325,13 +325,13 @@ export function PlatformsPanel() {
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="text-muted-foreground flex items-center gap-1.5">
                       {androidValidation.countValid ? (
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       ) : (
-                        <XCircle className="w-3 h-3 text-rose-400 shrink-0" />
+                        <XCircle className="w-3 h-3 text-rose-600 dark:text-rose-400 shrink-0" />
                       )}
                       Screen Count (2–8)
                     </span>
-                    <span className={`font-medium ${androidValidation.countValid ? "text-foreground" : "text-rose-400 font-semibold"}`}>
+                    <span className={`font-medium ${androidValidation.countValid ? "text-foreground" : "text-rose-600 dark:text-rose-400 font-semibold"}`}>
                       {androidValidation.countStatus}
                     </span>
                   </div>
@@ -340,9 +340,9 @@ export function PlatformsPanel() {
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="text-muted-foreground flex items-center gap-1.5">
                       {androidValidation.resValid ? (
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       ) : (
-                        <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0" />
+                        <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400 shrink-0" />
                       )}
                       Resolution & Ratio
                     </span>
@@ -355,20 +355,20 @@ export function PlatformsPanel() {
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="text-muted-foreground flex items-center gap-1.5">
                       {androidValidation.allUploaded ? (
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       ) : (
-                        <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0" />
+                        <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400 shrink-0" />
                       )}
                       App Screenshots
                     </span>
-                    <span className={`font-medium ${androidValidation.allUploaded ? "text-foreground" : "text-amber-400"}`}>
+                    <span className={`font-medium ${androidValidation.allUploaded ? "text-foreground" : "text-amber-600 dark:text-amber-400 font-semibold"}`}>
                       {androidValidation.mediaStatus}
                     </span>
                   </div>
 
                   {/* Google Play Guidelines Note */}
-                  <div className="flex items-start gap-1.5 text-[10px] text-muted-foreground/75 pt-1 bg-secondary/30 p-2 rounded-lg border border-border/20">
-                    <Info className="w-3 h-3 text-sky-400 shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-1.5 text-[10px] text-muted-foreground pt-1 bg-sky-500/5 dark:bg-sky-500/10 p-2 rounded-lg border border-sky-500/20">
+                    <Info className="w-3 h-3 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
                     <span>Google Play recommends 16:9 or 9:16 aspect ratio with min. 1080px.</span>
                   </div>
                 </div>

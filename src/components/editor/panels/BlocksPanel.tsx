@@ -1577,7 +1577,7 @@ export function BlocksPanel() {
                       <button
                         key={preset.id}
                         onClick={() => handleAdd(preset)}
-                        className="flex flex-col gap-1 p-2 rounded-xl bg-secondary/50 hover:bg-secondary border border-border/40 hover:border-primary/40 transition-all group cursor-pointer items-center text-center"
+                        className="flex flex-col gap-1 p-2 rounded-xl bg-card/70 dark:bg-secondary/40 hover:bg-secondary/80 border border-border/50 hover:border-primary/50 transition-all group cursor-pointer items-center text-center shadow-xs"
                       >
                         <div className="flex items-center justify-center h-10">
                           {preset.preview}
@@ -1594,10 +1594,10 @@ export function BlocksPanel() {
                       <button
                         key={preset.id}
                         onClick={() => handleAdd(preset)}
-                        className="flex items-center justify-between p-2.5 rounded-xl bg-secondary/50 hover:bg-secondary border border-border/40 hover:border-primary/40 transition-all group cursor-pointer"
+                        className="flex items-center justify-between p-2.5 rounded-xl bg-card/70 dark:bg-secondary/40 hover:bg-secondary/80 border border-border/50 hover:border-primary/50 transition-all group cursor-pointer shadow-xs"
                       >
                         <div className="shrink-0">{preset.preview}</div>
-                        <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground shrink-0 ml-2">
+                        <span className="text-[11px] font-semibold text-muted-foreground group-hover:text-primary shrink-0 ml-2 px-2 py-0.5 rounded-md bg-secondary/60 dark:bg-secondary/30 group-hover:bg-primary/10 transition-colors">
                           + Add
                         </span>
                       </button>
