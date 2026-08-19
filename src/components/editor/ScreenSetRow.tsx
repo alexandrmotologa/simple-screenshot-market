@@ -9,7 +9,7 @@ import { useEditorStore } from "@/lib/store/editorStore";
 import { toast } from "@/lib/store/toastStore";
 import { ScreenSet, ScreenshotLayer } from "@/lib/types";
 import { ScreenCard } from "@/components/editor/ScreenCard";
-import { IOS_DEVICES, ANDROID_DEVICES, COLOR_HEX_MAP } from "@/lib/devices";
+import { IOS_DEVICES, ANDROID_DEVICES, COLOR_HEX_MAP, isTabletDevice } from "@/lib/devices";
 import { cn } from "@/lib/utils";
 import { DragDropContext, Droppable, DropResult } from "@hello-pangea/dnd";
 import {
@@ -238,7 +238,7 @@ export function ScreenSetRow({ screenSet, isDragging = false }: ScreenSetRowProp
                 {screenSet.store === "ios" ? "iPhone Models" : "Android Phones"}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {devices.filter((d) => !d.id.includes("ipad") && !d.id.includes("tab")).map((device) => (
+              {devices.filter((d) => !isTabletDevice(d)).map((device) => (
                 <DropdownMenuItem
                   key={device.id}
                   className={cn(
@@ -263,7 +263,7 @@ export function ScreenSetRow({ screenSet, isDragging = false }: ScreenSetRowProp
             </DropdownMenuGroup>
 
             {/* Tablets Group */}
-            {devices.some((d) => d.id.includes("ipad") || d.id.includes("tab")) && (
+            {devices.some((d) => isTabletDevice(d)) && (
               <>
                 <DropdownMenuSeparator className="my-1.5" />
                 <DropdownMenuGroup>
@@ -271,7 +271,7 @@ export function ScreenSetRow({ screenSet, isDragging = false }: ScreenSetRowProp
                     {screenSet.store === "ios" ? "iPad Tablets" : "Android Tablets"}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {devices.filter((d) => d.id.includes("ipad") || d.id.includes("tab")).map((device) => (
+                  {devices.filter((d) => isTabletDevice(d)).map((device) => (
                     <DropdownMenuItem
                       key={device.id}
                       className={cn(

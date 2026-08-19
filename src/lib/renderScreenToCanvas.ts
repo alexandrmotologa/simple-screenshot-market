@@ -2,7 +2,7 @@ import {
   Screen, ScreenSet, TextLayer, ShapeLayer,
   ImageLayer, ScreenshotLayer, FlagLayer, CharacterLayer
 } from "@/lib/types";
-import { ALL_DEVICES, IOS_DEVICES, ANDROID_DEVICES, COLOR_HEX_MAP } from "@/lib/devices";
+import { ALL_DEVICES, IOS_DEVICES, ANDROID_DEVICES, COLOR_HEX_MAP, isTabletDevice } from "@/lib/devices";
 
 export interface RenderOptions {
   scale?: number;
@@ -734,7 +734,7 @@ export async function renderScreenToCanvas(
             ctx.arc(holeX, holeY, holeR, 0, Math.PI * 2);
             ctx.fill();
           } else if (device.notchType === "notch" && mockup.notch !== false) {
-            const isTablet = device.id.includes("tab") || device.id.includes("pad");
+            const isTablet = isTabletDevice(device);
             const notchW = isTablet ? innerW * 0.09 : innerW * 0.45;
             const notchH = isTablet ? innerW * 0.022 : innerW * 0.08;
             const notchX = innerX + (innerW - notchW) / 2;

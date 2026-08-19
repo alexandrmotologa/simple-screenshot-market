@@ -138,7 +138,7 @@ export function PlatformsPanel() {
     // Aspect ratio & resolution check: min 1080px & 9:16 portrait
     const minSideValid = Math.min(w, h) >= 1080 || Math.max(w, h) >= 1080;
     const ratio = h / w;
-    const aspectValid = ratio >= 1.5 && ratio <= 2.3;
+    const aspectValid = ratio >= 1.35 && ratio <= 2.3;
     const resValid = minSideValid && aspectValid;
 
     const resLabel = `${w} × ${h} px (9:16 Standard)`;

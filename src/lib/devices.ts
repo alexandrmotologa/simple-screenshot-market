@@ -481,6 +481,12 @@ export const ANDROID_DEVICES: DeviceModel[] = [
 
 export const ALL_DEVICES = [...IOS_DEVICES, ...ANDROID_DEVICES];
 
+export const isTabletDevice = (device: DeviceModel | string): boolean => {
+  const id = typeof device === "string" ? device : device.id;
+  const lower = id.toLowerCase();
+  return lower.includes("ipad") || lower.includes("tab") || lower.includes("slate");
+};
+
 // App Store required sizes
 export const APP_STORE_SIZES = {
   ios: [
