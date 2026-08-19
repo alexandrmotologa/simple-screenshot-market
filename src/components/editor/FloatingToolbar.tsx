@@ -450,6 +450,7 @@ function ScreenContextToolbar({
                     onColorChange={(color) => {
                       updateScreenBackground(screenSet.id, screen.id, { type: "solid", color });
                     }}
+                    onColorCommit={() => useEditorStore.getState().recordHistory()}
                     className="w-7 h-7 rounded border border-border cursor-pointer bg-transparent"
                   />
                   <input

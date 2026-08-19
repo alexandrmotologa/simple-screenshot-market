@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useCallback } from "react";
 
 export interface ColorInputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "onInput" | "value"> {
@@ -34,38 +34,81 @@ function normalizeHex(val: string | undefined | null): string {
 }
 
 /**
- * Fast, responsive Color Input.
- * Synchronizes `.value` with incoming props when changed externally while preserving native picker fluidity.
+ * Ultra-smooth, high-performance Color Input.
+ * Prevents OS picker jitter and input interruption by isolating user drag operations
+ * and scheduling render updates via requestAnimationFrame.
  */
 export const ColorInput = React.forwardRef<HTMLInputElement, ColorInputProps>(
   function ColorInput({ value = "#000000", onColorChange, onColorCommit, className, ...props }, ref) {
     const internalRef = useRef<HTMLInputElement>(null);
     const inputRef = (ref as React.RefObject<HTMLInputElement>) || internalRef;
+    const isInteractingRef = useRef(false);
+    const pendingRafRef = useRef<number | null>(null);
+    const lastEmittedColorRef = useRef<string>("");
 
     const normalizedValue = normalizeHex(value);
 
-    // Keep input element in sync when external prop changes
+    // Keep input element in sync ONLY when the user is NOT actively dragging inside the picker
     useEffect(() => {
-      if (inputRef.current) {
+      if (inputRef.current && !isInteractingRef.current) {
         if (inputRef.current.value.toLowerCase() !== normalizedValue.toLowerCase()) {
           inputRef.current.value = normalizedValue;
         }
       }
     }, [normalizedValue, inputRef]);
 
+    // Clean up RAF on unmount
+    useEffect(() => {
+      return () => {
+        if (pendingRafRef.current !== null) {
+          cancelAnimationFrame(pendingRafRef.current);
+        }
+      };
+    }, []);
+
+    const emitColor = useCallback(
+      (color: string, isFinal = false) => {
+        if (color.toLowerCase() === lastEmittedColorRef.current.toLowerCase() && !isFinal) return;
+        lastEmittedColorRef.current = color;
+        onColorChange(color);
+        if (isFinal) {
+          onColorCommit?.(color);
+        }
+      },
+      [onColorChange, onColorCommit]
+    );
+
     const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
+      isInteractingRef.current = true;
       const newColor = (e.target as HTMLInputElement).value;
-      onColorChange(newColor);
+
+      if (pendingRafRef.current !== null) {
+        cancelAnimationFrame(pendingRafRef.current);
+      }
+
+      pendingRafRef.current = requestAnimationFrame(() => {
+        emitColor(newColor, false);
+        pendingRafRef.current = null;
+      });
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (pendingRafRef.current !== null) {
+        cancelAnimationFrame(pendingRafRef.current);
+        pendingRafRef.current = null;
+      }
+      isInteractingRef.current = false;
       const finalColor = e.target.value;
-      onColorChange(finalColor);
-      onColorCommit?.(finalColor);
+      emitColor(finalColor, true);
     };
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-      onColorCommit?.(e.target.value);
+      if (pendingRafRef.current !== null) {
+        cancelAnimationFrame(pendingRafRef.current);
+        pendingRafRef.current = null;
+      }
+      isInteractingRef.current = false;
+      emitColor(e.target.value, true);
     };
 
     return (

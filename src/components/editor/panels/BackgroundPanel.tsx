@@ -274,6 +274,7 @@ export function BackgroundPanel() {
                     onColorChange={(color) =>
                       applyBg({ type: "solid", color })
                     }
+                    onColorCommit={() => useEditorStore.getState().recordHistory()}
                     className="opacity-0 w-0 h-0"
                   />
                   <div
