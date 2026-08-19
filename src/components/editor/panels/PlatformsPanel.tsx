@@ -476,71 +476,121 @@ export function PlatformsPanel() {
           </div>
 
           {/* ── ADD MORE SETS SECTION ── */}
-          <div className="space-y-2 pt-2 border-t border-border/50">
+          <div className="space-y-2.5 pt-2 border-t border-border/50">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
-                <span>➕</span> Add Additional Device Set
+                <span className="text-primary font-bold">+</span> Add Additional Device Set
               </span>
+              <span className="text-[10px] text-muted-foreground font-mono">4 platforms</span>
             </div>
-            <div className="grid grid-cols-2 gap-2">
+
+            <div className="flex flex-col gap-2">
+              {/* Add iPad Pro */}
               <button
                 type="button"
                 onClick={() => {
                   addTabletSet("ios");
                   toast.success("iPad Pro 13\" set added with proportional scaling!");
                 }}
-                className="flex flex-col items-center justify-center p-3 rounded-xl border border-border/60 bg-secondary/30 hover:bg-secondary/70 text-center transition-all cursor-pointer group"
+                className="flex items-center justify-between p-2.5 rounded-xl border border-border/60 bg-secondary/30 hover:bg-secondary/70 hover:border-indigo-500/40 transition-all cursor-pointer group text-left shadow-xs"
               >
-                <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
-                  <AppleStoreIcon className="w-4 h-4 text-foreground" />
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform border border-indigo-500/20">
+                    <AppleStoreIcon className="w-4 h-4 text-foreground" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                      + Add iPad Pro Set
+                    </p>
+                    <p className="text-[10px] text-muted-foreground font-mono">
+                      2048 × 2732 px · 4:3 Tablet
+                    </p>
+                  </div>
                 </div>
-                <span className="text-xs font-semibold text-foreground">+ Add iPad Pro</span>
-                <span className="text-[10px] text-muted-foreground font-mono">2048 × 2732 px</span>
+                <div className="w-6 h-6 rounded-md bg-secondary/80 flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all shrink-0 ml-2">
+                  <Plus className="w-3.5 h-3.5" />
+                </div>
               </button>
 
+              {/* Add Android Tablet */}
               <button
                 type="button"
                 onClick={() => {
                   addTabletSet("android");
                   toast.success("Android Tablet set added with proportional scaling!");
                 }}
-                className="flex flex-col items-center justify-center p-3 rounded-xl border border-border/60 bg-secondary/30 hover:bg-secondary/70 text-center transition-all cursor-pointer group"
+                className="flex items-center justify-between p-2.5 rounded-xl border border-border/60 bg-secondary/30 hover:bg-secondary/70 hover:border-emerald-500/40 transition-all cursor-pointer group text-left shadow-xs"
               >
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
-                  <GooglePlayIcon className="w-4 h-4" />
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform border border-emerald-500/20">
+                    <GooglePlayIcon className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-foreground group-hover:text-emerald-400 transition-colors truncate">
+                      + Add Android Tab Set
+                    </p>
+                    <p className="text-[10px] text-muted-foreground font-mono">
+                      1848 × 2960 px · 16:10 Tablet
+                    </p>
+                  </div>
                 </div>
-                <span className="text-xs font-semibold text-foreground">+ Add Android Tab</span>
-                <span className="text-[10px] text-muted-foreground font-mono">1848 × 2960 px</span>
+                <div className="w-6 h-6 rounded-md bg-secondary/80 flex items-center justify-center text-muted-foreground group-hover:bg-emerald-500 group-hover:text-white transition-all shrink-0 ml-2">
+                  <Plus className="w-3.5 h-3.5" />
+                </div>
               </button>
 
+              {/* Add iPhone Set */}
               <button
                 type="button"
                 onClick={() => {
                   addScreenSet("ios");
                   toast.success("iPhone 17 Pro Max set added with proportional scaling!");
                 }}
-                className="flex flex-col items-center justify-center p-3 rounded-xl border border-border/60 bg-secondary/30 hover:bg-secondary/70 text-center transition-all cursor-pointer group"
+                className="flex items-center justify-between p-2.5 rounded-xl border border-border/60 bg-secondary/30 hover:bg-secondary/70 hover:border-blue-500/40 transition-all cursor-pointer group text-left shadow-xs"
               >
-                <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
-                  <AppleStoreIcon className="w-4 h-4 text-foreground" />
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform border border-blue-500/20">
+                    <AppleStoreIcon className="w-4 h-4 text-foreground" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-foreground group-hover:text-blue-400 transition-colors truncate">
+                      + Add iPhone Set
+                    </p>
+                    <p className="text-[10px] text-muted-foreground font-mono">
+                      1320 × 2868 px · 19.5:9 Phone
+                    </p>
+                  </div>
                 </div>
-                <span className="text-xs font-semibold text-foreground">+ Add iPhone Set</span>
-                <span className="text-[10px] text-muted-foreground font-mono">1320 × 2868 px</span>
+                <div className="w-6 h-6 rounded-md bg-secondary/80 flex items-center justify-center text-muted-foreground group-hover:bg-blue-500 group-hover:text-white transition-all shrink-0 ml-2">
+                  <Plus className="w-3.5 h-3.5" />
+                </div>
               </button>
 
+              {/* Add Android Phone */}
               <button
                 type="button"
                 onClick={() => {
                   addScreenSet("android");
                   toast.success("Pixel 10 Pro XL set added with proportional scaling!");
                 }}
-                className="flex flex-col items-center justify-center p-3 rounded-xl border border-border/60 bg-secondary/30 hover:bg-secondary/70 text-center transition-all cursor-pointer group"
+                className="flex items-center justify-between p-2.5 rounded-xl border border-border/60 bg-secondary/30 hover:bg-secondary/70 hover:border-teal-500/40 transition-all cursor-pointer group text-left shadow-xs"
               >
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
-                  <GooglePlayIcon className="w-4 h-4" />
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-teal-500/10 text-teal-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform border border-teal-500/20">
+                    <GooglePlayIcon className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-foreground group-hover:text-teal-400 transition-colors truncate">
+                      + Add Android Phone Set
+                    </p>
+                    <p className="text-[10px] text-muted-foreground font-mono">
+                      1344 × 2992 px · 20:9 Phone
+                    </p>
+                  </div>
                 </div>
-                <span className="text-xs font-semibold text-foreground">+ Add Android Phone</span>
-                <span className="text-[10px] text-muted-foreground font-mono">1344 × 2992 px</span>
+                <div className="w-6 h-6 rounded-md bg-secondary/80 flex items-center justify-center text-muted-foreground group-hover:bg-teal-500 group-hover:text-white transition-all shrink-0 ml-2">
+                  <Plus className="w-3.5 h-3.5" />
+                </div>
               </button>
             </div>
           </div>
