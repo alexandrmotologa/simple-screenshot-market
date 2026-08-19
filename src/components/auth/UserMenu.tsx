@@ -95,15 +95,13 @@ export function UserMenu({ className }: UserMenuProps) {
         <ChevronDown className="w-3 h-3 text-muted-foreground group-hover:text-foreground transition-colors ml-0.5" />
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-56 p-1.5 shadow-2xl border border-border/80 rounded-2xl">
-        <DropdownMenuLabel className="p-2">
-          <div className="flex flex-col space-y-0.5">
-            <p className="text-xs font-bold text-foreground truncate">{displayName}</p>
-            {email && (
-              <p className="text-[11px] text-muted-foreground truncate font-mono">{email}</p>
-            )}
-          </div>
-        </DropdownMenuLabel>
+      <DropdownMenuContent align="end" className="w-56 p-1.5 shadow-2xl border border-border/80 rounded-2xl bg-card">
+        <div className="p-2 space-y-0.5">
+          <p className="text-xs font-bold text-foreground truncate">{displayName}</p>
+          {email && (
+            <p className="text-[11px] text-muted-foreground truncate font-mono">{email}</p>
+          )}
+        </div>
 
         {isAnonymous && (
           <>

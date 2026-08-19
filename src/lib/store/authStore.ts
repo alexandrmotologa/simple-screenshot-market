@@ -7,11 +7,11 @@ import {
   onAuthStateChanged,
   linkWithPopup,
 } from "firebase/auth";
-import { auth, googleProvider, githubProvider, isFirebaseConfigured } from "@/lib/firebase";
+import { getFirebaseAuth } from "@/lib/firebase";
 import { toast } from "@/lib/store/toastStore";
 
 interface AuthState {
-  user: User | null;
+  user: User | any | null;
   isLoading: boolean;
   isAuthModalOpen: boolean;
   authError: string | null;
@@ -19,29 +19,46 @@ interface AuthState {
 
   setAuthModalOpen: (open: boolean) => void;
   clearError: () => void;
+  initializeAuth: () => Promise<void>;
   signInWithGoogle: () => Promise<User | null>;
   signInWithGithub: () => Promise<User | null>;
-  signInAnonymous: () => Promise<User | null>;
+  signInAnonymous: () => Promise<any>;
   linkWithGoogle: () => Promise<User | null>;
   linkWithGithub: () => Promise<User | null>;
   signOutUser: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => {
-  // Initialize listener on auth state changes if Firebase is configured
-  if (typeof window !== "undefined" && isFirebaseConfigured && auth) {
-    onAuthStateChanged(auth, (currentUser) => {
-      set({
-        user: currentUser,
-        isLoading: false,
-        isInitialized: true,
-      });
-    });
+  // Try to initialize on client load
+  if (typeof window !== "undefined") {
+    setTimeout(async () => {
+      try {
+        const { auth } = await getFirebaseAuth();
+        if (auth) {
+          onAuthStateChanged(auth, (currentUser) => {
+            if (currentUser) {
+              set({
+                user: currentUser,
+                isLoading: false,
+                isInitialized: true,
+              });
+            } else {
+              set({ isLoading: false, isInitialized: true });
+            }
+          });
+        } else {
+          set({ isLoading: false, isInitialized: true });
+        }
+      } catch (err) {
+        console.warn("Auth initialization error:", err);
+        set({ isLoading: false, isInitialized: true });
+      }
+    }, 10);
   }
 
   return {
     user: null,
-    isLoading: isFirebaseConfigured,
+    isLoading: false,
     isAuthModalOpen: false,
     authError: null,
     isInitialized: false,
@@ -49,26 +66,38 @@ export const useAuthStore = create<AuthState>((set, get) => {
     setAuthModalOpen: (open) => set({ isAuthModalOpen: open, authError: null }),
     clearError: () => set({ authError: null }),
 
+    initializeAuth: async () => {
+      const { auth } = await getFirebaseAuth();
+      return;
+    },
+
     signInWithGoogle: async () => {
-      if (!auth || !googleProvider) {
-        toast.error("Firebase Auth is not configured. Please check your credentials.");
-        return null;
-      }
       try {
         set({ isLoading: true, authError: null });
+        const { auth, googleProvider } = await getFirebaseAuth();
+
+        if (!auth || !googleProvider) {
+          const errMsg = "Firebase Auth credentials not found. Please check .env configuration.";
+          set({ authError: errMsg, isLoading: false });
+          toast.error(errMsg);
+          return null;
+        }
+
         const result = await signInWithPopup(auth, googleProvider);
         set({ user: result.user, isAuthModalOpen: false, isLoading: false });
-        toast.success(`Welcome back, ${result.user.displayName || "Creator"}!`);
+        toast.success(`Welcome, ${result.user.displayName || "Creator"}!`);
         return result.user;
       } catch (error: any) {
         console.error("Google Sign-In Error:", error);
         let message = error.message || "Failed to sign in with Google";
         if (error.code === "auth/popup-closed-by-user") {
-          message = "Sign-in was cancelled.";
+          message = "Sign-in popup was closed.";
         } else if (error.code === "auth/account-exists-with-different-credential") {
-          message = "An account already exists with this email address.";
+          message = "An account already exists with this email.";
         } else if (error.code === "auth/configuration-not-found") {
-          message = "Google Sign-in is not enabled yet in Firebase Console.";
+          message = "Google Sign-In is not enabled yet in Firebase Console.";
+        } else if (error.code === "auth/unauthorized-domain") {
+          message = "This domain is not authorized in Firebase Console.";
         }
         set({ authError: message, isLoading: false });
         toast.error(message);
@@ -77,23 +106,30 @@ export const useAuthStore = create<AuthState>((set, get) => {
     },
 
     signInWithGithub: async () => {
-      if (!auth || !githubProvider) {
-        toast.error("Firebase Auth is not configured. Please check your credentials.");
-        return null;
-      }
       try {
         set({ isLoading: true, authError: null });
+        const { auth, githubProvider } = await getFirebaseAuth();
+
+        if (!auth || !githubProvider) {
+          const errMsg = "Firebase Auth credentials not found. Please check .env configuration.";
+          set({ authError: errMsg, isLoading: false });
+          toast.error(errMsg);
+          return null;
+        }
+
         const result = await signInWithPopup(auth, githubProvider);
         set({ user: result.user, isAuthModalOpen: false, isLoading: false });
-        toast.success(`Welcome back, ${result.user.displayName || "Developer"}!`);
+        toast.success(`Welcome, ${result.user.displayName || "Developer"}!`);
         return result.user;
       } catch (error: any) {
         console.error("GitHub Sign-In Error:", error);
         let message = error.message || "Failed to sign in with GitHub";
         if (error.code === "auth/popup-closed-by-user") {
-          message = "Sign-in was cancelled.";
+          message = "Sign-in popup was closed.";
         } else if (error.code === "auth/configuration-not-found") {
-          message = "GitHub Sign-in is not enabled yet in Firebase Console.";
+          message = "GitHub Sign-In is not enabled yet in Firebase Console.";
+        } else if (error.code === "auth/unauthorized-domain") {
+          message = "This domain is not authorized in Firebase Console.";
         }
         set({ authError: message, isLoading: false });
         toast.error(message);
@@ -102,39 +138,68 @@ export const useAuthStore = create<AuthState>((set, get) => {
     },
 
     signInAnonymous: async () => {
-      if (!auth) {
-        toast.error("Firebase Auth is not configured.");
-        return null;
-      }
       try {
         set({ isLoading: true, authError: null });
-        const result = await signInAnonymously(auth);
-        set({ user: result.user, isAuthModalOpen: false, isLoading: false });
-        toast.info("Continuing in Guest Mode. Your projects will be saved locally.");
-        return result.user;
+        const { auth } = await getFirebaseAuth();
+
+        if (auth) {
+          try {
+            const result = await signInAnonymously(auth);
+            set({ user: result.user, isAuthModalOpen: false, isLoading: false });
+            toast.info("Continuing in Guest Mode. Projects will save locally.");
+            return result.user;
+          } catch (firebaseErr: any) {
+            console.warn("Firebase Anonymous Sign-In fallback to local guest:", firebaseErr);
+          }
+        }
+
+        // Local Guest Session Fallback (Zero network friction)
+        const guestId = "guest_" + Math.random().toString(36).slice(2, 10);
+        const guestUser = {
+          uid: guestId,
+          isAnonymous: true,
+          displayName: "Guest Creator",
+          email: null,
+          photoURL: null,
+        };
+        set({ user: guestUser, isAuthModalOpen: false, isLoading: false });
+        toast.info("Continuing in Guest Mode. Projects will save locally.");
+        return guestUser;
       } catch (error: any) {
         console.error("Anonymous Sign-In Error:", error);
-        let message = error.message || "Failed to start guest session";
-        if (error.code === "auth/admin-restricted-operation") {
-          message = "Anonymous Sign-in is not enabled in Firebase Console.";
-        }
-        set({ authError: message, isLoading: false });
-        toast.error(message);
-        return null;
+        const fallbackGuest = {
+          uid: "guest_" + Date.now(),
+          isAnonymous: true,
+          displayName: "Guest Creator",
+          email: null,
+          photoURL: null,
+        };
+        set({ user: fallbackGuest, isAuthModalOpen: false, isLoading: false });
+        toast.info("Continuing in Guest Mode.");
+        return fallbackGuest;
       }
     },
 
     linkWithGoogle: async () => {
-      const currentUser = auth?.currentUser;
-      if (!auth || !googleProvider || !currentUser) return null;
       try {
         set({ isLoading: true, authError: null });
+        const { auth, googleProvider } = await getFirebaseAuth();
+        const currentUser = auth?.currentUser;
+
+        if (!auth || !googleProvider || !currentUser) {
+          return await get().signInWithGoogle();
+        }
+
         const result = await linkWithPopup(currentUser, googleProvider);
         set({ user: result.user, isLoading: false, isAuthModalOpen: false });
-        toast.success("Guest account successfully upgraded to Google!");
+        toast.success("Guest account successfully linked to Google!");
         return result.user;
       } catch (error: any) {
         console.error("Link Google Error:", error);
+        // Fallback to direct sign-in if account already exists
+        if (error.code === "auth/credential-already-in-use") {
+          return await get().signInWithGoogle();
+        }
         set({ authError: error.message, isLoading: false });
         toast.error(error.message || "Failed to link Google account");
         return null;
@@ -142,16 +207,25 @@ export const useAuthStore = create<AuthState>((set, get) => {
     },
 
     linkWithGithub: async () => {
-      const currentUser = auth?.currentUser;
-      if (!auth || !githubProvider || !currentUser) return null;
       try {
         set({ isLoading: true, authError: null });
+        const { auth, githubProvider } = await getFirebaseAuth();
+        const currentUser = auth?.currentUser;
+
+        if (!auth || !githubProvider || !currentUser) {
+          return await get().signInWithGithub();
+        }
+
         const result = await linkWithPopup(currentUser, githubProvider);
         set({ user: result.user, isLoading: false, isAuthModalOpen: false });
-        toast.success("Guest account successfully upgraded to GitHub!");
+        toast.success("Guest account successfully linked to GitHub!");
         return result.user;
       } catch (error: any) {
         console.error("Link GitHub Error:", error);
+        // Fallback to direct sign-in if account already exists
+        if (error.code === "auth/credential-already-in-use") {
+          return await get().signInWithGithub();
+        }
         set({ authError: error.message, isLoading: false });
         toast.error(error.message || "Failed to link GitHub account");
         return null;
@@ -159,16 +233,18 @@ export const useAuthStore = create<AuthState>((set, get) => {
     },
 
     signOutUser: async () => {
-      if (!auth) return;
       try {
         set({ isLoading: true });
-        await signOut(auth);
+        const { auth } = await getFirebaseAuth();
+        if (auth) {
+          await signOut(auth);
+        }
         set({ user: null, isLoading: false });
         toast.info("Signed out successfully.");
       } catch (error: any) {
         console.error("Sign-out Error:", error);
-        set({ isLoading: false });
-        toast.error("Failed to sign out.");
+        set({ user: null, isLoading: false });
+        toast.info("Signed out.");
       }
     },
   };
