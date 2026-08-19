@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { X, Loader2, Sparkles, User as UserIcon, ShieldCheck, ArrowRight, AlertCircle, ExternalLink } from "lucide-react";
+import { X, Loader2, Sparkles, User as UserIcon, ShieldCheck, AlertCircle } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
+import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
 
 export function AuthModal() {
   const [useDirectRedirect, setUseDirectRedirect] = useState(false);
+  const [activeProvider, setActiveProvider] = useState<"google" | "github" | "guest" | null>(null);
+
   const {
     isAuthModalOpen,
     setAuthModalOpen,
@@ -23,26 +26,40 @@ export function AuthModal() {
 
   const isAnonymous = user && user.isAnonymous;
 
-  const handleGoogle = () => {
+  const handleGoogle = async () => {
+    setActiveProvider("google");
     if (isAnonymous) {
-      linkWithGoogle();
+      await linkWithGoogle();
     } else {
-      signInWithGoogle(useDirectRedirect);
+      await signInWithGoogle(useDirectRedirect);
     }
   };
 
-  const handleGithub = () => {
+  const handleGithub = async () => {
+    setActiveProvider("github");
     if (isAnonymous) {
-      linkWithGithub();
+      await linkWithGithub();
     } else {
-      signInWithGithub(useDirectRedirect);
+      await signInWithGithub(useDirectRedirect);
     }
+  };
+
+  const handleGuest = async () => {
+    setActiveProvider("guest");
+    await signInAnonymous();
+  };
+
+  const handleCancel = () => {
+    useAuthStore.setState({ isLoading: false, authError: null, isAuthModalOpen: false });
+    setActiveProvider(null);
   };
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200"
-      onClick={() => setAuthModalOpen(false)}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-in fade-in duration-200 select-none"
+      onClick={() => {
+        if (!isLoading) setAuthModalOpen(false);
+      }}
     >
       <div
         className="bg-card border border-border/80 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 relative"
@@ -51,129 +68,164 @@ export function AuthModal() {
         {/* Top Gradient Accent */}
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
 
-        {/* Close Button */}
-        <button
-          onClick={() => setAuthModalOpen(false)}
-          className="absolute top-4 right-4 w-8 h-8 rounded-lg hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-        >
-          <X className="w-4 h-4" />
-        </button>
+        {/* Close Button (Disabled during active authentication to prevent race conditions) */}
+        {!isLoading && (
+          <button
+            onClick={() => setAuthModalOpen(false)}
+            className="absolute top-4 right-4 w-8 h-8 rounded-lg hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            title="Close modal"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
 
         <div className="p-6 space-y-5">
-          {/* Header */}
-          <div className="text-center space-y-1.5 pt-2">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 border border-indigo-500/30 flex items-center justify-center mx-auto text-indigo-400 shadow-md">
-              <Sparkles className="w-6 h-6" />
-            </div>
-            <h2 className="text-lg font-bold text-foreground">
-              {isAnonymous ? "Upgrade Your Account" : "Sign In to SnapFrame"}
-            </h2>
-            <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-              {isAnonymous
-                ? "Link your Google or GitHub account to sync your projects across all your devices."
-                : "Save projects to cloud, sync across devices, and power up with AI tools."}
-            </p>
-          </div>
-
-          {/* Auth Error Banner */}
-          {authError && (
-            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/25 flex items-start gap-2.5 text-xs text-rose-300 animate-in fade-in duration-150">
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-              <div className="flex-1 leading-relaxed">
-                <span>{authError}</span>
+          {/* Active Loading Screen Overlay */}
+          {isLoading ? (
+            <div className="py-8 flex flex-col items-center justify-center text-center space-y-4 animate-in fade-in duration-150">
+              <div className="relative">
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/25 flex items-center justify-center shadow-lg">
+                  <SnapFrameLogo size={36} />
+                </div>
+                <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-indigo-500 to-pink-500 opacity-30 blur-md animate-pulse" />
               </div>
-            </div>
-          )}
 
-          {/* Auth Action Buttons */}
-          <div className="space-y-2.5 pt-1">
-            {/* Google Sign In */}
-            <button
-              type="button"
-              disabled={isLoading}
-              onClick={handleGoogle}
-              className="w-full h-11 px-4 rounded-xl border border-border/80 bg-secondary/50 hover:bg-secondary hover:border-border text-foreground text-xs font-semibold flex items-center justify-center gap-3 transition-all cursor-pointer shadow-xs active:scale-[0.99] disabled:opacity-50"
-            >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin text-primary" />
-              ) : (
-                <GoogleIcon className="w-4 h-4 shrink-0" />
-              )}
-              <span>
-                {isLoading
-                  ? "Signing in..."
-                  : isAnonymous
-                  ? "Link Google Account"
-                  : useDirectRedirect
-                  ? "Sign In with Google (Direct)"
-                  : "Continue with Google"}
-              </span>
-            </button>
+              <div className="space-y-1">
+                <h3 className="text-base font-bold text-foreground flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                  <span>
+                    {activeProvider === "google"
+                      ? "Connecting to Google..."
+                      : activeProvider === "github"
+                      ? "Connecting to GitHub..."
+                      : "Initializing Session..."}
+                  </span>
+                </h3>
+                <p className="text-xs text-muted-foreground max-w-xs">
+                  {useDirectRedirect
+                    ? "Redirecting your browser securely to provider..."
+                    : "Please complete authorization in the popup window."}
+                </p>
+              </div>
 
-            {/* GitHub Sign In */}
-            <button
-              type="button"
-              disabled={isLoading}
-              onClick={handleGithub}
-              className="w-full h-11 px-4 rounded-xl border border-border/80 bg-secondary/50 hover:bg-secondary hover:border-border text-foreground text-xs font-semibold flex items-center justify-center gap-3 transition-all cursor-pointer shadow-xs active:scale-[0.99] disabled:opacity-50"
-            >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin text-primary" />
-              ) : (
-                <GithubIcon className="w-4 h-4 shrink-0" />
-              )}
-              <span>
-                {isLoading
-                  ? "Signing in..."
-                  : isAnonymous
-                  ? "Link GitHub Account"
-                  : useDirectRedirect
-                  ? "Sign In with GitHub (Direct)"
-                  : "Continue with GitHub"}
-              </span>
-            </button>
-
-            {/* Direct Redirect Toggle */}
-            <div className="flex items-center justify-center pt-1">
               <button
                 type="button"
-                onClick={() => setUseDirectRedirect(!useDirectRedirect)}
-                className="text-[11px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
+                onClick={handleCancel}
+                className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 pt-2 cursor-pointer transition-colors"
               >
-                <span>{useDirectRedirect ? "✓ Using Direct Redirect mode" : "Popups slow? Switch to Direct Redirect"}</span>
+                Cancel sign-in
               </button>
             </div>
+          ) : (
+            <>
+              {/* Header */}
+              <div className="text-center space-y-1.5 pt-2">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 border border-indigo-500/30 flex items-center justify-center mx-auto text-indigo-400 shadow-md">
+                  <Sparkles className="w-6 h-6" />
+                </div>
+                <h2 className="text-lg font-bold text-foreground">
+                  {isAnonymous ? "Upgrade Your Account" : "Sign In to SnapFrame"}
+                </h2>
+                <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+                  {isAnonymous
+                    ? "Link your Google or GitHub account to sync your projects across all your devices."
+                    : "Save projects to cloud, sync across devices, and power up with AI tools."}
+                </p>
+              </div>
 
-            {/* Anonymous / Guest Mode Option */}
-            {!user && (
-              <>
-                <div className="relative py-2">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-border/60" />
-                  </div>
-                  <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-wider">
-                    <span className="bg-card px-2 text-muted-foreground/80">or try without account</span>
+              {/* Auth Error Banner */}
+              {authError && (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/25 flex items-start gap-2.5 text-xs text-rose-300 animate-in fade-in duration-150">
+                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                  <div className="flex-1 leading-relaxed">
+                    <span>{authError}</span>
                   </div>
                 </div>
+              )}
 
+              {/* Auth Action Buttons */}
+              <div className="space-y-2.5 pt-1">
+                {/* Google Sign In */}
                 <button
                   type="button"
                   disabled={isLoading}
-                  onClick={() => signInAnonymous()}
-                  className="w-full h-10 px-4 rounded-xl border border-dashed border-border/70 hover:border-primary/60 bg-transparent hover:bg-secondary/40 text-muted-foreground hover:text-foreground text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                  onClick={handleGoogle}
+                  className="w-full h-11 px-4 rounded-xl border border-border/80 bg-secondary/50 hover:bg-secondary hover:border-border text-foreground text-xs font-semibold flex items-center justify-center gap-3 transition-all cursor-pointer shadow-xs active:scale-[0.99] disabled:opacity-50"
                 >
-                  <UserIcon className="w-3.5 h-3.5" />
-                  <span>Continue as Guest (Anonymous)</span>
+                  <GoogleIcon className="w-4 h-4 shrink-0" />
+                  <span>
+                    {isAnonymous
+                      ? "Link Google Account"
+                      : useDirectRedirect
+                      ? "Sign In with Google (Direct)"
+                      : "Continue with Google"}
+                  </span>
                 </button>
-              </>
-            )}
-          </div>
 
-          {/* Privacy Note */}
-          <div className="pt-2 text-center text-[10px] text-muted-foreground flex items-center justify-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Encrypted sessions · No tracking · Free forever</span>
-          </div>
+                {/* GitHub Sign In */}
+                <button
+                  type="button"
+                  disabled={isLoading}
+                  onClick={handleGithub}
+                  className="w-full h-11 px-4 rounded-xl border border-border/80 bg-secondary/50 hover:bg-secondary hover:border-border text-foreground text-xs font-semibold flex items-center justify-center gap-3 transition-all cursor-pointer shadow-xs active:scale-[0.99] disabled:opacity-50"
+                >
+                  <GithubIcon className="w-4 h-4 shrink-0" />
+                  <span>
+                    {isAnonymous
+                      ? "Link GitHub Account"
+                      : useDirectRedirect
+                      ? "Sign In with GitHub (Direct)"
+                      : "Continue with GitHub"}
+                  </span>
+                </button>
+
+                {/* Direct Redirect Toggle */}
+                <div className="flex items-center justify-center pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setUseDirectRedirect(!useDirectRedirect)}
+                    className="text-[11px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>
+                      {useDirectRedirect
+                        ? "✓ Direct Redirect mode active"
+                        : "Popups slow? Switch to Direct Redirect"}
+                    </span>
+                  </button>
+                </div>
+
+                {/* Anonymous / Guest Mode Option */}
+                {!user && (
+                  <>
+                    <div className="relative py-2">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-border/60" />
+                      </div>
+                      <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-wider">
+                        <span className="bg-card px-2 text-muted-foreground/80">or try without account</span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={isLoading}
+                      onClick={handleGuest}
+                      className="w-full h-10 px-4 rounded-xl border border-dashed border-border/70 hover:border-primary/60 bg-transparent hover:bg-secondary/40 text-muted-foreground hover:text-foreground text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                    >
+                      <UserIcon className="w-3.5 h-3.5" />
+                      <span>Continue as Guest (Anonymous)</span>
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* Privacy Note */}
+              <div className="pt-2 text-center text-[10px] text-muted-foreground flex items-center justify-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Encrypted sessions · No tracking · Free forever</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
