@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Plus, Trash2, ChevronDown, ChevronUp, Maximize2, Minimize2, Smartphone } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Plus, Trash2, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Maximize2, Minimize2, Smartphone, Tablet } from "lucide-react";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { cn } from "@/lib/utils";
 import { ScreenThumbnailCanvas } from "@/components/editor/ScreenThumbnailCanvas";
 import { AppleStoreIcon, GooglePlayIcon, APP_STORE_LABEL, GOOGLE_PLAY_LABEL } from "@/components/icons/StoreIcons";
+import { isTabletDevice, ALL_DEVICES } from "@/lib/devices";
 
 export function ScreenStrip() {
   const {
@@ -19,6 +20,7 @@ export function ScreenStrip() {
   } = useEditorStore();
 
   const [isCompact, setIsCompact] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Load saved preference from localStorage
   useEffect(() => {
@@ -44,6 +46,13 @@ export function ScreenStrip() {
     });
   };
 
+  const handleScroll = (direction: "left" | "right") => {
+    if (scrollRef.current) {
+      const offset = direction === "left" ? -280 : 280;
+      scrollRef.current.scrollBy({ left: offset, behavior: "smooth" });
+    }
+  };
+
   const handleSelectScreen = (setId: string, screenId: string) => {
     setActiveSet(setId);
     setActiveScreen(screenId);
@@ -58,15 +67,41 @@ export function ScreenStrip() {
   return (
     <div
       className={cn(
-        "relative border-t border-border/60 bg-card/85 backdrop-blur-md flex items-center justify-between shrink-0 px-3 z-20 transition-all duration-300 ease-in-out",
+        "relative border-t border-border/60 bg-card/85 backdrop-blur-md flex items-center justify-between shrink-0 px-2 z-20 transition-all duration-300 ease-in-out select-none",
         isCompact ? "h-10" : "h-28"
       )}
     >
+      {/* ── Scroll Left Button (if multiple sets) ── */}
+      {screenSets.length > 2 && (
+        <button
+          type="button"
+          onClick={() => handleScroll("left")}
+          className="w-6 h-6 rounded-md hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0 mr-1 cursor-pointer transition-colors"
+          title="Scroll Left"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+      )}
+
       {/* ── Screen Sets & Thumbnails Scroll Area ── */}
-      <div className="flex items-center gap-0 overflow-x-auto flex-1 min-w-0 pr-3 py-1 scrollbar-none">
+      <div
+        ref={scrollRef}
+        onWheel={(e) => {
+          if (scrollRef.current && e.deltaY) {
+            scrollRef.current.scrollLeft += e.deltaY;
+          }
+        }}
+        className="flex items-center gap-0 overflow-x-auto flex-1 min-w-0 pr-3 py-1 scroll-smooth scrollbar-thin scrollbar-thumb-border/50 hover:scrollbar-thumb-border"
+      >
         {screenSets.map((ss) => {
           const isIOS = ss.store === "ios";
+          const isTablet = isTabletDevice(ss.deviceId);
           const isSetActive = activeSetId === ss.id;
+          const deviceObj = ALL_DEVICES.find((d) => d.id === ss.deviceId);
+
+          const badgeLabel = isIOS
+            ? isTablet ? "iPad" : "iPhone"
+            : isTablet ? "Android Tab" : "Android";
 
           return (
             <div key={ss.id} className="flex items-center gap-2 mr-6 shrink-0">
@@ -79,7 +114,11 @@ export function ScreenStrip() {
                     isCompact ? "py-0.5" : "py-1",
                     isSetActive
                       ? isIOS
-                        ? "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/40 ring-1 ring-blue-500/30"
+                        ? isTablet
+                          ? "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/40 ring-1 ring-indigo-500/30"
+                          : "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/40 ring-1 ring-blue-500/30"
+                        : isTablet
+                        ? "bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/40 ring-1 ring-teal-500/30"
                         : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/40 ring-1 ring-emerald-500/30"
                       : "bg-secondary text-muted-foreground hover:text-foreground border-border/50 hover:bg-secondary/80"
                   )}
@@ -87,14 +126,14 @@ export function ScreenStrip() {
                     setActiveSet(ss.id);
                     if (ss.screens[0]) setActiveScreen(ss.screens[0].id);
                   }}
-                  title={`${isIOS ? APP_STORE_LABEL : GOOGLE_PLAY_LABEL} — ${ss.screens.length} of 10 screenshots`}
+                  title={`${deviceObj?.name || badgeLabel} — ${ss.screens.length} of 10 screenshots`}
                 >
                   {isIOS ? (
                     <AppleStoreIcon className="w-3 h-3 shrink-0" />
                   ) : (
                     <GooglePlayIcon className="w-3 h-3 shrink-0" />
                   )}
-                  <span>{isIOS ? "iOS" : "Android"}</span>
+                  <span>{badgeLabel}</span>
                   <span
                     className={cn(
                       "text-[9px] font-mono font-bold px-1 py-0.2 rounded ml-0.5",
@@ -229,8 +268,20 @@ export function ScreenStrip() {
         })}
       </div>
 
+      {/* ── Scroll Right Button (if multiple sets) ── */}
+      {screenSets.length > 2 && (
+        <button
+          type="button"
+          onClick={() => handleScroll("right")}
+          className="w-6 h-6 rounded-md hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0 mx-1 cursor-pointer transition-colors"
+          title="Scroll Right"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      )}
+
       {/* ── Toggle Compact / Expanded Height Button ── */}
-      <div className="flex items-center pl-2 shrink-0 border-l border-border/40">
+      <div className="flex items-center pl-1 shrink-0 border-l border-border/40">
         <button
           type="button"
           onClick={toggleCompact}

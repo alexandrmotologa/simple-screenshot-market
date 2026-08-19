@@ -481,9 +481,10 @@ export const ANDROID_DEVICES: DeviceModel[] = [
 
 export const ALL_DEVICES = [...IOS_DEVICES, ...ANDROID_DEVICES];
 
-export const isTabletDevice = (device: DeviceModel | string): boolean => {
+export const isTabletDevice = (device?: DeviceModel | string | null): boolean => {
+  if (!device) return false;
   const id = typeof device === "string" ? device : device.id;
-  const lower = id.toLowerCase();
+  const lower = (id || "").toLowerCase();
   return lower.includes("ipad") || lower.includes("tab") || lower.includes("slate");
 };
 
