@@ -746,6 +746,70 @@ export async function renderScreenToCanvas(
         }
       };
 
+      const drawCleanStatusBar = () => {
+        if (sl.cleanStatusBar || mockup?.cleanStatusBar) {
+          const theme = sl.statusBarTheme || mockup?.statusBarTheme || "dark";
+          const iconColor = theme === "light" ? "#000000" : "#ffffff";
+          const barH = innerW * 0.08;
+          const barY = innerY + innerW * 0.018;
+          const fontSize = Math.round(innerW * 0.036);
+
+          ctx.save();
+          // Time on left
+          ctx.fillStyle = iconColor;
+          ctx.font = `700 ${fontSize}px "Inter", -apple-system, BlinkMacSystemFont, sans-serif`;
+          ctx.textAlign = "left";
+          ctx.textBaseline = "middle";
+          ctx.fillText("9:41", innerX + innerW * 0.07, barY + barH * 0.45);
+
+          // Icons on right
+          const rightX = innerX + innerW * 0.93;
+          const iconY = barY + barH * 0.45;
+
+          // Battery pill
+          const battW = innerW * 0.052;
+          const battH = battW * 0.52;
+          const battX = rightX - battW;
+          const battY = iconY - battH / 2;
+
+          ctx.strokeStyle = iconColor;
+          ctx.lineWidth = Math.max(1.5, innerW * 0.003);
+          ctx.beginPath();
+          ctx.roundRect(battX, battY, battW, battH, battH * 0.3);
+          ctx.stroke();
+
+          // Battery cap
+          ctx.fillStyle = iconColor;
+          ctx.beginPath();
+          ctx.roundRect(battX + battW + 1, battY + battH * 0.25, battW * 0.08, battH * 0.5, [0, 1, 1, 0]);
+          ctx.fill();
+
+          // Battery 100% level fill
+          ctx.beginPath();
+          ctx.roundRect(battX + 2, battY + 2, battW - 4, battH - 4, battH * 0.2);
+          ctx.fill();
+
+          // 5G text
+          const wifiX = battX - innerW * 0.045;
+          ctx.font = `700 ${Math.round(fontSize * 0.72)}px "Inter", sans-serif`;
+          ctx.textAlign = "right";
+          ctx.fillText("5G", wifiX, iconY);
+
+          // Cellular bars
+          const cellX = wifiX - innerW * 0.045;
+          const barWidth = innerW * 0.0055;
+          const barGap = innerW * 0.003;
+          for (let b = 0; b < 4; b++) {
+            const bh = (b + 1) * (battH * 0.22);
+            ctx.beginPath();
+            ctx.roundRect(cellX + b * (barWidth + barGap), iconY + battH / 2 - bh, barWidth, bh, 1);
+            ctx.fill();
+          }
+
+          ctx.restore();
+        }
+      };
+
       const drawReflection = () => {
         if (hasFrame && mockup.reflection) {
           const reflGrad = ctx.createLinearGradient(innerX, innerY, innerX + innerW, innerY + innerH);
@@ -855,8 +919,9 @@ export async function renderScreenToCanvas(
         }
       }
 
-      // 4. Draw Notch / Dynamic Island & Glass Reflection ON TOP of everything
+      // 4. Draw Notch / Dynamic Island, Clean Status Bar & Glass Reflection ON TOP of everything
       drawNotch();
+      drawCleanStatusBar();
       drawReflection();
 
       ctx.restore(); // END CLIP INNER

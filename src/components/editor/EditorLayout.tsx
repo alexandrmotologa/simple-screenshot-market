@@ -20,6 +20,7 @@ import { FloatingToolbar } from "@/components/editor/FloatingToolbar";
 import { ScreenStrip } from "@/components/editor/ScreenStrip";
 import { ExportModal } from "@/components/editor/ExportModal";
 import { GifExportModal } from "@/components/editor/GifExportModal";
+import { AIAutoPilotModal } from "@/components/editor/AIAutoPilotModal";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ScreenshotLayer } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -71,6 +72,7 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
   const [showExport, setShowExport] = useState(false);
   const [showGif, setShowGif] = useState(false);
   const [showStorePreview, setShowStorePreview] = useState(false);
+  const [showAIAutoPilot, setShowAIAutoPilot] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [zoomOpen, setZoomOpen] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
@@ -430,6 +432,17 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
             <span className="hidden sm:inline">Store Preview</span>
           </button>
 
+          {/* AI Auto-Pilot */}
+          <button
+            type="button"
+            onClick={() => setShowAIAutoPilot(true)}
+            className="h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs font-bold bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 text-indigo-400 hover:text-indigo-300 border border-indigo-500/40 hover:border-indigo-500/60 transition-all cursor-pointer shadow-xs active:scale-95"
+            title="AI Auto-Pilot: 1-Click Vision Screen Generation"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
+            <span className="hidden md:inline">AI Auto-Pilot</span>
+          </button>
+
           {/* Export Button */}
           <button
             id="export-btn"
@@ -462,6 +475,13 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
         </div>
       </div>
 
+      {/* AI Auto-Pilot Modal */}
+      {showAIAutoPilot && (
+        <AIAutoPilotModal
+          open={showAIAutoPilot}
+          onOpenChange={setShowAIAutoPilot}
+        />
+      )}
       {/* Store Preview simulator modal */}
       {showStorePreview && (
         <StorePreviewModal

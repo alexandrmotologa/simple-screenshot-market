@@ -233,6 +233,9 @@ export interface ScreenshotLayer {
   label?: string;
   /** Focus Overlay settings */
   focusOverlay?: FocusOverlay;
+  /** Clean Status Bar (9:41 AM · 100% Battery · 5G) overlay */
+  cleanStatusBar?: boolean;
+  statusBarTheme?: "light" | "dark";
   locked?: boolean;
 }
 
@@ -318,6 +321,9 @@ export interface MockupSettings {
   notch?: boolean;
   dynamicIsland?: boolean;
   reflection?: boolean;
+  /** Clean Status Bar (9:41 AM · 100% Battery · 5G) overlay */
+  cleanStatusBar?: boolean;
+  statusBarTheme?: "light" | "dark";
 }
 
 // Store-specific size presets

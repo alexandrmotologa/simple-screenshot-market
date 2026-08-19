@@ -423,6 +423,38 @@ export function PlatformsPanel() {
                         </DropdownMenu>
                       </div>
 
+                      {/* Clean Status Bar Toggle */}
+                      <div className="flex items-center justify-between pt-1.5 text-[11px]">
+                        <span className="text-muted-foreground flex items-center gap-1.5" title="9:41 AM, 100% Battery & full signal overlay">
+                          <span>🧼</span>
+                          Clean Status Bar
+                        </span>
+                        <div className="flex items-center gap-2">
+                          {ss.mockup?.cleanStatusBar && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentTheme = ss.mockup?.statusBarTheme || "dark";
+                                updateMockup(ss.id, { statusBarTheme: currentTheme === "dark" ? "light" : "dark" });
+                                useEditorStore.getState().recordHistory();
+                              }}
+                              className="text-[9.5px] px-1.5 py-0.5 rounded bg-secondary/80 hover:bg-secondary font-mono border border-border/50 text-foreground cursor-pointer"
+                              title="Toggle status bar icon color (light/dark)"
+                            >
+                              {ss.mockup?.statusBarTheme === "light" ? "☀️ Light" : "🌙 Dark"}
+                            </button>
+                          )}
+                          <Switch
+                            checked={ss.mockup?.cleanStatusBar ?? false}
+                            onCheckedChange={(checked) => {
+                              updateMockup(ss.id, { cleanStatusBar: checked });
+                              useEditorStore.getState().recordHistory();
+                              toast.info(checked ? "Clean Status Bar enabled (9:41 AM · 100%)" : "Clean Status Bar disabled");
+                            }}
+                          />
+                        </div>
+                      </div>
+
                       {/* Store Guidelines Note */}
                       <div className="flex items-start gap-1.5 text-[10px] text-muted-foreground pt-1 bg-sky-500/5 dark:bg-sky-500/10 p-2 rounded-lg border border-sky-500/20">
                         <Info className="w-3 h-3 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />

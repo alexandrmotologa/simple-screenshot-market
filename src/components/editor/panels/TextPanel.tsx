@@ -367,10 +367,182 @@ function FontRow() {
   );
 }
 
+// ── AI Copywriter & Tone Assistant ──────────────────────────────────────────
+function AICopywriterWidget() {
+  const { getActiveSet, getActiveScreen, getActiveLayer, updateLayer } = useEditorStore();
+  const layer = getActiveLayer();
+  const set = getActiveSet();
+  const screen = getActiveScreen();
+
+  const [tone, setTone] = useState<"high-energy" | "minimalist" | "benefit-driven" | "fomo" | "b2b">("high-energy");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [variations, setVariations] = useState<string[]>([]);
+
+  if (!layer || layer.type !== "text" || !set || !screen) return null;
+  const tl = layer as import("@/lib/types").TextLayer;
+  const currentText = tl.content || "";
+  const charCount = currentText.length;
+  const isOverLimit = charCount > 30;
+
+  const handleRunAI = async (action: "rewrite" | "shorten" | "punchy" | "emojis" | "ideas") => {
+    try {
+      setIsGenerating(true);
+      setVariations([]);
+
+      const res = await fetch("/api/ai/copywriter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: currentText,
+          action,
+          tone,
+          maxLength: action === "shorten" ? 28 : 32,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || "Generation failed");
+
+      if (data.result) {
+        updateLayer(set.id, screen.id, layer.id, { content: data.result } as Partial<import("@/lib/types").Layer>);
+        useEditorStore.getState().recordHistory();
+        toast.success("AI updated text!");
+      }
+
+      if (data.variations && Array.isArray(data.variations)) {
+        setVariations(data.variations);
+      } else if (data.options && Array.isArray(data.options)) {
+        setVariations(data.options);
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "AI copywriter error");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  return (
+    <div className="px-3.5 py-3 border-b border-border/40 bg-gradient-to-b from-indigo-500/5 via-purple-500/5 to-transparent space-y-2.5">
+      {/* Title & Live Character Meter */}
+      <div className="flex items-center justify-between text-xs">
+        <span className="font-bold flex items-center gap-1 text-foreground">
+          <span className="text-indigo-400">✨</span> AI Copywriter &amp; Tone
+        </span>
+        <span
+          className={cn(
+            "text-[10px] font-mono font-bold px-1.5 py-0.2 rounded border",
+            isOverLimit
+              ? "bg-rose-500/15 text-rose-400 border-rose-500/30"
+              : "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+          )}
+          title="App Store recommended title length is <= 30 characters"
+        >
+          {charCount} / 30 chars
+        </span>
+      </div>
+
+      {/* Tone Chips */}
+      <div className="flex items-center gap-1 overflow-x-auto pb-0.5 scrollbar-none">
+        {[
+          { id: "high-energy", label: "🚀 Energy" },
+          { id: "minimalist", label: "✨ Minimal" },
+          { id: "benefit-driven", label: "🎯 Benefit" },
+          { id: "fomo", label: "🔥 FOMO" },
+          { id: "b2b", label: "💼 B2B" },
+        ].map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setTone(t.id as any)}
+            className={cn(
+              "px-2 py-0.5 rounded-md text-[10px] font-semibold tracking-tight shrink-0 transition-all border cursor-pointer",
+              tone === t.id
+                ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/50 shadow-xs"
+                : "bg-secondary/60 text-muted-foreground hover:text-foreground border-border/40 hover:bg-secondary"
+            )}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Quick Action Buttons */}
+      <div className="grid grid-cols-2 gap-1.5">
+        <button
+          type="button"
+          onClick={() => handleRunAI("rewrite")}
+          disabled={isGenerating || !currentText}
+          className="h-7 px-2 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-indigo-300 text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+        >
+          {isGenerating ? <span className="animate-spin text-xs">⏳</span> : <span>✨</span>}
+          <span>Rewrite Tone</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleRunAI("shorten")}
+          disabled={isGenerating || !currentText}
+          className="h-7 px-2 rounded-lg bg-secondary hover:bg-secondary/80 border border-border/60 text-foreground text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+        >
+          <span>✂️</span>
+          <span>Shorten (&lt;30c)</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleRunAI("punchy")}
+          disabled={isGenerating || !currentText}
+          className="h-7 px-2 rounded-lg bg-secondary hover:bg-secondary/80 border border-border/60 text-foreground text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+        >
+          <span>💥</span>
+          <span>Make Punchier</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleRunAI("ideas")}
+          disabled={isGenerating}
+          className="h-7 px-2 rounded-lg bg-secondary hover:bg-secondary/80 border border-border/60 text-foreground text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+        >
+          <span>💡</span>
+          <span>5 Alternatives</span>
+        </button>
+      </div>
+
+      {/* Alternative Variations List */}
+      {variations.length > 0 && (
+        <div className="space-y-1 pt-1 border-t border-border/30 animate-in fade-in duration-200">
+          <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
+            Click to apply variation:
+          </span>
+          <div className="space-y-1 max-h-32 overflow-y-auto pr-0.5">
+            {variations.map((v, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => {
+                  updateLayer(set.id, screen.id, layer.id, { content: v } as Partial<import("@/lib/types").Layer>);
+                  useEditorStore.getState().recordHistory();
+                  toast.success("Applied variation!");
+                }}
+                className="w-full text-left p-1.5 rounded-md bg-secondary/40 hover:bg-indigo-500/15 border border-border/40 hover:border-indigo-500/40 text-[11px] text-foreground transition-all cursor-pointer truncate flex items-center justify-between"
+              >
+                <span className="truncate">{v}</span>
+                <span className="text-[9px] font-mono opacity-60 ml-1 shrink-0">{v.length}c</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main TextPanel ─────────────────────────────────────────────────────────────
 export function TextPanel() {
   const { getActiveSet, getActiveScreen, addLayer, getActiveLayer } = useEditorStore();
-  const [activeCategory, setActiveCategory] = useState("Headlines");
+  const [activeCategory, setActiveCategory] = useState("Niche Copy (AI)");
   const activeLayer = getActiveLayer();
   const hasTextLayer = activeLayer?.type === "text";
 
@@ -403,6 +575,9 @@ export function TextPanel() {
 
   return (
     <div className="flex flex-col h-full min-h-0 overflow-hidden">
+      {/* AI Copywriter Widget — shown when text layer is active */}
+      {hasTextLayer && <AICopywriterWidget />}
+
       {/* Font selector — shown when text layer is active */}
       {hasTextLayer && <FontRow />}
 

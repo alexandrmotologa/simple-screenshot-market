@@ -8,87 +8,34 @@ import { useLanguageStore, getLang } from "@/lib/store/languageStore";
 import { TextLayer } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-// ─── AI Provider with fallback chain ───────────────────────────────────────────
-// Priority: Mistral → Google AI Studio → no-op (manual)
-
-async function translateWithMistral(
-  texts: string[],
-  targetLang: string,
-  apiKey: string
-): Promise<string[]> {
-  const prompt = `Translate the following UI screenshot texts to ${targetLang}. 
-Return ONLY a JSON array of translated strings, in the same order, no explanations.
-Texts: ${JSON.stringify(texts)}`;
-
-  const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "mistral-small-latest",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.3,
-      max_tokens: 2048,
-    }),
-  });
-
-  if (!res.ok) throw new Error(`Mistral error: ${res.status}`);
-  const data = await res.json();
-  const content = data.choices[0]?.message?.content ?? "[]";
-  const match = content.match(/\[[\s\S]*\]/);
-  return JSON.parse(match?.[0] ?? "[]");
-}
-
-async function translateWithGoogleAI(
-  texts: string[],
-  targetLang: string,
-  apiKey: string
-): Promise<string[]> {
-  const prompt = `Translate the following UI screenshot texts to ${targetLang}.
-Return ONLY a JSON array of translated strings, in the same order. No markdown, no explanations.
-Texts: ${JSON.stringify(texts)}`;
-
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.3, maxOutputTokens: 2048 },
-      }),
-    }
-  );
-  if (!res.ok) throw new Error(`Google AI error: ${res.status}`);
-  const data = await res.json();
-  const content = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "[]";
-  const match = content.match(/\[[\s\S]*\]/);
-  return JSON.parse(match?.[0] ?? "[]");
-}
-
+// ─── AI Provider with secure server fallback chain ─────────────────────────────
 async function translateTexts(
   texts: string[],
   targetLang: string,
   mistralKey?: string,
   googleKey?: string
 ): Promise<string[]> {
-  if (mistralKey) {
-    try {
-      return await translateWithMistral(texts, targetLang, mistralKey);
-    } catch (e) {
-      console.warn("Mistral failed, trying Google AI:", e);
+  try {
+    const res = await fetch("/api/ai/translate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        texts,
+        targetLang,
+        maxLength: 35,
+        clientKeys: {
+          gemini: googleKey || undefined,
+          mistral: mistralKey || undefined,
+        },
+      }),
+    });
+    const data = await res.json();
+    if (res.ok && data.translations && Array.isArray(data.translations)) {
+      return data.translations;
     }
+  } catch (e) {
+    console.warn("AI translation error:", e);
   }
-  if (googleKey) {
-    try {
-      return await translateWithGoogleAI(texts, targetLang, googleKey);
-    } catch (e) {
-      console.warn("Google AI failed:", e);
-    }
-  }
-  // Fallback: return originals (user must translate manually)
   return texts;
 }
 

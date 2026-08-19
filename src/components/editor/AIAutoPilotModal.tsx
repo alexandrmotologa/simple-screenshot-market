@@ -1,0 +1,309 @@
+"use client";
+
+import { useState } from "react";
+import { Sparkles, X, Loader2, CheckCircle2, Wand2, Palette, Type, Layers, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useEditorStore } from "@/lib/store/editorStore";
+import { useProjectStore } from "@/lib/store/projectStore";
+import { useLanguageStore } from "@/lib/store/languageStore";
+import { toast } from "@/lib/store/toastStore";
+import { TextLayer, ScreenshotLayer, ImageLayer, Screen, Layer } from "@/lib/types";
+import { nanoid } from "nanoid";
+
+interface AIAutoPilotModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function AIAutoPilotModal({ open, onOpenChange }: AIAutoPilotModalProps) {
+  const { screenSets, activeSetId, updateScreenBackground, addLayer, updateLayer, deleteLayer } = useEditorStore();
+  const { projects } = useProjectStore();
+  const { activeLang } = useLanguageStore();
+
+  const activeSet = screenSets.find((s) => s.id === activeSetId) || screenSets[0];
+  const screens = activeSet?.screens || [];
+
+  const [niche, setNiche] = useState("");
+  const [targetTone, setTargetTone] = useState<"high-energy" | "b2b" | "minimalist" | "fomo" | "benefit-driven">("high-energy");
+  const [applyGradients, setApplyGradients] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [progressStep, setProgressStep] = useState("");
+
+  if (!open || !activeSet) return null;
+
+  const handleRunAutoPilot = async () => {
+    try {
+      setIsProcessing(true);
+      setProgressStep("Analyzing screenshot layouts and context...");
+
+      // Prepare screenshots payload
+      const screenPayload = screens.map((screen, idx) => {
+        // Find screenshot layer if any
+        const sl = screen.layers.find((l) => l.type === "screenshot" || l.type === "image") as ScreenshotLayer | ImageLayer | undefined;
+        return {
+          index: idx,
+          base64: sl?.src && sl.src.startsWith("data:") ? sl.src : undefined,
+          name: screen.name || `Screen ${idx + 1}`,
+        };
+      });
+
+      setProgressStep("Consulting AI Vision & Copywriter Engine...");
+
+      const res = await fetch("/api/ai/vision-screens", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          screens: screenPayload,
+          appName: activeSet.name || "Mobile App",
+          niche: niche || "Productivity / Lifestyle App",
+          language: activeLang || "en",
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "AI generation failed");
+      }
+
+      const generatedStories = data.screens || [];
+      setProgressStep("Applying high-conversion typography & color palettes...");
+
+      // Apply results to active set screens
+      screens.forEach((screen, idx) => {
+        const story = generatedStories.find((g: any) => g.index === idx) || generatedStories[idx];
+        if (!story) return;
+
+        // 1. Update background if requested
+        if (applyGradients && story.recommendedGradient) {
+          updateScreenBackground(activeSet.id, screen.id, {
+            type: "gradient",
+            gradient: story.recommendedGradient,
+          });
+        }
+
+        // 2. Find or create Headline & Subcaption text layers
+        const textLayers = screen.layers.filter((l): l is TextLayer => l.type === "text");
+        const headlineLayer = textLayers[0];
+        const subcaptionLayer = textLayers[1];
+
+        const screenW = screen.width || 1290;
+        const screenH = screen.height || 2796;
+
+        if (headlineLayer) {
+          updateLayer(activeSet.id, screen.id, headlineLayer.id, {
+            content: story.headline,
+            fontSize: Math.round(screenW * 0.058),
+            fontWeight: 800,
+            align: "center",
+          });
+        } else {
+          // Create headline
+          addLayer(activeSet.id, screen.id, {
+            type: "text",
+            x: Math.round(screenW * 0.08),
+            y: Math.round(screenH * 0.07),
+            width: Math.round(screenW * 0.84),
+            height: Math.round(screenH * 0.1),
+            rotation: 0,
+            opacity: 1,
+            content: story.headline,
+            fontSize: Math.round(screenW * 0.058),
+            fontWeight: 800,
+            fontFamily: "Inter",
+            color: "#ffffff",
+            align: "center",
+            lineHeight: 1.15,
+            letterSpacing: -0.5,
+          } as Omit<TextLayer, "id">);
+        }
+
+        if (subcaptionLayer) {
+          updateLayer(activeSet.id, screen.id, subcaptionLayer.id, {
+            content: story.subcaption,
+            fontSize: Math.round(screenW * 0.034),
+            fontWeight: 500,
+            align: "center",
+            opacity: 0.85,
+          });
+        } else {
+          // Create subcaption
+          addLayer(activeSet.id, screen.id, {
+            type: "text",
+            x: Math.round(screenW * 0.1),
+            y: Math.round(screenH * 0.16),
+            width: Math.round(screenW * 0.8),
+            height: Math.round(screenH * 0.06),
+            rotation: 0,
+            opacity: 0.85,
+            content: story.subcaption,
+            fontSize: Math.round(screenW * 0.034),
+            fontWeight: 500,
+            fontFamily: "Inter",
+            color: "#ffffff",
+            align: "center",
+            lineHeight: 1.25,
+            letterSpacing: 0,
+          } as Omit<TextLayer, "id">);
+        }
+      });
+
+      useEditorStore.getState().recordHistory();
+      toast.success("AI Auto-Pilot successfully generated your App Store presentation!");
+      onOpenChange(false);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Failed to run AI Auto-Pilot");
+    } finally {
+      setIsProcessing(false);
+      setProgressStep("");
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={() => onOpenChange(false)}>
+      <div
+        className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b border-border/50 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="font-bold text-base text-foreground flex items-center gap-2">
+                <span>AI Project Auto-Pilot</span>
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                  VISION + ASO
+                </span>
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                1-Click complete transformation: Headlines, Subtitles &amp; Palettes
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => onOpenChange(false)}
+            className="w-7 h-7 rounded-lg hover:bg-secondary flex items-center justify-center text-muted-foreground transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-4.5">
+          {/* Niche Input */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+              <span>🎯</span> App Category / Niche (Optional)
+            </label>
+            <input
+              type="text"
+              value={niche}
+              onChange={(e) => setNiche(e.target.value)}
+              placeholder="e.g., AI Photo Editor, Fitness Tracker, Crypto Wallet..."
+              className="w-full h-9 px-3 text-xs bg-secondary/60 border border-border/60 rounded-xl outline-none focus:border-primary focus:ring-1 focus:ring-primary/40 transition-all placeholder:text-muted-foreground/60"
+            />
+          </div>
+
+          {/* Tone Selector */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+              <span>🪄</span> Marketing Tone
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { id: "high-energy", label: "🚀 High Energy", desc: "Bold & inspiring" },
+                { id: "minimalist", label: "✨ Minimalist", desc: "Short & punchy" },
+                { id: "benefit-driven", label: "🎯 Benefit Driven", desc: "Problem solver" },
+                { id: "fomo", label: "🔥 Social / FOMO", desc: "Community hype" },
+                { id: "b2b", label: "💼 B2B Enterprise", desc: "Professional trust" },
+              ].map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setTargetTone(t.id as any)}
+                  className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                    targetTone === t.id
+                      ? "bg-indigo-500/15 border-indigo-500/50 text-foreground ring-1 ring-indigo-500/30"
+                      : "bg-secondary/40 border-border/40 text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
+                  }`}
+                >
+                  <p className="text-xs font-bold">{t.label}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{t.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Color Palettes Option */}
+          <label className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-secondary/30 hover:bg-secondary/60 cursor-pointer transition-colors text-xs select-none">
+            <input
+              type="checkbox"
+              checked={applyGradients}
+              onChange={(e) => setApplyGradients(e.target.checked)}
+              className="w-4 h-4 rounded-md accent-primary"
+            />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                <Palette className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Auto-match panoramic color gradients</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Generates harmonious multi-screen gradients matching your screenshot colors
+              </p>
+            </div>
+          </label>
+
+          {/* Target Set Info */}
+          <div className="p-3 rounded-xl bg-secondary/50 border border-border/40 flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">
+              Target: <strong className="text-foreground">{activeSet.name}</strong> ({screens.length} screens)
+            </span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-background border border-border/50 text-foreground">
+              {activeLang.toUpperCase()}
+            </span>
+          </div>
+
+          {/* Progress Indicator */}
+          {isProcessing && (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs animate-pulse">
+              <Loader2 className="w-4 h-4 animate-spin shrink-0 text-indigo-400" />
+              <span>{progressStep}</span>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex gap-2.5 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isProcessing}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRunAutoPilot}
+              disabled={isProcessing || screens.length === 0}
+              className="flex-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-90 text-white font-bold gap-2 shadow-md shadow-indigo-500/25 cursor-pointer"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Generating...</span>
+                </>
+              ) : (
+                <>
+                  <Wand2 className="w-4 h-4" />
+                  <span>Generate All {screens.length} Screens</span>
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

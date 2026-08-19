@@ -11,7 +11,46 @@ import { cn } from "@/lib/utils";
 import { ColorInput } from "@/components/ui/color-input";
 import { Upload, Sparkles, Wand2, Layers, Image as ImageIcon } from "lucide-react";
 
-type Tab = "color" | "gradient" | "mesh" | "panoramic";
+type Tab = "color" | "gradient" | "mesh" | "panoramic" | "ai_magic";
+
+const AI_THEMES_LIST = [
+  {
+    id: "oled-midnight",
+    name: "OLED Midnight",
+    desc: "Luxury pitch black to deep indigo glow",
+    gradient: { direction: "to-br" as GradientDirection, stops: [{ color: "#060810", position: 0 }, { color: "#1e1b4b", position: 100 }] },
+  },
+  {
+    id: "clean-cupertino",
+    name: "Clean Cupertino",
+    desc: "Apple minimalist ice-white to cool slate",
+    gradient: { direction: "to-b" as GradientDirection, stops: [{ color: "#f8fafc", position: 0 }, { color: "#e2e8f0", position: 100 }] },
+  },
+  {
+    id: "vibrant-sunset",
+    name: "Vibrant Sunset",
+    desc: "Warm crimson, fiery coral & deep violet",
+    gradient: { direction: "to-br" as GradientDirection, stops: [{ color: "#31103f", position: 0 }, { color: "#f97316", position: 100 }] },
+  },
+  {
+    id: "cyber-neon",
+    name: "Cyber Neon",
+    desc: "Electric cyan & neon purple contrast",
+    gradient: { direction: "to-br" as GradientDirection, stops: [{ color: "#050518", position: 0 }, { color: "#06b6d4", position: 100 }] },
+  },
+  {
+    id: "pastel-aurora",
+    name: "Pastel Aurora",
+    desc: "Dreamy lavender & mint pastel breeze",
+    gradient: { direction: "to-br" as GradientDirection, stops: [{ color: "#1e1338", position: 0 }, { color: "#8b5cf6", position: 100 }] },
+  },
+  {
+    id: "emerald-glow",
+    name: "Emerald Matrix",
+    desc: "Deep forest black to radiant emerald",
+    gradient: { direction: "to-br" as GradientDirection, stops: [{ color: "#021512", position: 0 }, { color: "#10b981", position: 100 }] },
+  },
+];
 
 const PANORAMIC_PRESETS = [
   {
@@ -248,16 +287,16 @@ export function BackgroundPanel() {
 
         {/* Tab switcher */}
         <div className="flex rounded-xl bg-secondary p-1 gap-1">
-          {(["color", "gradient", "mesh", "panoramic"] as Tab[]).map((t) => (
+          {(["ai_magic", "gradient", "panoramic", "mesh", "color"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={cn(
-                "flex-1 py-1.5 rounded-lg text-xs font-medium capitalize transition-all cursor-pointer",
+                "flex-1 py-1.5 rounded-lg text-[11px] font-medium capitalize transition-all cursor-pointer",
                 tab === t ? "bg-background text-foreground shadow-xs font-semibold" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              {t === "panoramic" ? "🔗 Panoramic" : t === "mesh" ? "✦ Mesh" : t === "gradient" ? "Gradient" : "Solid"}
+              {t === "ai_magic" ? "✨ AI Magic" : t === "panoramic" ? "🔗 Panoramic" : t === "mesh" ? "✦ Mesh" : t === "gradient" ? "Gradient" : "Solid"}
             </button>
           ))}
         </div>
@@ -532,6 +571,53 @@ export function BackgroundPanel() {
                     </div>
                   </button>
                 ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab === "ai_magic" && (
+          <div className="space-y-4">
+            <div className="p-3.5 rounded-xl bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 border border-indigo-500/30 space-y-2">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-indigo-400" />
+                <span className="text-xs font-bold text-foreground">AI Curated Theme Matcher</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                App Store-optimized visual themes designed for maximum conversion. Click any theme to apply it across your screenshots.
+              </p>
+            </div>
+
+            <div className="space-y-2.5">
+              <Label className="text-xs text-muted-foreground block">Curated App Store Themes</Label>
+              <div className="grid grid-cols-1 gap-2.5">
+                {AI_THEMES_LIST.map((theme) => {
+                  const gradientCss = `linear-gradient(135deg, ${theme.gradient.stops[0].color}, ${theme.gradient.stops[1].color})`;
+                  return (
+                    <button
+                      key={theme.id}
+                      type="button"
+                      onClick={() => {
+                        applyBg({
+                          type: "gradient",
+                          gradient: theme.gradient,
+                        });
+                        useEditorStore.getState().recordHistory();
+                        toast.success(`Applied "${theme.name}" theme!`);
+                      }}
+                      className="w-full h-16 rounded-xl border border-border/60 hover:border-primary/60 hover:ring-1 hover:ring-primary/40 relative overflow-hidden transition-all text-left p-3 flex items-center justify-between group cursor-pointer shadow-xs"
+                      style={{ background: gradientCss }}
+                    >
+                      <div className="relative z-10">
+                        <p className="text-xs font-bold text-white drop-shadow-md">{theme.name}</p>
+                        <p className="text-[10px] text-white/80 drop-shadow-sm">{theme.desc}</p>
+                      </div>
+                      <div className="relative z-10 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-[9.5px] font-semibold text-white/90 border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                        Apply Theme
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
