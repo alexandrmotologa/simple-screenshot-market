@@ -84,6 +84,13 @@ export const COLOR_HEX_MAP: Record<string, string> = {
   // ── Samsung Tablet Official Colors ──
   "moonstone gray": "#4d4e52",
   "platinum silver": "#d2d4d8",
+  graphite: "#28292d",
+  beige: "#e8e1d5",
+  "mystic black": "#1f1f21",
+  "mystic silver": "#d8dade",
+  "mystic bronze": "#a07869",
+  "mystic navy": "#29384d",
+  "midnight blue": "#1a2332",
 };
 
 export const IOS_DEVICES: DeviceModel[] = [
@@ -378,6 +385,51 @@ export const ANDROID_DEVICES: DeviceModel[] = [
     buttons: [
       { side: "right", yOffset: 0.25, height: 0.08 },
       { side: "right", yOffset: 0.4, height: 0.04 },
+    ],
+  },
+  {
+    id: "samsung-tab-s9-ultra",
+    name: "Samsung Galaxy Tab S9 Ultra (14.6\")",
+    store: "android",
+    width: 1848,
+    height: 2960,
+    colors: ["Graphite", "Beige"],
+    cornerRadius: 60,
+    bezelRatio: 0.018,
+    notchType: "notch",
+    buttons: [
+      { side: "top", yOffset: 0.12, height: 0.04 },
+      { side: "top", yOffset: 0.18, height: 0.04 },
+    ],
+  },
+  {
+    id: "samsung-tab-s7-plus",
+    name: "Samsung Galaxy Tab S7+ (12.4\")",
+    store: "android",
+    width: 1752,
+    height: 2800,
+    colors: ["Mystic Black", "Mystic Silver", "Mystic Bronze", "Mystic Navy"],
+    cornerRadius: 64,
+    bezelRatio: 0.024,
+    notchType: "none",
+    buttons: [
+      { side: "top", yOffset: 0.15, height: 0.04 },
+      { side: "top", yOffset: 0.22, height: 0.04 },
+    ],
+  },
+  {
+    id: "samsung-tab-a",
+    name: "Samsung Galaxy Tab A (10.4\")",
+    store: "android",
+    width: 1200,
+    height: 1920,
+    colors: ["Graphite", "Silver", "Navy"],
+    cornerRadius: 68,
+    bezelRatio: 0.034,
+    notchType: "none",
+    buttons: [
+      { side: "right", yOffset: 0.15, height: 0.04 },
+      { side: "right", yOffset: 0.22, height: 0.04 },
     ],
   },
   {

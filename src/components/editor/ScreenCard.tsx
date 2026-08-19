@@ -868,19 +868,26 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
                 ctx.arc(holeX, holeY, holeR, 0, Math.PI * 2);
                 ctx.fill();
               } else if (device.notchType === "notch" && mockup.notch !== false) {
-                const notchW = innerW * 0.45;
-                const notchH = innerW * 0.08;
+                const isTablet = device.id.includes("tab") || device.id.includes("pad");
+                const notchW = isTablet ? innerW * 0.09 : innerW * 0.45;
+                const notchH = isTablet ? innerW * 0.022 : innerW * 0.08;
                 const notchX = innerX + (innerW - notchW) / 2;
-                ctx.beginPath();
-                ctx.moveTo(notchX - notchH, innerY);
-                ctx.quadraticCurveTo(notchX, innerY, notchX, innerY + notchH * 0.4);
-                ctx.lineTo(notchX, innerY + notchH - notchH * 0.5);
-                ctx.quadraticCurveTo(notchX, innerY + notchH, notchX + notchH, innerY + notchH);
-                ctx.lineTo(notchX + notchW - notchH, innerY + notchH);
-                ctx.quadraticCurveTo(notchX + notchW, innerY + notchH, notchX + notchW, innerY + notchH - notchH * 0.5);
-                ctx.lineTo(notchX + notchW, innerY + notchH * 0.4);
-                ctx.quadraticCurveTo(notchX + notchW, innerY, notchX + notchW + notchH, innerY);
-                ctx.fill();
+                if (isTablet) {
+                  ctx.beginPath();
+                  ctx.roundRect(notchX, innerY, notchW, notchH, [0, 0, 8, 8]);
+                  ctx.fill();
+                } else {
+                  ctx.beginPath();
+                  ctx.moveTo(notchX - notchH, innerY);
+                  ctx.quadraticCurveTo(notchX, innerY, notchX, innerY + notchH * 0.4);
+                  ctx.lineTo(notchX, innerY + notchH - notchH * 0.5);
+                  ctx.quadraticCurveTo(notchX, innerY + notchH, notchX + notchH, innerY + notchH);
+                  ctx.lineTo(notchX + notchW - notchH, innerY + notchH);
+                  ctx.quadraticCurveTo(notchX + notchW, innerY + notchH, notchX + notchW, innerY + notchH - notchH * 0.5);
+                  ctx.lineTo(notchX + notchW, innerY + notchH * 0.4);
+                  ctx.quadraticCurveTo(notchX + notchW, innerY, notchX + notchW + notchH, innerY);
+                  ctx.fill();
+                }
               }
             }
         };

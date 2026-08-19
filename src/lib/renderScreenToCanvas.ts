@@ -734,11 +734,13 @@ export async function renderScreenToCanvas(
             ctx.arc(holeX, holeY, holeR, 0, Math.PI * 2);
             ctx.fill();
           } else if (device.notchType === "notch" && mockup.notch !== false) {
-            const notchW = innerW * 0.45;
-            const notchH = innerW * 0.08;
+            const isTablet = device.id.includes("tab") || device.id.includes("pad");
+            const notchW = isTablet ? innerW * 0.09 : innerW * 0.45;
+            const notchH = isTablet ? innerW * 0.022 : innerW * 0.08;
             const notchX = innerX + (innerW - notchW) / 2;
+            const cornerR = isTablet ? 8 : 16;
             ctx.beginPath();
-            ctx.roundRect(notchX, innerY, notchW, notchH, [0, 0, 16, 16]);
+            ctx.roundRect(notchX, innerY, notchW, notchH, [0, 0, cornerR, cornerR]);
             ctx.fill();
           }
         }
