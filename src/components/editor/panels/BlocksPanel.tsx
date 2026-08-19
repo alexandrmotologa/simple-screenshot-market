@@ -240,6 +240,36 @@ const UI_WIDGET_PRESETS: BlockPreset[] = [
     },
   },
   {
+    id: "magnifier-loupe-zoom",
+    name: "🔍 2.5x Zoom Magnifier Lens",
+    category: "ios-widgets",
+    keywords: ["magnifier", "loupe", "zoom", "lens", "focus", "callout", "inspect", "detail"],
+    preview: (
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 border border-indigo-500/50 text-white shadow-xs">
+        <div className="w-5 h-5 rounded-full border-2 border-indigo-400 bg-indigo-500/20 flex items-center justify-center text-[10px]">🔍</div>
+        <span className="text-[11px] font-bold text-indigo-300">2.5x Zoom Lens</span>
+      </div>
+    ),
+    getLayers: (sw, sh) => {
+      const size = Math.round(sw * 0.44);
+      return [{
+        type: "shape",
+        shape: "magnifier-loupe",
+        text: "2.5x Zoom",
+        fill: "rgba(255,255,255,0.12)",
+        stroke: "#818cf8",
+        strokeWidth: 8,
+        cornerRadius: Math.round(size / 2),
+        x: Math.round((sw - size) / 2),
+        y: Math.round(sh * 0.42),
+        width: size,
+        height: size,
+        rotation: 0,
+        opacity: 1,
+      } as any];
+    },
+  },
+  {
     id: "notification-banner",
     name: "iOS Notification Banner",
     category: "ios-widgets",

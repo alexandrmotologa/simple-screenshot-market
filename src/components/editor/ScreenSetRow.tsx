@@ -231,13 +231,14 @@ export function ScreenSetRow({ screenSet, isDragging = false }: ScreenSetRowProp
             <span className="truncate">{currentDevice?.name ?? "Select device"}</span>
             <ChevronDown className="w-3.5 h-3.5 text-muted-foreground ml-auto shrink-0" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-60 max-h-80 overflow-y-auto">
+          <DropdownMenuContent align="start" className="w-64 max-h-80 overflow-y-auto">
+            {/* Phones Group */}
             <DropdownMenuGroup>
-              <DropdownMenuLabel className="text-xs">
-                {screenSet.store === "ios" ? "iPhone Models" : "Android Devices"}
+              <DropdownMenuLabel className="text-xs text-muted-foreground uppercase font-bold tracking-wider">
+                {screenSet.store === "ios" ? "iPhone Models" : "Android Phones"}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {devices.map((device) => (
+              {devices.filter((d) => !d.id.includes("ipad") && !d.id.includes("tab")).map((device) => (
                 <DropdownMenuItem
                   key={device.id}
                   className={cn(
@@ -254,12 +255,47 @@ export function ScreenSetRow({ screenSet, isDragging = false }: ScreenSetRowProp
                 >
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{device.name}</p>
-                    <p className="text-muted-foreground">{device.width} × {device.height}</p>
+                    <p className="text-[11px] text-muted-foreground font-mono">{device.width} × {device.height} px</p>
                   </div>
                   {screenSet.deviceId === device.id && <span className="text-primary shrink-0">✓</span>}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuGroup>
+
+            {/* Tablets Group */}
+            {devices.some((d) => d.id.includes("ipad") || d.id.includes("tab")) && (
+              <>
+                <DropdownMenuSeparator className="my-1.5" />
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className="text-xs text-indigo-400 uppercase font-bold tracking-wider">
+                    {screenSet.store === "ios" ? "iPad Tablets" : "Android Tablets"}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {devices.filter((d) => d.id.includes("ipad") || d.id.includes("tab")).map((device) => (
+                    <DropdownMenuItem
+                      key={device.id}
+                      className={cn(
+                        "text-xs gap-2 cursor-pointer",
+                        screenSet.deviceId === device.id && "text-primary bg-primary/5 font-semibold"
+                      )}
+                      onClick={() => {
+                        updateDevice(screenSet.id, device.id);
+                        if (screenSet.mockup?.color && !device.colors.includes(screenSet.mockup.color)) {
+                          updateMockup(screenSet.id, { color: device.colors[0] });
+                        }
+                        useEditorStore.getState().recordHistory();
+                      }}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{device.name}</p>
+                        <p className="text-[11px] text-muted-foreground font-mono">{device.width} × {device.height} px</p>
+                      </div>
+                      {screenSet.deviceId === device.id && <span className="text-primary shrink-0">✓</span>}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuGroup>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
 

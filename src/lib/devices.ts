@@ -77,7 +77,13 @@ export const COLOR_HEX_MAP: Record<string, string> = {
   "silky black": "#111111",
   "silver shadow": "#aab0b8",
   navy: "#1e3a5f",
-  icyblue: "#8abbe8",
+  // ── Apple iPad Official Colors ──
+  "space black": "#1c1d1f",
+  "space gray": "#535458",
+
+  // ── Samsung Tablet Official Colors ──
+  "moonstone gray": "#4d4e52",
+  "platinum silver": "#d2d4d8",
 };
 
 export const IOS_DEVICES: DeviceModel[] = [
@@ -185,6 +191,70 @@ export const IOS_DEVICES: DeviceModel[] = [
       { side: "left", yOffset: 0.28, height: 0.05 }, // Vol Up
       { side: "left", yOffset: 0.35, height: 0.05 }, // Vol Down
       { side: "right", yOffset: 0.28, height: 0.07 }, // Power
+    ],
+  },
+  {
+    id: "ipad-pro-13",
+    name: "iPad Pro 13\" (M4 / 12.9\")",
+    store: "ios",
+    width: 2048,
+    height: 2732,
+    colors: ["Space Black", "Silver"],
+    cornerRadius: 82,
+    bezelRatio: 0.024,
+    notchType: "none",
+    buttons: [
+      { side: "top", yOffset: 0.82, height: 0.05 }, // Power button
+      { side: "right", yOffset: 0.12, height: 0.04 }, // Vol Up
+      { side: "right", yOffset: 0.18, height: 0.04 }, // Vol Down
+    ],
+  },
+  {
+    id: "ipad-pro-11",
+    name: "iPad Pro 11\" (M4)",
+    store: "ios",
+    width: 1668,
+    height: 2388,
+    colors: ["Space Black", "Silver"],
+    cornerRadius: 76,
+    bezelRatio: 0.026,
+    notchType: "none",
+    buttons: [
+      { side: "top", yOffset: 0.82, height: 0.05 },
+      { side: "right", yOffset: 0.12, height: 0.04 },
+      { side: "right", yOffset: 0.18, height: 0.04 },
+    ],
+  },
+  {
+    id: "ipad-mini",
+    name: "iPad mini (8.3\")",
+    store: "ios",
+    width: 1488,
+    height: 2266,
+    colors: ["Space Gray", "Starlight", "Purple", "Blue"],
+    cornerRadius: 70,
+    bezelRatio: 0.028,
+    notchType: "none",
+    buttons: [
+      { side: "top", yOffset: 0.82, height: 0.05 }, // Power
+      { side: "top", yOffset: 0.12, height: 0.04 }, // Vol Up
+      { side: "top", yOffset: 0.18, height: 0.04 }, // Vol Down
+    ],
+  },
+  {
+    id: "ipad-air-11",
+    name: "iPad Air 11\" (M2)",
+    store: "ios",
+    width: 1640,
+    height: 2360,
+    colors: ["Space Gray", "Starlight", "Blue", "Purple"],
+    cornerRadius: 74,
+    bezelRatio: 0.027,
+    notchType: "none",
+    buttons: [
+      { side: "top", yOffset: 0.82, height: 0.05 },
+      { side: "right", yOffset: 0.12, height: 0.04 },
+      { side: "right", yOffset: 0.18, height: 0.04 },
     ],
   },
 ];
@@ -308,6 +378,51 @@ export const ANDROID_DEVICES: DeviceModel[] = [
     buttons: [
       { side: "right", yOffset: 0.25, height: 0.08 },
       { side: "right", yOffset: 0.4, height: 0.04 },
+    ],
+  },
+  {
+    id: "samsung-tab-s10-ultra",
+    name: "Samsung Galaxy Tab S10 Ultra (14.6\")",
+    store: "android",
+    width: 1848,
+    height: 2960,
+    colors: ["Moonstone Gray", "Platinum Silver"],
+    cornerRadius: 62,
+    bezelRatio: 0.020,
+    notchType: "notch",
+    buttons: [
+      { side: "top", yOffset: 0.15, height: 0.04 },
+      { side: "top", yOffset: 0.22, height: 0.04 },
+    ],
+  },
+  {
+    id: "pixel-slate",
+    name: "Google Pixel Slate (12.3\")",
+    store: "android",
+    width: 2000,
+    height: 3000,
+    colors: ["Midnight Blue", "Obsidian"],
+    cornerRadius: 68,
+    bezelRatio: 0.028,
+    notchType: "none",
+    buttons: [
+      { side: "top", yOffset: 0.85, height: 0.04 },
+      { side: "left", yOffset: 0.15, height: 0.06 },
+    ],
+  },
+  {
+    id: "pixel-tablet",
+    name: "Google Pixel Tablet (11\")",
+    store: "android",
+    width: 1600,
+    height: 2560,
+    colors: ["Porcelain", "Hazel", "Rose"],
+    cornerRadius: 78,
+    bezelRatio: 0.032,
+    notchType: "none",
+    buttons: [
+      { side: "top", yOffset: 0.82, height: 0.05 },
+      { side: "right", yOffset: 0.15, height: 0.04 },
     ],
   },
 ];

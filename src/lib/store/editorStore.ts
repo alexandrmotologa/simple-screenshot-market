@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { Layer, Screen, ScreenSet, Background, MockupSettings, ThemeId } from "@/lib/types";
 import { themeById } from "@/lib/themes";
 import { nanoid } from "@/lib/utils";
+import { ALL_DEVICES } from "@/lib/devices";
 
 interface HistoryEntry {
   screenSets: ScreenSet[];
@@ -100,6 +101,7 @@ interface EditorStore {
 
   // Actions: screen sets
   addScreenSet: (store: "ios" | "android") => void;
+  addTabletSet: (store?: "ios" | "android") => void;
   removeScreenSet: (setId: string) => void;
   updateScreenSet: (setId: string, updates: Partial<ScreenSet>) => void;
 }
@@ -639,13 +641,67 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   updateDevice: (setId, deviceId) => {
+    const newDevice = ALL_DEVICES.find((d) => d.id === deviceId);
+
     set((state) => ({
       screenSets: state.screenSets.map((ss) => {
         if (ss.id !== setId) return ss;
+        const oldW = ss.preset.width || 1290;
+        const oldH = ss.preset.height || 2796;
+        const newW = newDevice?.width || oldW;
+        const newH = newDevice?.height || oldH;
+
+        const needsScale = newDevice && (oldW !== newW || oldH !== newH);
+        const scaleX = newW / oldW;
+        const scaleY = newH / oldH;
+        const scaleAvg = (scaleX + scaleY) / 2;
+
+        const updatedScreens: Screen[] = ss.screens.map((screen) => {
+          if (!needsScale) return screen;
+          return {
+            ...screen,
+            width: newW,
+            height: newH,
+            layers: screen.layers.map((layer) => {
+              const base = {
+                ...layer,
+                x: Math.round(layer.x * scaleX),
+                y: Math.round(layer.y * scaleY),
+                width: Math.round(layer.width * scaleX),
+                height: Math.round(layer.height * scaleY),
+              };
+              if (layer.type === "text") {
+                return { ...base, fontSize: Math.round((layer.fontSize || 56) * scaleAvg) } as Layer;
+              }
+              if (layer.type === "shape") {
+                return {
+                  ...base,
+                  cornerRadius: layer.cornerRadius !== undefined ? Math.round(layer.cornerRadius * scaleAvg) : undefined,
+                  strokeWidth: layer.strokeWidth !== undefined ? Math.round(layer.strokeWidth * scaleAvg) : undefined,
+                } as Layer;
+              }
+              if (layer.type === "image") {
+                return {
+                  ...base,
+                  cornerRadius: Math.round((layer.cornerRadius || 0) * scaleAvg),
+                } as Layer;
+              }
+              return base as Layer;
+            }),
+          };
+        });
+
         return {
           ...ss,
           deviceId,
           mockup: { ...ss.mockup, device: deviceId },
+          preset: {
+            ...ss.preset,
+            width: newW,
+            height: newH,
+            name: newDevice ? newDevice.name : ss.preset.name,
+          },
+          screens: updatedScreens,
         };
       }),
     }));
@@ -957,6 +1013,115 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       activeSetId: newId,
       activeScreenId: screenId,
     });
+    get().recordHistory();
+  },
+
+  addTabletSet: (store = "ios") => {
+    const isIOS = store === "ios";
+    const tabletDeviceId = isIOS ? "ipad-pro-13" : "samsung-tab-s10-ultra";
+    const tabletDevice = ALL_DEVICES.find((d) => d.id === tabletDeviceId);
+
+    const sourceSet = get().screenSets.find((s) => s.store === store) || get().screenSets[0];
+    const newId = nanoid();
+    const newW = tabletDevice?.width || (isIOS ? 2048 : 1848);
+    const newH = tabletDevice?.height || (isIOS ? 2732 : 2960);
+
+    const oldW = sourceSet?.preset.width || 1290;
+    const oldH = sourceSet?.preset.height || 2796;
+    const scaleX = newW / oldW;
+    const scaleY = newH / oldH;
+    const scaleAvg = (scaleX + scaleY) / 2;
+
+    const newScreens = (sourceSet ? sourceSet.screens : []).map((screen, idx) => ({
+      ...screen,
+      id: nanoid(),
+      name: `iPad Screen ${idx + 1}`,
+      width: newW,
+      height: newH,
+      layers: screen.layers.map((layer) => {
+        const baseLayer = {
+          ...layer,
+          id: nanoid(),
+          x: Math.round(layer.x * scaleX),
+          y: Math.round(layer.y * scaleY),
+          width: Math.round(layer.width * scaleX),
+          height: Math.round(layer.height * scaleY),
+        };
+        if (layer.type === "text") {
+          return { ...baseLayer, fontSize: Math.round((layer.fontSize || 56) * scaleAvg) } as Layer;
+        }
+        if (layer.type === "shape") {
+          return {
+            ...baseLayer,
+            cornerRadius: layer.cornerRadius !== undefined ? Math.round(layer.cornerRadius * scaleAvg) : undefined,
+            strokeWidth: layer.strokeWidth !== undefined ? Math.round(layer.strokeWidth * scaleAvg) : undefined,
+          } as Layer;
+        }
+        if (layer.type === "image") {
+          return {
+            ...baseLayer,
+            cornerRadius: Math.round((layer.cornerRadius || 0) * scaleAvg),
+          } as Layer;
+        }
+        return baseLayer as Layer;
+      }),
+    }));
+
+    const newSet: ScreenSet = {
+      id: newId,
+      name: isIOS ? "App Store (iPad Pro 13\")" : "Google Play (Tablet 10\")",
+      store,
+      deviceId: tabletDeviceId,
+      preset: {
+        name: isIOS ? "iPad Pro 13\" (M4)" : "Galaxy Tab S10 Ultra",
+        width: newW,
+        height: newH,
+        store,
+        description: isIOS ? "App Store — iPad Pro 12.9\"/13\"" : "Google Play — Tablet 10\"",
+      },
+      mockup: {
+        device: tabletDeviceId,
+        color: isIOS ? "Space Black" : "Moonstone Gray",
+        showFrame: true,
+        showReflection: true,
+        showShadow: false,
+        frameType: "3d",
+      },
+      screens: newScreens.length > 0 ? newScreens : [
+        {
+          id: nanoid(),
+          name: "Screen 1",
+          width: newW,
+          height: newH,
+          caption: "",
+          background: { type: "gradient", gradient: { direction: "to-br", stops: [{ color: "#6366f1", position: 0 }, { color: "#8b5cf6", position: 100 }] } },
+          layers: [
+            {
+              id: nanoid(),
+              type: "screenshot",
+              x: Math.round(newW * 0.1),
+              y: Math.round(newH * 0.25),
+              width: Math.round(newW * 0.8),
+              height: Math.round(newH * 0.7),
+              rotation: 0,
+              opacity: 1,
+              objectFit: "cover",
+              cornerRadius: 40,
+              showDeviceFrame: true,
+              shadow: { blur: 80, spread: 0, color: "rgba(0,0,0,0.35)", offsetX: 0, offsetY: 20 },
+              label: "Drop tablet screenshot here",
+            } as Layer
+          ]
+        }
+      ],
+    };
+
+    set((state) => ({
+      screenSets: [...state.screenSets, newSet],
+      activeSetId: newId,
+      activeScreenId: newSet.screens[0]?.id ?? null,
+    }));
+
     get().recordHistory();
   },
 

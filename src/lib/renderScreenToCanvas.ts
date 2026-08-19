@@ -505,16 +505,17 @@ export async function renderScreenToCanvas(
         if (mockup.frameType === "titanium") {
           if (device.buttons) {
             device.buttons.forEach((btn: any) => {
-              const btnY = y + h * btn.yOffset;
-              const btnH = h * btn.height;
-              const btnW = (btn.thickness || 1) * (Math.min(w, h) * 0.009);
-              const btnRadius = btnW / 2;
-              const btnGrad = ctx.createLinearGradient(x, btnY, x, btnY + btnH);
+              const isTop = btn.side === "top";
+              const btnY = isTop ? y - (btn.thickness || 1) * (Math.min(w, h) * 0.009) + 1 : y + h * btn.yOffset;
+              const btnH = isTop ? (btn.thickness || 1) * (Math.min(w, h) * 0.009) : h * btn.height;
+              const btnW = isTop ? w * btn.height : (btn.thickness || 1) * (Math.min(w, h) * 0.009);
+              const btnX = isTop ? x + w * btn.yOffset : (btn.side === "left" ? x - btnW + 1 : x + w - 1);
+              const btnRadius = Math.min(btnW, btnH) / 2;
+              const btnGrad = ctx.createLinearGradient(btnX, btnY, btnX + (isTop ? btnW : 0), btnY + (isTop ? 0 : btnH));
               btnGrad.addColorStop(0, "#d1d5db");
               btnGrad.addColorStop(0.5, "#6b7280");
               btnGrad.addColorStop(1, "#374151");
               ctx.fillStyle = btnGrad;
-              const btnX = btn.side === "left" ? x - btnW + 1 : x + w - 1;
               ctx.beginPath();
               ctx.roundRect(btnX, btnY, btnW, btnH, [btnRadius, btnRadius, btnRadius, btnRadius]);
               ctx.fill();
@@ -611,11 +612,12 @@ export async function renderScreenToCanvas(
           if (device.buttons) {
             ctx.fillStyle = baseHex;
             device.buttons.forEach((btn: any) => {
-              const btnY = y + h * btn.yOffset;
-              const btnH = h * btn.height;
-              const btnW = (btn.thickness || 1) * (Math.min(w, h) * 0.008);
-              const btnRadius = btnW / 2;
-              const btnX = btn.side === "left" ? x - btnW + 1 : x + w - 1;
+              const isTop = btn.side === "top";
+              const btnY = isTop ? y - (btn.thickness || 1) * (Math.min(w, h) * 0.008) + 1 : y + h * btn.yOffset;
+              const btnH = isTop ? (btn.thickness || 1) * (Math.min(w, h) * 0.008) : h * btn.height;
+              const btnW = isTop ? w * btn.height : (btn.thickness || 1) * (Math.min(w, h) * 0.008);
+              const btnX = isTop ? x + w * btn.yOffset : (btn.side === "left" ? x - btnW + 1 : x + w - 1);
+              const btnRadius = Math.min(btnW, btnH) / 2;
               ctx.beginPath();
               ctx.roundRect(btnX, btnY, btnW, btnH, [btnRadius, btnRadius, btnRadius, btnRadius]);
               ctx.fill();
@@ -1513,6 +1515,73 @@ export async function renderScreenToCanvas(
         ctx.roundRect(progX, progY, progW * 0.68, progH, progH / 2);
         ctx.fillStyle = "#F97316";
         ctx.fill();
+
+      } else if (sl.shape === "magnifier-loupe") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const radius = Math.min(bw, bh) / 2;
+        const cx = bx + bw / 2;
+        const cy = by + bh / 2;
+
+        // Outer Glow
+        ctx.save();
+        ctx.shadowColor = "rgba(99, 102, 241, 0.4)";
+        ctx.shadowBlur = 40;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+        ctx.fill();
+        ctx.restore();
+
+        // Lens glass reflection gradient
+        const lensGrad = ctx.createLinearGradient(cx - radius, cy - radius, cx + radius, cy + radius);
+        lensGrad.addColorStop(0, "rgba(255, 255, 255, 0.35)");
+        lensGrad.addColorStop(0.3, "rgba(255, 255, 255, 0.05)");
+        lensGrad.addColorStop(0.7, "rgba(99, 102, 241, 0.08)");
+        lensGrad.addColorStop(1, "rgba(255, 255, 255, 0.25)");
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fillStyle = lensGrad;
+        ctx.fill();
+
+        // Metallic Chamfered Bezel Rim
+        const rimGrad = ctx.createLinearGradient(cx - radius, cy - radius, cx + radius, cy + radius);
+        rimGrad.addColorStop(0, "#ffffff");
+        rimGrad.addColorStop(0.3, "#818cf8");
+        rimGrad.addColorStop(0.7, "#4f46e5");
+        rimGrad.addColorStop(1, "#c7d2fe");
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius - 2, 0, Math.PI * 2);
+        ctx.strokeStyle = rimGrad;
+        ctx.lineWidth = sl.strokeWidth || 8;
+        ctx.stroke();
+
+        // Inner glare arc
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 0.85, Math.PI * 1.15, Math.PI * 1.85);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // Zoom tag / badge
+        if (sl.text) {
+          const badgeW = radius * 0.9;
+          const badgeH = radius * 0.32;
+          const badgeX = cx - badgeW / 2;
+          const badgeY = cy + radius * 0.45;
+          ctx.beginPath();
+          ctx.roundRect(badgeX, badgeY, badgeW, badgeH, badgeH / 2);
+          ctx.fillStyle = "rgba(15, 23, 42, 0.92)";
+          ctx.fill();
+          ctx.strokeStyle = "#818cf8";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          ctx.fillStyle = "#ffffff";
+          ctx.font = `bold ${badgeH * 0.48}px sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(sl.text, cx, badgeY + badgeH / 2);
+        }
 
       } else if (sl.shape === "ios-toggle") {
         const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;

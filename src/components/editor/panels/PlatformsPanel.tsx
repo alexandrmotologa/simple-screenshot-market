@@ -20,9 +20,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { FRAME_STYLES_LIST, FullBorderStyle } from "@/components/editor/ScreenSetRow";
 import { StorePreviewModal } from "@/components/editor/StorePreviewModal";
+import { toast } from "@/lib/store/toastStore";
 
 export function PlatformsPanel() {
-  const { screenSets, addScreenSet, removeScreenSet, updateMockup } = useEditorStore();
+  const { screenSets, addScreenSet, addTabletSet, removeScreenSet, updateMockup } = useEditorStore();
   const [showSimulator, setShowSimulator] = useState(false);
 
   const iosSet = screenSets.find((s) => s.store === "ios");
@@ -491,6 +492,46 @@ export function PlatformsPanel() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Tablet Sets Section */}
+          <div className="space-y-2 pt-2 border-t border-border/50">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                <span>📱</span> Tablet & iPad Sets
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  addTabletSet("ios");
+                  toast.success("iPad Pro 13\" set added with proportional scaling!");
+                }}
+                className="flex flex-col items-center justify-center p-3 rounded-xl border border-border/60 bg-secondary/30 hover:bg-secondary/70 text-center transition-all cursor-pointer group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
+                  <AppleStoreIcon className="w-4 h-4 text-foreground" />
+                </div>
+                <span className="text-xs font-semibold text-foreground">+ Add iPad Pro</span>
+                <span className="text-[10px] text-muted-foreground font-mono">2048 × 2732 px</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  addTabletSet("android");
+                  toast.success("Android Tablet set added with proportional scaling!");
+                }}
+                className="flex flex-col items-center justify-center p-3 rounded-xl border border-border/60 bg-secondary/30 hover:bg-secondary/70 text-center transition-all cursor-pointer group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
+                  <GooglePlayIcon className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-semibold text-foreground">+ Add Android Tab</span>
+                <span className="text-[10px] text-muted-foreground font-mono">1848 × 2960 px</span>
+              </button>
+            </div>
           </div>
         </div>
       </ScrollArea>

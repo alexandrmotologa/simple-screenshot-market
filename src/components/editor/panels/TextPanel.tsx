@@ -38,6 +38,71 @@ interface PresetCategory {
 
 const PRESET_CATEGORIES: PresetCategory[] = [
   {
+    name: "Niche Copy (AI)",
+    presets: [
+      {
+        label: "Fitness & Gym",
+        preview: { text: "Crush Every Workout", fontSize: 16, fontWeight: 800 },
+        layer: {
+          type: "text", content: "Crush Every Workout",
+          fontSize: 130, fontWeight: 800, fontFamily: "Inter",
+          color: "#ffffff", align: "center", lineHeight: 1.1,
+          letterSpacing: -1, width: 1100, height: 280,
+        },
+      },
+      {
+        label: "Finance & Wealth",
+        preview: { text: "Grow Wealth Automatically", fontSize: 16, fontWeight: 800 },
+        layer: {
+          type: "text", content: "Grow Wealth Automatically",
+          fontSize: 125, fontWeight: 800, fontFamily: "Inter",
+          color: "#ffffff", align: "center", lineHeight: 1.1,
+          letterSpacing: -1, width: 1100, height: 280,
+        },
+      },
+      {
+        label: "AI Productivity",
+        preview: { text: "10x Your Productivity", fontSize: 16, fontWeight: 800 },
+        layer: {
+          type: "text", content: "10x Your Productivity",
+          fontSize: 130, fontWeight: 800, fontFamily: "Inter",
+          color: "#ffffff", align: "center", lineHeight: 1.1,
+          letterSpacing: -1, width: 1100, height: 280,
+        },
+      },
+      {
+        label: "Sleep & Calm",
+        preview: { text: "Fall Asleep Faster", fontSize: 16, fontWeight: 800 },
+        layer: {
+          type: "text", content: "Fall Asleep Faster",
+          fontSize: 135, fontWeight: 800, fontFamily: "Inter",
+          color: "#ffffff", align: "center", lineHeight: 1.1,
+          letterSpacing: -1, width: 1100, height: 280,
+        },
+      },
+      {
+        label: "Dating & Meet",
+        preview: { text: "Meet Someone Real", fontSize: 16, fontWeight: 800 },
+        layer: {
+          type: "text", content: "Meet Someone Real",
+          fontSize: 130, fontWeight: 800, fontFamily: "Inter",
+          color: "#ffffff", align: "center", lineHeight: 1.1,
+          letterSpacing: -1, width: 1100, height: 280,
+        },
+      },
+      {
+        label: "Travel & Stays",
+        preview: { text: "Book Dream Getaways", fontSize: 16, fontWeight: 800 },
+        layer: {
+          type: "text", content: "Book Dream Getaways",
+          fontSize: 125, fontWeight: 800, fontFamily: "Inter",
+          color: "#ffffff", align: "center", lineHeight: 1.1,
+          letterSpacing: -1, width: 1100, height: 280,
+        },
+      },
+    ],
+  },
+  {
     name: "Headlines",
     presets: [
       {
