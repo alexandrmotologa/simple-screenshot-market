@@ -15,98 +15,92 @@ export function SnapFrameLogo({
 }: SnapFrameLogoProps) {
   return (
     <div className={cn("inline-flex items-center gap-2.5 select-none", className)}>
-      {/* Vector Icon Mark */}
+      {/* Sleek Layered Screens Mark */}
       <div
         style={{ width: size, height: size }}
-        className="relative shrink-0 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 p-[1.5px] shadow-md shadow-indigo-500/25 group-hover:shadow-indigo-500/40 group-hover:scale-105 transition-all duration-300"
+        className="relative shrink-0 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-[1.5px] shadow-sm shadow-indigo-500/20 group-hover:scale-105 group-hover:shadow-indigo-500/35 transition-all duration-200"
       >
-        <div className="w-full h-full rounded-[10px] bg-[#0c0d14] flex items-center justify-center overflow-hidden relative">
-          {/* Subtle Ambient Glow */}
-          <div className="absolute inset-0 bg-radial from-indigo-500/30 via-transparent to-transparent opacity-80" />
-
-          {/* SVG Emblem: Smartphone Frame + Aperture Snap */}
+        <div className="w-full h-full rounded-[10.5px] bg-card flex items-center justify-center overflow-hidden relative">
           <svg
-            viewBox="0 0 32 32"
+            viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className="w-[82%] h-[82%] relative z-10 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]"
+            className="w-[78%] h-[78%]"
           >
             <defs>
-              <linearGradient id="sf-grad-1" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#38bdf8" />
-                <stop offset="50%" stopColor="#818cf8" />
+              <linearGradient id="sf-grad" x1="3" y1="3" x2="21" y2="21" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#6366f1" />
+                <stop offset="50%" stopColor="#a855f7" />
                 <stop offset="100%" stopColor="#ec4899" />
-              </linearGradient>
-              <linearGradient id="sf-grad-2" x1="32" y1="0" x2="0" y2="32" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#a855f7" />
-                <stop offset="100%" stopColor="#38bdf8" />
               </linearGradient>
             </defs>
 
-            {/* Phone Silhouette Frame */}
+            {/* Back Card (Tilted layered screen) */}
             <rect
-              x="6.5"
-              y="2.5"
-              width="19"
-              height="27"
-              rx="4.5"
-              stroke="url(#sf-grad-1)"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              className="opacity-90"
-            />
-
-            {/* Dynamic Island / Top Notch */}
-            <line
-              x1="13"
-              y1="5.5"
-              x2="19"
-              y2="5.5"
-              stroke="url(#sf-grad-1)"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-
-            {/* Camera / Screenshot Aperture Iris in Center */}
-            <circle
-              cx="16"
-              cy="16.5"
-              r="6.2"
-              stroke="url(#sf-grad-2)"
-              strokeWidth="1.5"
-            />
-            
-            {/* Shutter Blade Diagonals */}
-            <path
-              d="M16 10.3L19.5 14M22.2 16.5L18.5 20M16 22.7L12.5 19M9.8 16.5L13.5 13"
-              stroke="url(#sf-grad-1)"
+              x="6"
+              y="2.8"
+              width="12"
+              height="16.5"
+              rx="2.5"
+              className="fill-indigo-500/25 stroke-indigo-400/60"
               strokeWidth="1.2"
-              strokeLinecap="round"
+              transform="rotate(7 12 11)"
             />
 
-            {/* Inner Focal Center */}
-            <circle
-              cx="16"
-              cy="16.5"
-              r="2.2"
-              fill="url(#sf-grad-1)"
+            {/* Front Card (Active Screen with gradient) */}
+            <rect
+              x="4.8"
+              y="4.2"
+              width="12.4"
+              height="16.8"
+              rx="2.8"
+              fill="url(#sf-grad)"
+            />
+
+            {/* Dynamic Island Pill */}
+            <rect
+              x="8.8"
+              y="5.8"
+              width="4.4"
+              height="1.2"
+              rx="0.6"
+              fill="white"
+              fillOpacity="0.9"
+            />
+
+            {/* Screen UI Highlights */}
+            <rect
+              x="7.2"
+              y="9"
+              width="7.6"
+              height="1.8"
+              rx="0.9"
+              fill="white"
+              fillOpacity="0.45"
+            />
+            <rect
+              x="7.2"
+              y="12.2"
+              width="5.2"
+              height="1.4"
+              rx="0.7"
+              fill="white"
+              fillOpacity="0.3"
             />
           </svg>
         </div>
       </div>
 
-      {/* Typography */}
+      {/* Brand Typography */}
       {withText && (
-        <div className="flex items-center gap-1.5">
-          <span
-            className={cn(
-              "font-extrabold text-base tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-300 dark:from-white dark:via-slate-100 dark:to-slate-300 bg-clip-text text-transparent",
-              textClassName
-            )}
-          >
-            Snap<span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Frame</span>
-          </span>
-        </div>
+        <span
+          className={cn(
+            "font-extrabold text-base tracking-tight text-foreground",
+            textClassName
+          )}
+        >
+          Snap<span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">Frame</span>
+        </span>
       )}
     </div>
   );
