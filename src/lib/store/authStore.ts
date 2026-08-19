@@ -5,7 +5,6 @@ import {
   signInAnonymously,
   signOut,
   onAuthStateChanged,
-  linkWithPopup,
 } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebase";
 import { toast } from "@/lib/store/toastStore";
@@ -89,16 +88,24 @@ export const useAuthStore = create<AuthState>((set, get) => {
         return result.user;
       } catch (error: any) {
         console.error("Google Sign-In Error:", error);
-        let message = error.message || "Failed to sign in with Google";
+        
+        // Handle user closing the popup gracefully without scary error banners
         if (error.code === "auth/popup-closed-by-user") {
-          message = "Sign-in popup was closed.";
+          set({ isLoading: false, authError: null });
+          return null;
+        }
+
+        let message = error.message || "Failed to sign in with Google";
+        if (error.code === "auth/popup-blocked") {
+          message = "Popup was blocked by your browser. Please allow popups to sign in.";
         } else if (error.code === "auth/account-exists-with-different-credential") {
-          message = "An account already exists with this email.";
+          message = "An account already exists with this email address.";
         } else if (error.code === "auth/configuration-not-found") {
           message = "Google Sign-In is not enabled yet in Firebase Console.";
         } else if (error.code === "auth/unauthorized-domain") {
-          message = "This domain is not authorized in Firebase Console.";
+          message = "This domain is not authorized in Firebase Console (add localhost in Authorized Domains).";
         }
+        
         set({ authError: message, isLoading: false });
         toast.error(message);
         return null;
@@ -123,14 +130,22 @@ export const useAuthStore = create<AuthState>((set, get) => {
         return result.user;
       } catch (error: any) {
         console.error("GitHub Sign-In Error:", error);
-        let message = error.message || "Failed to sign in with GitHub";
+
+        // Handle user closing the popup gracefully
         if (error.code === "auth/popup-closed-by-user") {
-          message = "Sign-in popup was closed.";
+          set({ isLoading: false, authError: null });
+          return null;
+        }
+
+        let message = error.message || "Failed to sign in with GitHub";
+        if (error.code === "auth/popup-blocked") {
+          message = "Popup was blocked by your browser. Please allow popups to sign in.";
         } else if (error.code === "auth/configuration-not-found") {
           message = "GitHub Sign-In is not enabled yet in Firebase Console.";
         } else if (error.code === "auth/unauthorized-domain") {
-          message = "This domain is not authorized in Firebase Console.";
+          message = "This domain is not authorized in Firebase Console (add localhost in Authorized Domains).";
         }
+
         set({ authError: message, isLoading: false });
         toast.error(message);
         return null;
@@ -181,55 +196,11 @@ export const useAuthStore = create<AuthState>((set, get) => {
     },
 
     linkWithGoogle: async () => {
-      try {
-        set({ isLoading: true, authError: null });
-        const { auth, googleProvider } = await getFirebaseAuth();
-        const currentUser = auth?.currentUser;
-
-        if (!auth || !googleProvider || !currentUser) {
-          return await get().signInWithGoogle();
-        }
-
-        const result = await linkWithPopup(currentUser, googleProvider);
-        set({ user: result.user, isLoading: false, isAuthModalOpen: false });
-        toast.success("Guest account successfully linked to Google!");
-        return result.user;
-      } catch (error: any) {
-        console.error("Link Google Error:", error);
-        // Fallback to direct sign-in if account already exists
-        if (error.code === "auth/credential-already-in-use") {
-          return await get().signInWithGoogle();
-        }
-        set({ authError: error.message, isLoading: false });
-        toast.error(error.message || "Failed to link Google account");
-        return null;
-      }
+      return await get().signInWithGoogle();
     },
 
     linkWithGithub: async () => {
-      try {
-        set({ isLoading: true, authError: null });
-        const { auth, githubProvider } = await getFirebaseAuth();
-        const currentUser = auth?.currentUser;
-
-        if (!auth || !githubProvider || !currentUser) {
-          return await get().signInWithGithub();
-        }
-
-        const result = await linkWithPopup(currentUser, githubProvider);
-        set({ user: result.user, isLoading: false, isAuthModalOpen: false });
-        toast.success("Guest account successfully linked to GitHub!");
-        return result.user;
-      } catch (error: any) {
-        console.error("Link GitHub Error:", error);
-        // Fallback to direct sign-in if account already exists
-        if (error.code === "auth/credential-already-in-use") {
-          return await get().signInWithGithub();
-        }
-        set({ authError: error.message, isLoading: false });
-        toast.error(error.message || "Failed to link GitHub account");
-        return null;
-      }
+      return await get().signInWithGithub();
     },
 
     signOutUser: async () => {
