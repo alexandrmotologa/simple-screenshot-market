@@ -184,29 +184,125 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
       }
     }
 
-    // ── Include Fastlane / App Store Connect Metadata Package ────────────────
+    // ── Include Store Listing & Fastlane Metadata Package ──────────────────
     if (zip && includeFastlane) {
       const fastlaneFolder = zip.folder("fastlane")?.folder("metadata");
+      const storeListingFolder = zip.folder("store_listing");
       const langsToExport = activeLangs.length > 0 ? activeLangs : ["en"];
+      const storeListingData = project?.storeListing || {};
+
+      const fullListingExport: Record<string, any> = {};
 
       langsToExport.forEach((lang) => {
         const langKey = lang.toLowerCase();
-        // iOS Fastlane metadata
-        const iosMeta = fastlaneFolder?.folder("ios")?.folder(langKey);
-        iosMeta?.file("name.txt", appName);
-        iosMeta?.file("subtitle.txt", "Transform your app screenshots");
-        iosMeta?.file("description.txt", `Welcome to ${appName}! Generate stunning high-conversion App Store and Google Play screenshots in seconds.`);
-        iosMeta?.file("keywords.txt", "screenshots, mockup, app store, generator, design, presentation");
-        iosMeta?.file("promotional_text.txt", `Get the latest version of ${appName} with multi-language support and panoramic export!`);
+        const langUpper = lang.toUpperCase();
+        const langListing = (storeListingData[lang] || storeListingData["en"] || {}) as {
+          ios?: Record<string, string>;
+          android?: Record<string, string>;
+        };
 
-        // Android Fastlane metadata
+        // iOS Listing
+        const iosData = langListing.ios || {};
+        const iosName = iosData.name || project?.name || appName;
+        const iosSubtitle = iosData.subtitle || "Transform your app screenshots";
+        const iosDescription = iosData.description || `Welcome to ${appName}! Generate stunning high-conversion App Store and Google Play screenshots in seconds.`;
+        const iosPromo = iosData.promotionalText || `Get the latest version of ${appName}!`;
+        const iosWhatsNew = iosData.whatsNew || "Bug fixes and performance improvements.";
+        const iosKeywords = "screenshots, mockup, app store, generator, design, presentation";
+
+        // Android Listing
+        const androidData = langListing.android || {};
+        const androidTitle = androidData.title || project?.name || appName;
+        const androidShort = androidData.shortDescription || "Stunning App Store & Play Store screenshots";
+        const androidFull = androidData.fullDescription || `${appName} empowers indie developers and designers to build beautiful store listing screenshots.`;
+        const androidWhatsNew = androidData.whatsNew || "Bug fixes and performance improvements.";
+
+        fullListingExport[lang] = {
+          ios: {
+            name: iosName,
+            subtitle: iosSubtitle,
+            description: iosDescription,
+            promotionalText: iosPromo,
+            whatsNew: iosWhatsNew,
+            keywords: iosKeywords,
+          },
+          android: {
+            title: androidTitle,
+            shortDescription: androidShort,
+            fullDescription: androidFull,
+            whatsNew: androidWhatsNew,
+          },
+        };
+
+        // 1. Fastlane iOS folder
+        const iosMeta = fastlaneFolder?.folder("ios")?.folder(langKey);
+        iosMeta?.file("name.txt", iosName);
+        iosMeta?.file("subtitle.txt", iosSubtitle);
+        iosMeta?.file("description.txt", iosDescription);
+        iosMeta?.file("keywords.txt", iosKeywords);
+        iosMeta?.file("promotional_text.txt", iosPromo);
+        iosMeta?.file("release_notes.txt", iosWhatsNew);
+
+        // 2. Fastlane Android folder
         const androidMeta = fastlaneFolder?.folder("android")?.folder(langKey);
-        androidMeta?.file("title.txt", appName);
-        androidMeta?.file("short_description.txt", "Stunning App Store & Play Store screenshots");
-        androidMeta?.file("full_description.txt", `${appName} empowers indie developers and designers to build beautiful store listing screenshots.`);
+        androidMeta?.file("title.txt", androidTitle);
+        androidMeta?.file("short_description.txt", androidShort);
+        androidMeta?.file("full_description.txt", androidFull);
+        androidMeta?.folder("changelogs")?.file("default.txt", androidWhatsNew);
+
+        // 3. Human-readable text files for easy manual copy-paste
+        const appStoreText = [
+          `==================================================`,
+          `  APP STORE CONNECT METADATA (${langUpper})`,
+          `==================================================`,
+          ``,
+          `[App Name] (Max 30 chars):`,
+          iosName,
+          ``,
+          `[Subtitle] (Max 30 chars):`,
+          iosSubtitle,
+          ``,
+          `[Promotional Text] (Max 170 chars):`,
+          iosPromo,
+          ``,
+          `[Keywords] (Max 100 chars):`,
+          iosKeywords,
+          ``,
+          `[What's New / Release Notes]:`,
+          iosWhatsNew,
+          ``,
+          `[Description] (Max 4000 chars):`,
+          iosDescription,
+          ``,
+        ].join("\n");
+
+        const googlePlayText = [
+          `==================================================`,
+          `  GOOGLE PLAY CONSOLE METADATA (${langUpper})`,
+          `==================================================`,
+          ``,
+          `[App Title] (Max 30 chars):`,
+          androidTitle,
+          ``,
+          `[Short Description] (Max 80 chars):`,
+          androidShort,
+          ``,
+          `[What's New / Release Notes] (Max 500 chars):`,
+          androidWhatsNew,
+          ``,
+          `[Full Description] (Max 4000 chars):`,
+          androidFull,
+          ``,
+        ].join("\n");
+
+        storeListingFolder?.file(`App_Store_Listing_${langUpper}.txt`, appStoreText);
+        storeListingFolder?.file(`Google_Play_Listing_${langUpper}.txt`, googlePlayText);
       });
 
-      // metadata.json manifest
+      // JSON Dump for programmatic automation
+      storeListingFolder?.file("store_listing.json", JSON.stringify(fullListingExport, null, 2));
+
+      // metadata.json manifest in zip root
       zip.file("metadata.json", JSON.stringify({
         appName,
         exportedAt: new Date().toISOString(),
@@ -221,6 +317,7 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
           screensCount: s.screens.length,
         })),
         languages: langsToExport,
+        storeListing: fullListingExport,
         totalScreens: exported,
         guidelinesCompliant: true,
       }, null, 2));
@@ -429,9 +526,9 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 font-semibold text-foreground">
                 <FileText className="w-3.5 h-3.5 text-primary" />
-                <span>Include Fastlane & App Store Connect Metadata</span>
+                <span>Include Store Listing & Fastlane Metadata Package</span>
               </div>
-              <p className="text-[11px] text-muted-foreground">Generates structured `fastlane/metadata/` folders + `metadata.json` manifest</p>
+              <p className="text-[11px] text-muted-foreground">Generates ready-to-use Title, Subtitle, Descriptions, and What&apos;s New in both Fastlane &amp; human-readable .txt files</p>
             </div>
           </label>
 
