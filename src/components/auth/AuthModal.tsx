@@ -1,10 +1,11 @@
 "use client";
 
-import { X, Loader2, Sparkles, User as UserIcon, ShieldCheck, ArrowRight, AlertCircle } from "lucide-react";
+import { useState } from "react";
+import { X, Loader2, Sparkles, User as UserIcon, ShieldCheck, ArrowRight, AlertCircle, ExternalLink } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
-import { Button } from "@/components/ui/button";
 
 export function AuthModal() {
+  const [useDirectRedirect, setUseDirectRedirect] = useState(false);
   const {
     isAuthModalOpen,
     setAuthModalOpen,
@@ -21,6 +22,22 @@ export function AuthModal() {
   if (!isAuthModalOpen) return null;
 
   const isAnonymous = user && user.isAnonymous;
+
+  const handleGoogle = () => {
+    if (isAnonymous) {
+      linkWithGoogle();
+    } else {
+      signInWithGoogle(useDirectRedirect);
+    }
+  };
+
+  const handleGithub = () => {
+    if (isAnonymous) {
+      linkWithGithub();
+    } else {
+      signInWithGithub(useDirectRedirect);
+    }
+  };
 
   return (
     <div
@@ -74,23 +91,58 @@ export function AuthModal() {
             <button
               type="button"
               disabled={isLoading}
-              onClick={() => (isAnonymous ? linkWithGoogle() : signInWithGoogle())}
+              onClick={handleGoogle}
               className="w-full h-11 px-4 rounded-xl border border-border/80 bg-secondary/50 hover:bg-secondary hover:border-border text-foreground text-xs font-semibold flex items-center justify-center gap-3 transition-all cursor-pointer shadow-xs active:scale-[0.99] disabled:opacity-50"
             >
-              <GoogleIcon className="w-4 h-4 shrink-0" />
-              <span>{isAnonymous ? "Link Google Account" : "Continue with Google"}</span>
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin text-primary" />
+              ) : (
+                <GoogleIcon className="w-4 h-4 shrink-0" />
+              )}
+              <span>
+                {isLoading
+                  ? "Signing in..."
+                  : isAnonymous
+                  ? "Link Google Account"
+                  : useDirectRedirect
+                  ? "Sign In with Google (Direct)"
+                  : "Continue with Google"}
+              </span>
             </button>
 
             {/* GitHub Sign In */}
             <button
               type="button"
               disabled={isLoading}
-              onClick={() => (isAnonymous ? linkWithGithub() : signInWithGithub())}
+              onClick={handleGithub}
               className="w-full h-11 px-4 rounded-xl border border-border/80 bg-secondary/50 hover:bg-secondary hover:border-border text-foreground text-xs font-semibold flex items-center justify-center gap-3 transition-all cursor-pointer shadow-xs active:scale-[0.99] disabled:opacity-50"
             >
-              <GithubIcon className="w-4 h-4 shrink-0" />
-              <span>{isAnonymous ? "Link GitHub Account" : "Continue with GitHub"}</span>
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin text-primary" />
+              ) : (
+                <GithubIcon className="w-4 h-4 shrink-0" />
+              )}
+              <span>
+                {isLoading
+                  ? "Signing in..."
+                  : isAnonymous
+                  ? "Link GitHub Account"
+                  : useDirectRedirect
+                  ? "Sign In with GitHub (Direct)"
+                  : "Continue with GitHub"}
+              </span>
             </button>
+
+            {/* Direct Redirect Toggle */}
+            <div className="flex items-center justify-center pt-1">
+              <button
+                type="button"
+                onClick={() => setUseDirectRedirect(!useDirectRedirect)}
+                className="text-[11px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <span>{useDirectRedirect ? "✓ Using Direct Redirect mode" : "Popups slow? Switch to Direct Redirect"}</span>
+              </button>
+            </div>
 
             {/* Anonymous / Guest Mode Option */}
             {!user && (
