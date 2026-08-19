@@ -19,6 +19,8 @@ import { Project, Screen } from "@/lib/types";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ConfirmActionModal } from "@/components/dashboard/ConfirmActionModal";
 import { Footer } from "@/components/dashboard/Footer";
+import { UserMenu } from "@/components/auth/UserMenu";
+import { AuthModal } from "@/components/auth/AuthModal";
 
 // ── Mini Canvas Thumbnail with Real Screen Render & Multi-Screen Stack ────────
 function ProjectThumbnail({ project }: { project: Project }) {
@@ -601,13 +603,14 @@ export default function DashboardPage() {
             <Button
               variant="ghost"
               size="sm"
-              className="text-muted-foreground"
+              className="text-muted-foreground hidden sm:flex"
               onClick={() => window.open("https://github.com/alexandrmotologa/simple-screenshot-market", "_blank")}
             >
               <Globe className="w-4 h-4 mr-1.5" />
               GitHub
             </Button>
             <ThemeToggle />
+            <UserMenu />
           </div>
         </div>
       </header>
@@ -930,6 +933,8 @@ export default function DashboardPage() {
           onRename={handleRename}
         />
       )}
+
+      <AuthModal />
     </div>
   );
 }

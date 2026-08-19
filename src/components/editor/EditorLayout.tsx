@@ -22,6 +22,8 @@ import { ExportModal } from "@/components/editor/ExportModal";
 import { GifExportModal } from "@/components/editor/GifExportModal";
 import { AIAutoPilotModal } from "@/components/editor/AIAutoPilotModal";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { UserMenu } from "@/components/auth/UserMenu";
+import { AuthModal } from "@/components/auth/AuthModal";
 import { ScreenshotLayer } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -421,6 +423,9 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
           {/* Theme Toggle */}
           <ThemeToggle />
 
+          {/* User Profile / Auth */}
+          <UserMenu />
+
           {/* Store Simulator Preview */}
           <button
             type="button"
@@ -500,6 +505,7 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
       {showShortcuts && (
         <KeyboardShortcutsModal open={showShortcuts} onClose={() => setShowShortcuts(false)} />
       )}
+      <AuthModal />
     </div>
   );
 }
