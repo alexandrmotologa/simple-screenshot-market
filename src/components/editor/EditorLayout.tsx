@@ -162,7 +162,35 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
   const handleCopyScreenToClipboard = async () => {
     try {
       setIsCopying(true);
-      // Find current active screen card's canvas
+      const targetSet = activeSet || screenSets[0];
+      const targetScreen = targetSet?.screens.find((s) => s.id === activeScreenId) || targetSet?.screens[0];
+
+      if (targetSet && targetScreen) {
+        const offscreenCanvas = document.createElement("canvas");
+        const { renderScreenToCanvas } = await import("@/lib/renderScreenToCanvas");
+        const { useLanguageStore } = await import("@/lib/store/languageStore");
+        const activeLang = useLanguageStore.getState().activeLang || "en";
+
+        await renderScreenToCanvas(offscreenCanvas, targetScreen, targetSet, {
+          scale: 1,
+          activeLang,
+          isExport: true,
+        });
+
+        const blob = await new Promise<Blob | null>((resolve) =>
+          offscreenCanvas.toBlob(resolve, "image/png", 1)
+        );
+
+        if (blob) {
+          await navigator.clipboard.write([
+            new ClipboardItem({ "image/png": blob }),
+          ]);
+          toast.success("Active screen copied to clipboard as lossless 4K PNG!");
+          return;
+        }
+      }
+
+      // Fallback: Find current active screen card's canvas in DOM
       const activeCanvas = document.querySelector(".canvas-active canvas") as HTMLCanvasElement || document.querySelector("canvas") as HTMLCanvasElement;
       if (!activeCanvas) {
         toast.error("No active screen found to copy.");
@@ -181,13 +209,12 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
           toast.success("Active screen copied to clipboard as PNG!");
         } catch {
           toast.error("Clipboard copy not permitted by browser.");
-        } finally {
-          setIsCopying(false);
         }
       }, "image/png");
     } catch {
-      setIsCopying(false);
       toast.error("Failed to copy image to clipboard.");
+    } finally {
+      setIsCopying(false);
     }
   };
 

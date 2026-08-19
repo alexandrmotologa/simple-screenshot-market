@@ -4,19 +4,22 @@ import { useState, useRef, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { useProjectStore } from "@/lib/store/projectStore";
-import { AppleStoreIcon, GooglePlayIcon, APP_STORE_LABEL, GOOGLE_PLAY_LABEL } from "@/components/icons/StoreIcons";
+import { useLanguageStore, getLang } from "@/lib/store/languageStore";
+import { AppleStoreIcon, GooglePlayIcon } from "@/components/icons/StoreIcons";
 import {
-  Smartphone, Share2, Star, Download, Sparkles,
+  Smartphone, Tablet, Share2, Star, Sparkles,
   ChevronLeft, ChevronRight, Moon, Sun, ArrowLeft, MoreVertical,
-  CheckCircle2, ShieldCheck, Award
+  Edit3, Check, Globe, Upload, Image as ImageIcon,
+  ShieldCheck, Award, ThumbsUp, RefreshCw
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScreenThumbnailCanvas } from "@/components/editor/ScreenThumbnailCanvas";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface StorePreviewModalProps {
   open: boolean;
@@ -24,12 +27,27 @@ interface StorePreviewModalProps {
   appName?: string;
 }
 
-export function StorePreviewModal({ open, onOpenChange, appName = "My Awesome App" }: StorePreviewModalProps) {
+export function StorePreviewModal({ open, onOpenChange, appName: initialAppName = "My Awesome App" }: StorePreviewModalProps) {
   const { screenSets, activeSetId } = useEditorStore();
+  const { projectLanguages, activeLang } = useLanguageStore();
 
   const [platform, setPlatform] = useState<"ios" | "android">("ios");
+  const [deviceType, setDeviceType] = useState<"phone" | "tablet">("phone");
   const [storeTheme, setStoreTheme] = useState<"dark" | "light">("dark");
+  const [selectedLang, setSelectedLang] = useState<string>(activeLang || "en");
+  
+  // Customizable Store Metadata
+  const [isEditingInfo, setIsEditingInfo] = useState(false);
+  const [appName, setAppName] = useState(initialAppName);
+  const [appSubtitle, setAppSubtitle] = useState("Productivity & Design Studio");
+  const [developerName, setDeveloperName] = useState("NextGen Studio LLC");
+  const [ratingScore, setRatingScore] = useState("4.9");
+  const [ratingCount, setRatingCount] = useState("128K");
+  const [priceTag, setPriceTag] = useState("GET");
+  const [iconUrl, setIconUrl] = useState<string | null>(null);
+
   const scrollRef = useRef<HTMLDivElement>(null);
+  const iconInputRef = useRef<HTMLInputElement>(null);
 
   // Derive active set matching selected platform
   const activeSet = screenSets.find((s) => s.store === platform) || screenSets[0];
@@ -43,8 +61,11 @@ export function StorePreviewModal({ open, onOpenChange, appName = "My Awesome Ap
     }
   }, [activeSetId, screenSets, open]);
 
-  const appSubtitle = platform === "ios" ? "Productivity & Design Tools" : "Top Rated • Tools & Design";
-  const developerName = "NextGen Studio LLC";
+  useEffect(() => {
+    if (initialAppName) {
+      setAppName(initialAppName);
+    }
+  }, [initialAppName]);
 
   const scrollBy = (offset: number) => {
     if (scrollRef.current) {
@@ -52,20 +73,67 @@ export function StorePreviewModal({ open, onOpenChange, appName = "My Awesome Ap
     }
   };
 
+  const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setIconUrl(url);
+    }
+  };
+
+  const isTablet = deviceType === "tablet";
+  const cardWidth = isTablet ? 320 : 210;
+  const cardHeight = isTablet ? 426 : 455;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[92vh] flex flex-col p-0 overflow-hidden border border-border/70 rounded-2xl bg-card shadow-2xl">
+      <DialogContent className="max-w-5xl max-h-[94vh] flex flex-col p-0 overflow-hidden border border-border/70 rounded-2xl bg-card shadow-2xl">
         {/* Modal Top Control Bar */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-border/50 bg-secondary/60 shrink-0">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-border/50 bg-secondary/60 shrink-0">
           <div className="flex items-center gap-2">
-            <Smartphone className="w-4 h-4 text-primary" />
-            <DialogTitle className="text-sm font-bold text-foreground">
-              Live Store Listing Simulator
-            </DialogTitle>
+            <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center text-primary">
+              <Smartphone className="w-4 h-4" />
+            </div>
+            <div>
+              <DialogTitle className="text-sm font-bold text-foreground leading-tight">
+                Live Store Listing Simulator
+              </DialogTitle>
+              <p className="text-[10px] text-muted-foreground">App Store & Google Play Real-Time Preview</p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Platform Toggle */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Multi-Language Selector */}
+            {projectLanguages.length > 1 && (
+              <div className="flex items-center gap-1 bg-background/80 border border-border/60 rounded-xl px-2 py-1 shadow-xs">
+                <Globe className="w-3.5 h-3.5 text-muted-foreground" />
+                <span className="text-[11px] font-medium text-muted-foreground mr-1">Lang:</span>
+                <div className="flex gap-1">
+                  {projectLanguages.map((code) => {
+                    const lang = getLang(code);
+                    const isSelected = selectedLang === code;
+                    return (
+                      <button
+                        key={code}
+                        type="button"
+                        onClick={() => setSelectedLang(code)}
+                        className={cn(
+                          "px-2 py-0.5 rounded-lg text-xs font-semibold uppercase transition-all cursor-pointer",
+                          isSelected
+                            ? "bg-primary text-primary-foreground shadow-xs"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                        title={lang?.name}
+                      >
+                        {code}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Platform Toggle (App Store vs Google Play) */}
             <div className="flex items-center p-0.5 rounded-xl bg-background border border-border/50 shadow-xs">
               <button
                 type="button"
@@ -95,7 +163,54 @@ export function StorePreviewModal({ open, onOpenChange, appName = "My Awesome Ap
               </button>
             </div>
 
-            {/* Store Theme Toggle */}
+            {/* Device Form Factor (Phone vs Tablet / iPad) */}
+            <div className="flex items-center p-0.5 rounded-xl bg-background border border-border/50 shadow-xs">
+              <button
+                type="button"
+                onClick={() => setDeviceType("phone")}
+                className={cn(
+                  "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+                  deviceType === "phone"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                title="Phone Screen Layout"
+              >
+                <Smartphone className="w-3.5 h-3.5" />
+                <span>Phone</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setDeviceType("tablet")}
+                className={cn(
+                  "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+                  deviceType === "tablet"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                title="iPad / Tablet Layout"
+              >
+                <Tablet className="w-3.5 h-3.5" />
+                <span>Tablet</span>
+              </button>
+            </div>
+
+            {/* Edit Metadata Toggle */}
+            <button
+              type="button"
+              onClick={() => setIsEditingInfo(!isEditingInfo)}
+              className={cn(
+                "flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold border transition-all cursor-pointer shadow-xs",
+                isEditingInfo
+                  ? "bg-indigo-600 text-white border-indigo-500 shadow-sm"
+                  : "bg-background hover:bg-secondary border-border/50 text-foreground"
+              )}
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>{isEditingInfo ? "Close Edit" : "Edit Info"}</span>
+            </button>
+
+            {/* Store Theme Toggle (Light / Dark) */}
             <button
               type="button"
               onClick={() => setStoreTheme((t) => (t === "dark" ? "light" : "dark"))}
@@ -107,11 +222,81 @@ export function StorePreviewModal({ open, onOpenChange, appName = "My Awesome Ap
           </div>
         </div>
 
+        {/* Live Metadata Edit Panel (Collapsible) */}
+        {isEditingInfo && (
+          <div className="bg-secondary/40 border-b border-border/60 px-5 py-3.5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 animate-in slide-in-from-top-2 duration-200">
+            <div>
+              <label className="text-[11px] font-semibold text-muted-foreground block mb-1">App Name</label>
+              <Input
+                value={appName}
+                onChange={(e) => setAppName(e.target.value)}
+                placeholder="My App"
+                className="h-8 text-xs bg-background"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold text-muted-foreground block mb-1">Tagline / Subtitle</label>
+              <Input
+                value={appSubtitle}
+                onChange={(e) => setAppSubtitle(e.target.value)}
+                placeholder="Category & Features"
+                className="h-8 text-xs bg-background"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold text-muted-foreground block mb-1">Developer Studio</label>
+              <Input
+                value={developerName}
+                onChange={(e) => setDeveloperName(e.target.value)}
+                placeholder="Developer Name"
+                className="h-8 text-xs bg-background"
+              />
+            </div>
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <label className="text-[11px] font-semibold text-muted-foreground block mb-1">Rating & Count</label>
+                <div className="flex gap-1">
+                  <Input
+                    value={ratingScore}
+                    onChange={(e) => setRatingScore(e.target.value)}
+                    className="h-8 text-xs bg-background w-14"
+                  />
+                  <Input
+                    value={ratingCount}
+                    onChange={(e) => setRatingCount(e.target.value)}
+                    className="h-8 text-xs bg-background flex-1"
+                  />
+                </div>
+              </div>
+              <div>
+                <input
+                  ref={iconInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleIconUpload}
+                  className="hidden"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => iconInputRef.current?.click()}
+                  className="h-8 text-xs gap-1.5 px-2.5 cursor-pointer"
+                  title="Upload custom App Icon"
+                >
+                  <Upload className="w-3 h-3" />
+                  <span>Icon</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Store Frame Container */}
         <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 flex justify-center bg-muted/20">
           <div
             className={cn(
-              "w-full max-w-2xl rounded-3xl border overflow-hidden shadow-2xl transition-colors duration-200 flex flex-col",
+              "w-full rounded-3xl border overflow-hidden shadow-2xl transition-all duration-200 flex flex-col",
+              isTablet ? "max-w-4xl" : "max-w-2xl",
               storeTheme === "dark"
                 ? "bg-[#000000] text-white border-zinc-800"
                 : "bg-[#ffffff] text-zinc-900 border-zinc-200"
@@ -121,7 +306,7 @@ export function StorePreviewModal({ open, onOpenChange, appName = "My Awesome Ap
             {platform === "ios" ? (
               <div className="flex flex-col p-4 sm:p-6 space-y-5">
                 {/* Store Top Bar */}
-                <div className="flex items-center justify-between text-sky-500 text-xs font-medium pb-2">
+                <div className="flex items-center justify-between text-sky-500 text-xs font-medium pb-2 border-b border-border/20">
                   <div className="flex items-center gap-1 cursor-pointer hover:opacity-80">
                     <ChevronLeft className="w-4 h-4" />
                     <span>Search</span>
@@ -134,8 +319,12 @@ export function StorePreviewModal({ open, onOpenChange, appName = "My Awesome Ap
                 {/* App Header Info */}
                 <div className="flex gap-4 items-start">
                   {/* App Icon */}
-                  <div className="w-24 h-24 rounded-[22px] bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-md p-0.5 shrink-0 flex items-center justify-center text-white font-black text-2xl tracking-tighter">
-                    <Sparkles className="w-10 h-10 text-white" />
+                  <div className="w-24 h-24 rounded-[22px] bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-md overflow-hidden shrink-0 flex items-center justify-center text-white font-black text-2xl tracking-tighter">
+                    {iconUrl ? (
+                      <img src={iconUrl} alt="App Icon" className="w-full h-full object-cover" />
+                    ) : (
+                      <Sparkles className="w-10 h-10 text-white" />
+                    )}
                   </div>
 
                   {/* App Metadata */}
@@ -153,7 +342,7 @@ export function StorePreviewModal({ open, onOpenChange, appName = "My Awesome Ap
                         type="button"
                         className="px-6 py-1.5 rounded-full bg-sky-500 hover:bg-sky-400 text-white text-xs font-bold transition-all uppercase tracking-wide cursor-pointer shadow-sm"
                       >
-                        GET
+                        {priceTag}
                       </button>
                       <span className={cn("text-[9px]", storeTheme === "dark" ? "text-zinc-500" : "text-zinc-400")}>
                         In-App Purchases
@@ -166,10 +355,10 @@ export function StorePreviewModal({ open, onOpenChange, appName = "My Awesome Ap
                 <div className={cn("grid grid-cols-3 py-2.5 px-3 rounded-xl border text-center", storeTheme === "dark" ? "bg-zinc-900/60 border-zinc-800" : "bg-zinc-100/70 border-zinc-200")}>
                   <div className="flex flex-col items-center justify-center border-r border-border/40">
                     <span className={cn("text-[9.5px] font-semibold uppercase", storeTheme === "dark" ? "text-zinc-400" : "text-zinc-500")}>
-                      128K RATINGS
+                      {ratingCount} RATINGS
                     </span>
                     <span className="text-sm font-bold flex items-center gap-1 mt-0.5">
-                      4.9 <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                      {ratingScore} <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                     </span>
                   </div>
 
@@ -193,19 +382,24 @@ export function StorePreviewModal({ open, onOpenChange, appName = "My Awesome Ap
                 {/* Screenshot Carousel Section */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold tracking-tight">Screenshots</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-bold tracking-tight">Screenshots</h3>
+                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-secondary/80 text-muted-foreground font-medium uppercase">
+                        {isTablet ? "iPad 12.9\"" : "iPhone"}
+                      </span>
+                    </div>
                     <div className="flex items-center gap-1">
                       <button
                         type="button"
-                        onClick={() => scrollBy(-260)}
-                        className="w-7 h-7 rounded-full border border-border/40 flex items-center justify-center hover:bg-secondary transition-colors"
+                        onClick={() => scrollBy(-cardWidth * 1.2)}
+                        className="w-7 h-7 rounded-full border border-border/40 flex items-center justify-center hover:bg-secondary transition-colors cursor-pointer"
                       >
                         <ChevronLeft className="w-4 h-4" />
                       </button>
                       <button
                         type="button"
-                        onClick={() => scrollBy(260)}
-                        className="w-7 h-7 rounded-full border border-border/40 flex items-center justify-center hover:bg-secondary transition-colors"
+                        onClick={() => scrollBy(cardWidth * 1.2)}
+                        className="w-7 h-7 rounded-full border border-border/40 flex items-center justify-center hover:bg-secondary transition-colors cursor-pointer"
                       >
                         <ChevronRight className="w-4 h-4" />
                       </button>
@@ -221,13 +415,14 @@ export function StorePreviewModal({ open, onOpenChange, appName = "My Awesome Ap
                       <div
                         key={screen.id}
                         className="snap-start shrink-0 rounded-2xl overflow-hidden border border-zinc-800/80 shadow-lg transition-transform hover:scale-[1.01] bg-card/60"
-                        style={{ width: "210px", height: "455px" }}
+                        style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
                       >
                         <ScreenThumbnailCanvas
                           screen={screen}
                           screenSet={activeSet}
-                          width={210}
-                          height={455}
+                          width={cardWidth}
+                          height={cardHeight}
+                          activeLang={selectedLang}
                         />
                       </div>
                     ))}
@@ -238,12 +433,12 @@ export function StorePreviewModal({ open, onOpenChange, appName = "My Awesome Ap
                 <div className={cn("p-3.5 rounded-2xl border space-y-1.5", storeTheme === "dark" ? "bg-zinc-900/40 border-zinc-800" : "bg-zinc-50 border-zinc-200")}>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold">What&apos;s New</span>
-                    <span className="text-[10px] text-sky-500 font-medium">Version 2.4.0</span>
+                    <span className="text-[10px] text-sky-500 font-medium">Version 2.5.0</span>
                   </div>
                   <p className={cn("text-[11px] leading-relaxed", storeTheme === "dark" ? "text-zinc-400" : "text-zinc-600")}>
-                    • Added ultra-wide panoramic continuous carousel support.<br />
-                    • Enhanced high-resolution export for iPhone 17 Pro Max.<br />
-                    • Performance and smoothness improvements.
+                    • Enhanced titanium frame precision and studio reflections.<br />
+                    • Multi-language localized screenshot rendering support.<br />
+                    • 100% App Store submission guidelines validation.
                   </p>
                 </div>
               </div>
@@ -251,7 +446,7 @@ export function StorePreviewModal({ open, onOpenChange, appName = "My Awesome Ap
               /* Google Play Store Layout */
               <div className="flex flex-col p-4 sm:p-6 space-y-5">
                 {/* Play Store Top Bar */}
-                <div className="flex items-center justify-between text-xs font-medium pb-2">
+                <div className="flex items-center justify-between text-xs font-medium pb-2 border-b border-border/20">
                   <div className="flex items-center gap-3 cursor-pointer">
                     <ArrowLeft className="w-4 h-4" />
                     <span className="font-bold text-sm">Google Play</span>
@@ -264,8 +459,12 @@ export function StorePreviewModal({ open, onOpenChange, appName = "My Awesome Ap
 
                 {/* App Header Info */}
                 <div className="flex gap-4 items-start">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 shadow-md shrink-0 flex items-center justify-center text-white">
-                    <Sparkles className="w-9 h-9" />
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 shadow-md overflow-hidden shrink-0 flex items-center justify-center text-white">
+                    {iconUrl ? (
+                      <img src={iconUrl} alt="App Icon" className="w-full h-full object-cover" />
+                    ) : (
+                      <Sparkles className="w-9 h-9" />
+                    )}
                   </div>
 
                   <div className="flex-1 min-w-0 space-y-1">
@@ -285,10 +484,10 @@ export function StorePreviewModal({ open, onOpenChange, appName = "My Awesome Ap
                 <div className="flex items-center justify-between px-2 text-center">
                   <div className="flex flex-col items-center">
                     <span className="text-xs font-bold flex items-center gap-1">
-                      4.9 <Star className="w-2.5 h-2.5 fill-current text-emerald-500" />
+                      {ratingScore} <Star className="w-2.5 h-2.5 fill-current text-emerald-500" />
                     </span>
                     <span className={cn("text-[9px]", storeTheme === "dark" ? "text-zinc-400" : "text-zinc-500")}>
-                      120K reviews
+                      {ratingCount} reviews
                     </span>
                   </div>
                   <div className="h-6 w-px bg-border/40" />
@@ -318,19 +517,19 @@ export function StorePreviewModal({ open, onOpenChange, appName = "My Awesome Ap
                 {/* Screenshots Carousel */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold">Phone</span>
+                    <span className="text-xs font-bold">{isTablet ? "Tablet" : "Phone"}</span>
                     <div className="flex items-center gap-1">
                       <button
                         type="button"
-                        onClick={() => scrollBy(-260)}
-                        className="w-7 h-7 rounded-full border border-border/40 flex items-center justify-center hover:bg-secondary transition-colors"
+                        onClick={() => scrollBy(-cardWidth * 1.2)}
+                        className="w-7 h-7 rounded-full border border-border/40 flex items-center justify-center hover:bg-secondary transition-colors cursor-pointer"
                       >
                         <ChevronLeft className="w-4 h-4" />
                       </button>
                       <button
                         type="button"
-                        onClick={() => scrollBy(260)}
-                        className="w-7 h-7 rounded-full border border-border/40 flex items-center justify-center hover:bg-secondary transition-colors"
+                        onClick={() => scrollBy(cardWidth * 1.2)}
+                        className="w-7 h-7 rounded-full border border-border/40 flex items-center justify-center hover:bg-secondary transition-colors cursor-pointer"
                       >
                         <ChevronRight className="w-4 h-4" />
                       </button>
@@ -346,13 +545,14 @@ export function StorePreviewModal({ open, onOpenChange, appName = "My Awesome Ap
                       <div
                         key={screen.id}
                         className="snap-start shrink-0 rounded-2xl overflow-hidden border border-zinc-800/80 shadow-lg transition-transform hover:scale-[1.01] bg-card/60"
-                        style={{ width: "210px", height: "455px" }}
+                        style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
                       >
                         <ScreenThumbnailCanvas
                           screen={screen}
                           screenSet={activeSet}
-                          width={210}
-                          height={455}
+                          width={cardWidth}
+                          height={cardHeight}
+                          activeLang={selectedLang}
                         />
                       </div>
                     ))}

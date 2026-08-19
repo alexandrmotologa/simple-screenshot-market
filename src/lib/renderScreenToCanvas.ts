@@ -933,80 +933,308 @@ export async function renderScreenToCanvas(
         ctx.closePath();
         ctx.fill(); applyStroke();
 
+      } else if (sl.shape === "crescent") {
+        ctx.beginPath();
+        ctx.arc(cx2, cy2, Math.min(hw, hh), Math.PI * 0.2, Math.PI * 1.8);
+        ctx.arc(cx2 - hw * 0.3, cy2, Math.min(hw, hh) * 0.8, Math.PI * 1.8, Math.PI * 0.2, true);
+        ctx.closePath();
+        ctx.fill(); applyStroke();
+
+      } else if (sl.shape === "arrowRight") {
+        const aw = sl.width;
+        const ah = sl.height;
+        const arrowHead = aw * 0.4;
+        const stemH = ah * 0.35;
+        ctx.beginPath();
+        ctx.moveTo(sl.x, cy2 - stemH);
+        ctx.lineTo(sl.x + aw - arrowHead, cy2 - stemH);
+        ctx.lineTo(sl.x + aw - arrowHead, sl.y);
+        ctx.lineTo(sl.x + aw, cy2);
+        ctx.lineTo(sl.x + aw - arrowHead, sl.y + ah);
+        ctx.lineTo(sl.x + aw - arrowHead, cy2 + stemH);
+        ctx.lineTo(sl.x, cy2 + stemH);
+        ctx.closePath();
+        ctx.fill(); applyStroke();
+
+      } else if (
+        sl.shape === "appstore-badge" ||
+        sl.shape === "appstore-dark" ||
+        sl.shape === "appstore-light" ||
+        sl.shape === "googleplay-badge" ||
+        sl.shape === "googleplay-dark" ||
+        sl.shape === "googleplay-light"
+      ) {
+        const isAppStore = sl.shape.startsWith("appstore");
+        const isLight = sl.shape.includes("light");
+        const badgeSrc = isAppStore
+          ? isLight ? "/badges/appstore-light.svg" : "/badges/appstore-dark.svg"
+          : isLight ? "/badges/googleplay-light.svg" : "/badges/googleplay-dark.svg";
+
+        try {
+          const badgeImg = await loadCachedImage(badgeSrc);
+          ctx.drawImage(badgeImg, sl.x, sl.y, sl.width, sl.height);
+        } catch {
+          ctx.fillStyle = isLight ? "#FFFFFF" : "#000000";
+          ctx.beginPath();
+          ctx.roundRect(sl.x, sl.y, sl.width, sl.height, Math.min(sl.width, sl.height) * 0.2);
+          ctx.fill();
+        }
+
       } else if (sl.shape === "rating-badge") {
         const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
-        const br = sl.cornerRadius !== undefined ? sl.cornerRadius : bh / 2;
+        const maxR = Math.min(bw, bh) / 2;
+        const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : maxR;
+
         ctx.beginPath();
         ctx.roundRect(bx, by, bw, bh, br);
         ctx.fillStyle = sl.fill ?? "rgba(15,23,42,0.85)";
         ctx.fill();
         applyStroke();
+
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.font = `700 ${bh * 0.42}px "Inter", sans-serif`;
         ctx.fillStyle = "#F59E0B";
         ctx.fillText(sl.subtext || "★★★★★", bx + bw * 0.32, by + bh / 2 + 1);
+
         ctx.font = `600 ${bh * 0.35}px "Inter", sans-serif`;
         ctx.fillStyle = "#FFFFFF";
         ctx.fillText(sl.text || "4.9 (100k+)", bx + bw * 0.74, by + bh / 2);
 
       } else if (sl.shape === "award-badge") {
         const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
-        const br = sl.cornerRadius !== undefined ? sl.cornerRadius : bh / 2;
+        const maxR = Math.min(bw, bh) / 2;
+        const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : maxR;
+
         ctx.beginPath();
         ctx.roundRect(bx, by, bw, bh, br);
         ctx.fillStyle = sl.fill ?? "#1e1b4b";
         ctx.fill();
         applyStroke();
+
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.font = `${bh * 0.5}px serif`;
         ctx.fillText(sl.subtext || "🏆", bx + bh * 0.45, by + bh / 2);
+
         ctx.font = `700 ${bh * 0.34}px "Inter", sans-serif`;
         ctx.fillStyle = "#FBBF24";
         ctx.fillText(sl.text || "#1 App of the Day", bx + bw * 0.58, by + bh / 2);
 
       } else if (sl.shape === "users-badge") {
         const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
-        const br = sl.cornerRadius !== undefined ? sl.cornerRadius : bh / 2;
+        const maxR = Math.min(bw, bh) / 2;
+        const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : maxR;
+
         ctx.beginPath();
         ctx.roundRect(bx, by, bw, bh, br);
         ctx.fillStyle = sl.fill ?? "rgba(16,185,129,0.15)";
         ctx.fill();
         applyStroke();
+
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.font = `${bh * 0.45}px serif`;
         ctx.fillText(sl.subtext || "👥", bx + bh * 0.45, by + bh / 2);
+
         ctx.font = `700 ${bh * 0.34}px "Inter", sans-serif`;
         ctx.fillStyle = "#10B981";
         ctx.fillText(sl.text || "1,000,000+ Users", bx + bw * 0.58, by + bh / 2);
 
       } else if (sl.shape === "security-badge") {
         const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
-        const br = sl.cornerRadius !== undefined ? sl.cornerRadius : bh / 2;
+        const maxR = Math.min(bw, bh) / 2;
+        const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : maxR;
+
         ctx.beginPath();
         ctx.roundRect(bx, by, bw, bh, br);
         ctx.fillStyle = sl.fill ?? "rgba(59,130,246,0.15)";
         ctx.fill();
         applyStroke();
+
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.font = `${bh * 0.45}px serif`;
         ctx.fillText(sl.subtext || "🔒", bx + bh * 0.45, by + bh / 2);
+
         ctx.font = `700 ${bh * 0.34}px "Inter", sans-serif`;
         ctx.fillStyle = "#3B82F6";
         ctx.fillText(sl.text || "100% Private & Secure", bx + bw * 0.58, by + bh / 2);
 
+      } else if (sl.shape === "notification-badge") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const maxR = Math.min(bw, bh) / 2;
+        const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : Math.min(36, maxR);
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? "rgba(255,255,255,0.96)";
+        ctx.fill();
+        applyStroke();
+
+        const iconSize = bh * 0.62;
+        const iconX = bx + bh * 0.18;
+        const iconY = by + (bh - iconSize) / 2;
+        const iconR = iconSize * 0.24;
+
+        ctx.beginPath();
+        ctx.roundRect(iconX, iconY, iconSize, iconSize, iconR);
+        const iconGrad = ctx.createLinearGradient(iconX, iconY, iconX + iconSize, iconY + iconSize);
+        iconGrad.addColorStop(0, "#6366F1");
+        iconGrad.addColorStop(1, "#8B5CF6");
+        ctx.fillStyle = iconGrad;
+        ctx.fill();
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = `${iconSize * 0.52}px serif`;
+        ctx.fillText("⚡", iconX + iconSize / 2, iconY + iconSize / 2 + 1);
+
+        const textLeft = iconX + iconSize + bh * 0.18;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.font = `600 ${bh * 0.16}px "Inter", sans-serif`;
+        ctx.fillStyle = "#64748B";
+        ctx.fillText(sl.subtext || "SnapFrame · now", textLeft, by + bh * 0.33);
+
+        ctx.font = `700 ${bh * 0.20}px "Inter", sans-serif`;
+        ctx.fillStyle = "#0F172A";
+        ctx.fillText(sl.text || "Workout completed! +250 XP earned 🎉", textLeft, by + bh * 0.67);
+
+      } else if (sl.shape === "search-badge") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const maxR = Math.min(bw, bh) / 2;
+        const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : maxR;
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? "rgba(255,255,255,0.18)";
+        ctx.fill();
+        applyStroke();
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = `${bh * 0.38}px serif`;
+        ctx.fillText("🔍", bx + bh * 0.42, by + bh / 2);
+
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.font = `500 ${bh * 0.30}px "Inter", sans-serif`;
+        ctx.fillStyle = "rgba(255,255,255,0.85)";
+        ctx.fillText(sl.text || "Search songs, artists, albums...", bx + bh * 0.85, by + bh / 2);
+
+        ctx.textAlign = "center";
+        ctx.font = `${bh * 0.32}px serif`;
+        ctx.fillText("🎙️", bx + bw - bh * 0.42, by + bh / 2);
+
+      } else if (sl.shape === "sale-badge") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const maxR = Math.min(bw, bh) / 2;
+        const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : maxR;
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? "#E11D48";
+        ctx.fill();
+        applyStroke();
+
+        drawAutoFitText(
+          ctx,
+          sl.text || "🏷️ 50% OFF · Early Bird Special",
+          bx + bw / 2,
+          by + bh / 2,
+          bw * 0.88,
+          bh * 0.36,
+          700,
+          '"Inter", sans-serif',
+          "#FFFFFF",
+          "center"
+        );
+
+      } else if (sl.shape === "trial-badge") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const maxR = Math.min(bw, bh) / 2;
+        const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : maxR;
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? "#6366F1";
+        ctx.fill();
+        applyStroke();
+
+        drawAutoFitText(
+          ctx,
+          sl.text || "🚀 Try Free for 7 Days · No Card",
+          bx + bw / 2,
+          by + bh / 2,
+          bw * 0.88,
+          bh * 0.36,
+          700,
+          '"Inter", sans-serif',
+          "#FFFFFF",
+          "center"
+        );
+
+      } else if (sl.shape === "checklist-badge") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const maxR = Math.min(bw, bh) / 2;
+        const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : maxR;
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? "rgba(15,23,42,0.92)";
+        ctx.fill();
+        applyStroke();
+
+        drawAutoFitText(
+          ctx,
+          sl.text || "✓ Ad-Free  ·  ✓ Offline  ·  ✓ 4K",
+          bx + bw / 2,
+          by + bh / 2,
+          bw * 0.88,
+          bh * 0.34,
+          600,
+          '"Inter", sans-serif',
+          "#F8FAFC",
+          "center"
+        );
+
+      } else if (sl.shape === "ranking-badge") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const maxR = Math.min(bw, bh) / 2;
+        const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : Math.min(30, maxR);
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? "#172554";
+        ctx.fill();
+        applyStroke();
+
+        drawAutoFitText(
+          ctx,
+          sl.text || "🏅 #1 Top Free App",
+          bx + bw / 2,
+          by + bh / 2,
+          bw * 0.88,
+          bh * 0.36,
+          700,
+          '"Inter", sans-serif',
+          "#FFFFFF",
+          "center"
+        );
+
       } else if (sl.shape === "pro-tag" || sl.shape === "new-tag") {
         const isPro = sl.shape === "pro-tag";
         const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
-        const br = sl.cornerRadius !== undefined ? sl.cornerRadius : bh / 2;
+        const maxR = Math.min(bw, bh) / 2;
+        const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : maxR;
+
         ctx.beginPath();
         ctx.roundRect(bx, by, bw, bh, br);
         ctx.fillStyle = sl.fill ?? (isPro ? "#6366F1" : "#10B981");
         ctx.fill();
         applyStroke();
+
         drawAutoFitText(
           ctx,
           sl.text || (isPro ? "⚡ PRO FEATURE" : "✨ NEW"),
@@ -1020,18 +1248,626 @@ export async function renderScreenToCanvas(
           "center"
         );
 
+      } else if (sl.shape === "press-badge") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const maxR = Math.min(bw, bh) / 2;
+        const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : Math.min(32, maxR);
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? "rgba(15,23,42,0.92)";
+        ctx.fill();
+        applyStroke();
+
+        const quoteFontSize = bh * 0.16;
+        ctx.font = `500 ${quoteFontSize}px "Inter", sans-serif`;
+        ctx.fillStyle = "#FFFFFF";
+        drawWrappedText(
+          ctx,
+          sl.text || '"The cleanest and fastest screenshot generator on mobile."',
+          bx + bw / 2,
+          by + bh * 0.40,
+          bw * 0.88,
+          quoteFontSize * 1.3,
+          "center"
+        );
+
+        ctx.font = `700 ${bh * 0.14}px "Inter", sans-serif`;
+        ctx.fillStyle = "#34D399";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(sl.subtext || "— TechCrunch", bx + bw / 2, by + bh * 0.78);
+
+      } else if (sl.shape === "testimonial-badge") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const maxR = Math.min(bw, bh) / 2;
+        const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : Math.min(36, maxR);
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? "rgba(15,23,42,0.92)";
+        ctx.fill();
+        applyStroke();
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = `700 ${bh * 0.16}px "Inter", sans-serif`;
+        ctx.fillStyle = "#FBBF24";
+        ctx.fillText("★★★★★", bx + bw / 2, by + bh * 0.20);
+
+        const quoteFontSize = bh * 0.13;
+        ctx.font = `600 ${quoteFontSize}px "Inter", sans-serif`;
+        ctx.fillStyle = "#FFFFFF";
+        drawWrappedText(
+          ctx,
+          sl.text || '"Boosted our App Store conversion rate by +40% in just 1 week!"',
+          bx + bw / 2,
+          by + bh * 0.52,
+          bw * 0.88,
+          quoteFontSize * 1.3,
+          "center"
+        );
+
+        ctx.font = `500 ${bh * 0.11}px "Inter", sans-serif`;
+        ctx.fillStyle = "#94A3B8";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(sl.subtext || "Alex Morgan · Lead iOS Developer", bx + bw / 2, by + bh * 0.82);
+
+      } else if (sl.shape === "live-counter-badge") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const maxR = Math.min(bw, bh) / 2;
+        const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : maxR;
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? "rgba(67,20,7,0.92)";
+        ctx.fill();
+        applyStroke();
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = `700 ${bh * 0.36}px "Inter", sans-serif`;
+        ctx.fillStyle = "#FB923C";
+        ctx.fillText(sl.text || "🔥 2,500+ Downloads Today", bx + bw / 2, by + bh / 2);
+
+      } else if (sl.shape === "glass-card" || sl.shape === "dark-card") {
+        const isGlass = sl.shape === "glass-card";
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const maxR = Math.min(bw, bh) / 2;
+        const br = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, maxR) : Math.min(40, maxR);
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? (isGlass ? "rgba(255,255,255,0.14)" : "rgba(10,14,23,0.90)");
+        ctx.fill();
+        applyStroke();
+
+        const pillW = bw * 0.32;
+        const pillH = bh * 0.12;
+        const pillX = bx + (bw - pillW) / 2;
+        const pillY = by + bh * 0.12;
+        ctx.beginPath();
+        ctx.roundRect(pillX, pillY, pillW, pillH, pillH / 2);
+        ctx.fillStyle = isGlass ? "rgba(255,255,255,0.20)" : "rgba(99,102,241,0.25)";
+        ctx.fill();
+        ctx.strokeStyle = isGlass ? "rgba(255,255,255,0.40)" : "rgba(99,102,241,0.50)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = `700 ${pillH * 0.52}px "Inter", sans-serif`;
+        ctx.fillStyle = isGlass ? "#FFFFFF" : "#818CF8";
+        ctx.fillText(isGlass ? "✨ HIGHLIGHT" : "⚡ PRO FEATURE", pillX + pillW / 2, pillY + pillH / 2 + 1);
+
+        const headingFontSize = bh * 0.15;
+        ctx.font = `700 ${headingFontSize}px "Inter", sans-serif`;
+        ctx.fillStyle = "#FFFFFF";
+        drawWrappedText(
+          ctx,
+          sl.text || (isGlass ? "Ultra Fast & Intuitive" : "Pro Performance"),
+          bx + bw / 2,
+          by + bh * 0.44,
+          bw * 0.84,
+          headingFontSize * 1.25,
+          "center"
+        );
+
+        const subFontSize = bh * 0.09;
+        ctx.font = `500 ${subFontSize}px "Inter", sans-serif`;
+        ctx.fillStyle = isGlass ? "rgba(255,255,255,0.85)" : "rgba(148,163,184,0.90)";
+        drawWrappedText(
+          ctx,
+          sl.subtext || (isGlass ? "Designed for speed, simplicity, and ease of use." : "Engineered for power users who demand lightning speed."),
+          bx + bw / 2,
+          by + bh * 0.74,
+          bw * 0.84,
+          subFontSize * 1.35,
+          "center"
+        );
+
       } else if (sl.shape === "glow-orb") {
         const cx = sl.x + sl.width / 2;
         const cy = sl.y + sl.height / 2;
-        const rad = Math.min(sl.width, sl.height) / 2;
-        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
+        const r = Math.min(sl.width, sl.height) / 2;
+        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
         grad.addColorStop(0, sl.fill || "rgba(139,92,246,0.6)");
         grad.addColorStop(0.6, sl.fill ? `${sl.fill}44` : "rgba(139,92,246,0.2)");
         grad.addColorStop(1, "transparent");
         ctx.fillStyle = grad;
         ctx.beginPath();
-        ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
         ctx.fill();
+
+      } else if (sl.shape === "dynamic-island") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const br = bh / 2;
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? "#000000";
+        ctx.fill();
+        if (sl.stroke && sl.strokeWidth) {
+          ctx.strokeStyle = sl.stroke;
+          ctx.lineWidth = sl.strokeWidth;
+          ctx.stroke();
+        } else {
+          ctx.strokeStyle = "rgba(255,255,255,0.15)";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        const iconR = bh * 0.32;
+        const iconX = bx + bh * 0.45;
+        const iconY = by + bh / 2;
+        ctx.beginPath();
+        ctx.arc(iconX, iconY, iconR, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(99,102,241,0.25)";
+        ctx.fill();
+        ctx.font = `${bh * 0.36}px serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("🎵", iconX, iconY + 1);
+
+        const textLeft = iconX + iconR + bh * 0.22;
+        const maxTextW = bw - (textLeft - bx) - bh * 1.1;
+        drawAutoFitText(
+          ctx,
+          sl.text || "Now Playing · Starboy",
+          textLeft,
+          by + bh / 2,
+          maxTextW,
+          bh * 0.28,
+          600,
+          '"Inter", sans-serif',
+          "#FFFFFF",
+          "left"
+        );
+
+        const rightX = bx + bw - bh * 0.55;
+        const barW = bh * 0.07;
+        const barGap = bh * 0.05;
+        const heights = [0.25, 0.55, 0.40, 0.65];
+        ctx.fillStyle = "#34D399";
+        heights.forEach((hFactor, idx) => {
+          const bH = bh * hFactor;
+          const bX = rightX - (3 - idx) * (barW + barGap);
+          const bY = by + (bh - bH) / 2;
+          ctx.beginPath();
+          ctx.roundRect(bX, bY, barW, bH, barW / 2);
+          ctx.fill();
+        });
+
+      } else if (sl.shape === "live-activity") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const br = Math.min(32, bh * 0.22);
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? "rgba(15,23,42,0.94)";
+        ctx.fill();
+        if (sl.stroke && sl.strokeWidth) {
+          ctx.strokeStyle = sl.stroke;
+          ctx.lineWidth = sl.strokeWidth;
+          ctx.stroke();
+        } else {
+          ctx.strokeStyle = "rgba(255,255,255,0.15)";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        const iconSize = bh * 0.44;
+        const iconX = bx + bh * 0.16;
+        const iconY = by + bh * 0.16;
+        ctx.beginPath();
+        ctx.roundRect(iconX, iconY, iconSize, iconSize, iconSize * 0.25);
+        ctx.fillStyle = "#F97316";
+        ctx.fill();
+        ctx.font = `${iconSize * 0.58}px serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("🏃", iconX + iconSize / 2, iconY + iconSize / 2 + 1);
+
+        const textLeft = iconX + iconSize + bh * 0.14;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.font = `700 ${bh * 0.18}px "Inter", sans-serif`;
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillText(sl.text || "Workout in progress", textLeft, by + bh * 0.26);
+
+        ctx.font = `600 ${bh * 0.15}px "Inter", sans-serif`;
+        ctx.fillStyle = "#38BDF8";
+        ctx.fillText(sl.subtext || "32:15 min · 420 kcal 🔥", textLeft, by + bh * 0.48);
+
+        const progX = bx + bh * 0.16;
+        const progY = by + bh * 0.74;
+        const progW = bw - bh * 0.32;
+        const progH = bh * 0.10;
+        ctx.beginPath();
+        ctx.roundRect(progX, progY, progW, progH, progH / 2);
+        ctx.fillStyle = "rgba(255,255,255,0.12)";
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.roundRect(progX, progY, progW * 0.68, progH, progH / 2);
+        ctx.fillStyle = "#F97316";
+        ctx.fill();
+
+      } else if (sl.shape === "ios-toggle") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const br = Math.min(28, bh * 0.24);
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? "rgba(15,23,42,0.92)";
+        ctx.fill();
+        if (sl.stroke && sl.strokeWidth) {
+          ctx.strokeStyle = sl.stroke;
+          ctx.lineWidth = sl.strokeWidth;
+          ctx.stroke();
+        } else {
+          ctx.strokeStyle = "rgba(255,255,255,0.12)";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        const iconSize = bh * 0.46;
+        const iconX = bx + bh * 0.16;
+        const iconY = by + (bh - iconSize) / 2;
+        ctx.beginPath();
+        ctx.roundRect(iconX, iconY, iconSize, iconSize, iconSize * 0.25);
+        ctx.fillStyle = "rgba(99,102,241,0.2)";
+        ctx.fill();
+        ctx.font = `${iconSize * 0.55}px serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("✨", iconX + iconSize / 2, iconY + iconSize / 2 + 1);
+
+        const textLeft = iconX + iconSize + bh * 0.14;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.font = `700 ${bh * 0.20}px "Inter", sans-serif`;
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillText(sl.text || "AI Smart Assistant", textLeft, by + bh * 0.38);
+
+        ctx.font = `500 ${bh * 0.14}px "Inter", sans-serif`;
+        ctx.fillStyle = "#94A3B8";
+        ctx.fillText(sl.subtext || "Active & Listening", textLeft, by + bh * 0.64);
+
+        const swW = bh * 0.54;
+        const swH = bh * 0.32;
+        const swX = bx + bw - swW - bh * 0.16;
+        const swY = by + (bh - swH) / 2;
+        ctx.beginPath();
+        ctx.roundRect(swX, swY, swW, swH, swH / 2);
+        ctx.fillStyle = "#34C759";
+        ctx.fill();
+
+        const knobR = (swH - 4) / 2;
+        const knobX = swX + swW - knobR - 2;
+        const knobY = swY + swH / 2;
+        ctx.beginPath();
+        ctx.arc(knobX, knobY, knobR, 0, Math.PI * 2);
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fill();
+
+      } else if (sl.shape === "editors-choice-badge") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const br = Math.min(bw, bh) / 2;
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? "#0B132B";
+        ctx.fill();
+        if (sl.stroke && sl.strokeWidth) {
+          ctx.strokeStyle = sl.stroke;
+          ctx.lineWidth = sl.strokeWidth;
+          ctx.stroke();
+        } else {
+          ctx.strokeStyle = "rgba(251,191,36,0.65)";
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        }
+
+        ctx.font = `${bh * 0.45}px serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("🌿", bx + bh * 0.42, by + bh / 2);
+        ctx.fillText("🌿", bx + bw - bh * 0.42, by + bh / 2);
+
+        drawAutoFitText(
+          ctx,
+          sl.text || "App Store Editors' Choice",
+          bx + bw / 2,
+          by + bh / 2,
+          bw - bh * 1.2,
+          bh * 0.34,
+          800,
+          '"Inter", sans-serif',
+          "#FBBF24",
+          "center"
+        );
+
+      } else if (sl.shape === "design-award-badge") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const br = Math.min(bw, bh) / 2;
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? "#18181B";
+        ctx.fill();
+        if (sl.stroke && sl.strokeWidth) {
+          ctx.strokeStyle = sl.stroke;
+          ctx.lineWidth = sl.strokeWidth;
+          ctx.stroke();
+        } else {
+          ctx.strokeStyle = "rgba(255,255,255,0.3)";
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        }
+
+        ctx.font = `${bh * 0.42}px serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("💎", bx + bh * 0.45, by + bh / 2);
+
+        drawAutoFitText(
+          ctx,
+          sl.text || "Apple Design Award Winner",
+          bx + bw * 0.56,
+          by + bh / 2,
+          bw - bh * 1.0,
+          bh * 0.34,
+          700,
+          '"Inter", sans-serif',
+          "#FAFAFA",
+          "center"
+        );
+
+      } else if (sl.shape === "streak-badge") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const br = Math.min(bw, bh) / 2;
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? "#EA580C";
+        ctx.fill();
+        if (sl.stroke && sl.strokeWidth) {
+          ctx.strokeStyle = sl.stroke;
+          ctx.lineWidth = sl.strokeWidth;
+          ctx.stroke();
+        } else {
+          ctx.strokeStyle = "rgba(254,215,170,0.5)";
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        }
+
+        ctx.font = `${bh * 0.48}px serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("🔥", bx + bh * 0.45, by + bh / 2);
+
+        drawAutoFitText(
+          ctx,
+          sl.text || "30-Day Streak · On Fire!",
+          bx + bw * 0.56,
+          by + bh / 2,
+          bw - bh * 1.0,
+          bh * 0.35,
+          800,
+          '"Inter", sans-serif',
+          "#FFFFFF",
+          "center"
+        );
+
+      } else if (sl.shape === "guarantee-badge") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const br = Math.min(bw, bh) / 2;
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? "rgba(6,78,59,0.92)";
+        ctx.fill();
+        if (sl.stroke && sl.strokeWidth) {
+          ctx.strokeStyle = sl.stroke;
+          ctx.lineWidth = sl.strokeWidth;
+          ctx.stroke();
+        } else {
+          ctx.strokeStyle = "rgba(52,211,153,0.6)";
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        }
+
+        ctx.font = `${bh * 0.45}px serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("🛡️", bx + bh * 0.45, by + bh / 2);
+
+        drawAutoFitText(
+          ctx,
+          sl.text || "30-Day Money Back Guarantee",
+          bx + bw * 0.56,
+          by + bh / 2,
+          bw - bh * 1.0,
+          bh * 0.33,
+          700,
+          '"Inter", sans-serif',
+          "#6EE7B7",
+          "center"
+        );
+
+      } else if (sl.shape === "growth-stat-card") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const br = Math.min(28, bh * 0.22);
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? "rgba(15,23,42,0.92)";
+        ctx.fill();
+        if (sl.stroke && sl.strokeWidth) {
+          ctx.strokeStyle = sl.stroke;
+          ctx.lineWidth = sl.strokeWidth;
+          ctx.stroke();
+        } else {
+          ctx.strokeStyle = "rgba(16,185,129,0.4)";
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        }
+
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.font = `800 ${bh * 0.34}px "Inter", sans-serif`;
+        ctx.fillStyle = "#34D399";
+        ctx.fillText("📈 +142%", bx + bh * 0.20, by + bh * 0.38);
+
+        ctx.font = `600 ${bh * 0.16}px "Inter", sans-serif`;
+        ctx.fillStyle = "#E2E8F0";
+        ctx.fillText(sl.text || "Productivity & Speed Boost", bx + bh * 0.20, by + bh * 0.72);
+
+        const spX = bx + bw - bh * 0.9;
+        const spY = by + bh * 0.5;
+        ctx.beginPath();
+        ctx.moveTo(spX, spY + bh * 0.15);
+        ctx.lineTo(spX + bh * 0.22, spY + bh * 0.05);
+        ctx.lineTo(spX + bh * 0.44, spY + bh * 0.10);
+        ctx.lineTo(spX + bh * 0.70, spY - bh * 0.22);
+        ctx.strokeStyle = "#34D399";
+        ctx.lineWidth = 4;
+        ctx.lineCap = "round";
+        ctx.stroke();
+
+      } else if (sl.shape === "comparison-card") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const br = Math.min(bw, bh) / 2;
+
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? "rgba(15,23,42,0.92)";
+        ctx.fill();
+        if (sl.stroke && sl.strokeWidth) {
+          ctx.strokeStyle = sl.stroke;
+          ctx.lineWidth = sl.strokeWidth;
+          ctx.stroke();
+        } else {
+          ctx.strokeStyle = "rgba(255,255,255,0.2)";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = `600 ${bh * 0.28}px "Inter", sans-serif`;
+        ctx.fillStyle = "#F87171";
+        ctx.fillText("❌ " + (sl.subtext || "Without App"), bx + bw * 0.28, by + bh / 2);
+
+        ctx.strokeStyle = "rgba(255,255,255,0.2)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(bx + bw * 0.5, by + bh * 0.2);
+        ctx.lineTo(bx + bw * 0.5, by + bh * 0.8);
+        ctx.stroke();
+
+        ctx.font = `700 ${bh * 0.28}px "Inter", sans-serif`;
+        ctx.fillStyle = "#34D399";
+        ctx.fillText("✨ " + (sl.text || "With Our App"), bx + bw * 0.73, by + bh / 2);
+
+      } else if (sl.shape === "curved-arrow") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const color = sl.fill || sl.stroke || "#F59E0B";
+
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = Math.max(3, bh * 0.08);
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+
+        ctx.beginPath();
+        ctx.moveTo(bx + bw * 0.1, by + bh * 0.15);
+        ctx.bezierCurveTo(
+          bx + bw * 0.7, by + bh * 0.1,
+          bx + bw * 0.9, by + bh * 0.5,
+          bx + bw * 0.85, by + bh * 0.85
+        );
+        ctx.stroke();
+
+        const endX = bx + bw * 0.85;
+        const endY = by + bh * 0.85;
+        const arrowSize = Math.max(12, bh * 0.22);
+        ctx.beginPath();
+        ctx.moveTo(endX, endY);
+        ctx.lineTo(endX - arrowSize * 0.8, endY - arrowSize * 0.3);
+        ctx.lineTo(endX - arrowSize * 0.3, endY - arrowSize * 0.8);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+
+      } else if (sl.shape === "handwritten-callout") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        const br = Math.min(18, bh * 0.28);
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, br);
+        ctx.fillStyle = sl.fill ?? "#FEF08A";
+        ctx.fill();
+        if (sl.stroke && sl.strokeWidth) {
+          ctx.strokeStyle = sl.stroke;
+          ctx.lineWidth = sl.strokeWidth;
+          ctx.stroke();
+        } else {
+          ctx.strokeStyle = "#FACC15";
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        }
+
+        drawAutoFitText(
+          ctx,
+          sl.text || "✨ Swipe to explore",
+          bx + bw / 2,
+          by + bh / 2,
+          bw * 0.88,
+          bh * 0.38,
+          700,
+          '"Inter", cursive, sans-serif',
+          "#713F12",
+          "center"
+        );
+        ctx.restore();
+
+      } else if (sl.shape === "marker-highlight") {
+        const bx = sl.x, by = sl.y, bw = sl.width, bh = sl.height;
+        ctx.save();
+        ctx.fillStyle = sl.fill ?? "rgba(250, 204, 21, 0.45)";
+        ctx.beginPath();
+        ctx.moveTo(bx, by + bh * 0.2);
+        ctx.lineTo(bx + bw, by);
+        ctx.lineTo(bx + bw * 0.96, by + bh);
+        ctx.lineTo(bx + bw * 0.02, by + bh * 0.9);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
 
       } else if (sl.shape === "rounded-rectangle" || sl.shape === "rectangle" || r2 > 0) {
         const effectiveR = sl.cornerRadius !== undefined ? Math.min(sl.cornerRadius, Math.min(sl.width, sl.height) / 2) : r2;
