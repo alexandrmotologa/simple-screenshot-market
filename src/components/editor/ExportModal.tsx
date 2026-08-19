@@ -12,6 +12,7 @@ import type { TextLayer, ShapeLayer, ImageLayer } from "@/lib/types";
 import { renderScreenToCanvas } from "@/lib/renderScreenToCanvas";
 import { cn } from "@/lib/utils";
 import { AppleStoreIcon, GooglePlayIcon, APP_STORE_LABEL, GOOGLE_PLAY_LABEL } from "@/components/icons/StoreIcons";
+import { ALL_DEVICES, isTabletDevice } from "@/lib/devices";
 
 interface ExportModalProps {
   projectId: string;
@@ -128,8 +129,19 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
     let exported = 0;
 
     for (const ss of activeSets) {
-      const platformLabel = ss.store === "ios" ? "iOS" : "Android";
-      const platformFolder = zip?.folder(platformLabel);
+      const isIOS = ss.store === "ios";
+      const isTablet = isTabletDevice(ss.deviceId);
+
+      // Clean, unambiguous folder names distinguishing iPhones, iPads, and Android Tablets:
+      const platformFolderLabel = isIOS
+        ? isTablet ? "App Store (iPad)" : "App Store (iPhone)"
+        : isTablet ? "Google Play (Tablet)" : "Google Play (Phone)";
+      
+      const filePrefix = isIOS
+        ? isTablet ? "iPad" : "iPhone"
+        : isTablet ? "Android_Tablet" : "Android_Phone";
+
+      const platformFolder = zip?.folder(platformFolderLabel);
 
       for (const langCode of (activeLangs.length > 0 ? activeLangs : ["en"])) {
         const langFolder = activeLangs.length > 1 ? platformFolder?.folder(langCode.toUpperCase()) : platformFolder;
@@ -147,7 +159,7 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
           const quality = format === "jpg" ? 0.92 : 1;
           const screenNum = String(ss.screens.indexOf(screen) + 1).padStart(2, "0");
           const langSuffix = activeLangs.length > 1 ? `_${langCode.toUpperCase()}` : "";
-          const filename = `${appName}_${platformLabel}_${screenNum}${langSuffix}@${scale}x.${format}`;
+          const filename = `${appName}_${filePrefix}_${screenNum}${langSuffix}@${scale}x.${format}`;
 
           const blob = await new Promise<Blob>((resolve) =>
             canvas.toBlob((b) => resolve(b!), mimeType, quality)
@@ -200,7 +212,14 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
         exportedAt: new Date().toISOString(),
         scale,
         format,
-        platforms: activeSets.map((s) => s.store),
+        sets: activeSets.map((s) => ({
+          name: s.name,
+          store: s.store,
+          deviceId: s.deviceId,
+          isTablet: isTabletDevice(s.deviceId),
+          resolution: `${(s.preset?.width ?? 1290) * scale}x${(s.preset?.height ?? 2796) * scale}`,
+          screensCount: s.screens.length,
+        })),
         languages: langsToExport,
         totalScreens: exported,
         guidelinesCompliant: true,
@@ -257,18 +276,25 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
                 <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-mono">PASSED</span>
               </div>
               <p className="text-[11px] text-emerald-300/80 leading-tight">
-                Exact pixel dimensions for App Store (1320×2868 / 1290×2796) and Google Play (1080×1920), 0 alpha defects, RGB color profile.
+                Exact pixel dimensions for App Store (iPhone & iPad Pro 13&quot;) and Google Play (Phones & Tablets), 0 alpha defects, RGB color profile.
               </p>
             </div>
           </div>
 
           {/* Platform selection */}
           <div>
-            <p className="text-xs font-semibold text-muted-foreground mb-2">Platform</p>
+            <p className="text-xs font-semibold text-muted-foreground mb-2">Target Platforms & Devices</p>
             <div className="space-y-2">
               {screenSets.map((ss) => {
                 const isSelected = selectedSets.has(ss.id);
                 const isIOS = ss.store === "ios";
+                const isTablet = isTabletDevice(ss.deviceId);
+                const deviceObj = ALL_DEVICES.find((d) => d.id === ss.deviceId);
+
+                const platformTitle = isIOS
+                  ? isTablet ? "App Store (iPad Pro)" : "App Store (iPhone)"
+                  : isTablet ? "Google Play (Tablet)" : "Google Play (Phone)";
+
                 return (
                   <button
                     key={ss.id}
@@ -277,8 +303,12 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
                       "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl border text-sm transition-all text-left cursor-pointer",
                       isSelected
                         ? isIOS
-                          ? "border-blue-500/40 bg-blue-500/8 text-blue-300"
-                          : "border-green-500/40 bg-green-500/8 text-green-300"
+                          ? isTablet
+                            ? "border-indigo-500/40 bg-indigo-500/10 text-indigo-300"
+                            : "border-blue-500/40 bg-blue-500/10 text-blue-300"
+                          : isTablet
+                          ? "border-teal-500/40 bg-teal-500/10 text-teal-300"
+                          : "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
                         : "border-border/50 bg-secondary/30 text-muted-foreground hover:bg-secondary/60"
                     )}
                   >
@@ -287,13 +317,22 @@ export function ExportModal({ projectId, onClose }: ExportModalProps) {
                     ) : (
                       <GooglePlayIcon className="w-4 h-4 shrink-0" />
                     )}
-                    <span className="flex-1 font-medium">
-                      {isIOS ? APP_STORE_LABEL : GOOGLE_PLAY_LABEL}
-                    </span>
-                    <span className="text-xs opacity-70 font-mono">{ss.preset.width} × {ss.preset.height} px ({ss.screens.length} screens)</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-foreground">{platformTitle}</span>
+                        {isTablet && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                            Tablet
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs opacity-70 font-mono">
+                        {deviceObj?.name || ss.preset?.name} · {ss.preset?.width} × {ss.preset?.height} px ({ss.screens.length} screens)
+                      </p>
+                    </div>
                     <div className={cn(
                       "w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center",
-                      isSelected ? (isIOS ? "border-blue-400 bg-blue-400" : "border-green-400 bg-green-400") : "border-border"
+                      isSelected ? (isIOS ? "border-blue-400 bg-blue-400" : "border-emerald-400 bg-emerald-400") : "border-border"
                     )}>
                       {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
                     </div>

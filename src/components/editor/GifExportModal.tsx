@@ -11,6 +11,7 @@ import { useProjectStore } from "@/lib/store/projectStore";
 import { cn } from "@/lib/utils";
 import type { TextLayer, ShapeLayer, ImageLayer } from "@/lib/types";
 import { renderScreenToCanvas } from "@/lib/renderScreenToCanvas";
+import { isTabletDevice } from "@/lib/devices";
 
 interface GifExportModalProps {
   projectId: string;
@@ -181,7 +182,9 @@ export function GifExportModal({ projectId, onClose }: GifExportModalProps) {
                             : "border-border/40 bg-secondary/30 text-muted-foreground hover:bg-secondary/60"
                         )}
                       >
-                        {ss.store === "ios" ? "🍎 iOS" : "🤖 Android"}
+                        {ss.store === "ios"
+                          ? isTabletDevice(ss.deviceId) ? "🍏 iPad" : "🍎 iPhone"
+                          : isTabletDevice(ss.deviceId) ? "📱 Tablet" : "🤖 Android"}
                         <span className="block text-[10px] opacity-70 mt-0.5">{ss.screens.length} screens</span>
                       </button>
                     ))}
