@@ -6,7 +6,6 @@ import { useAuthStore } from "@/lib/store/authStore";
 import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
 
 export function AuthModal() {
-  const [useDirectRedirect, setUseDirectRedirect] = useState(false);
   const [activeProvider, setActiveProvider] = useState<"google" | "github" | "guest" | null>(null);
 
   const {
@@ -31,7 +30,7 @@ export function AuthModal() {
     if (isAnonymous) {
       await linkWithGoogle();
     } else {
-      await signInWithGoogle(useDirectRedirect);
+      await signInWithGoogle();
     }
   };
 
@@ -40,7 +39,7 @@ export function AuthModal() {
     if (isAnonymous) {
       await linkWithGithub();
     } else {
-      await signInWithGithub(useDirectRedirect);
+      await signInWithGithub();
     }
   };
 
@@ -56,7 +55,7 @@ export function AuthModal() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-in fade-in duration-200 select-none"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200 select-none"
       onClick={() => {
         if (!isLoading) setAuthModalOpen(false);
       }}
@@ -68,19 +67,19 @@ export function AuthModal() {
         {/* Top Gradient Accent */}
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
 
-        {/* Close Button (Disabled during active authentication to prevent race conditions) */}
+        {/* Close Button (Disabled during active authentication) */}
         {!isLoading && (
           <button
             onClick={() => setAuthModalOpen(false)}
             className="absolute top-4 right-4 w-8 h-8 rounded-lg hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-            title="Close modal"
+            title="Close"
           >
             <X className="w-4 h-4" />
           </button>
         )}
 
         <div className="p-6 space-y-5">
-          {/* Active Loading Screen Overlay */}
+          {/* Active Loading Screen */}
           {isLoading ? (
             <div className="py-8 flex flex-col items-center justify-center text-center space-y-4 animate-in fade-in duration-150">
               <div className="relative">
@@ -95,16 +94,14 @@ export function AuthModal() {
                   <Loader2 className="w-4 h-4 animate-spin text-primary" />
                   <span>
                     {activeProvider === "google"
-                      ? "Connecting to Google..."
+                      ? "Connecting with Google..."
                       : activeProvider === "github"
-                      ? "Connecting to GitHub..."
+                      ? "Connecting with GitHub..."
                       : "Initializing Session..."}
                   </span>
                 </h3>
                 <p className="text-xs text-muted-foreground max-w-xs">
-                  {useDirectRedirect
-                    ? "Redirecting your browser securely to provider..."
-                    : "Please complete authorization in the popup window."}
+                  Authenticating your session securely. Please complete the prompt...
                 </p>
               </div>
 
@@ -153,13 +150,7 @@ export function AuthModal() {
                   className="w-full h-11 px-4 rounded-xl border border-border/80 bg-secondary/50 hover:bg-secondary hover:border-border text-foreground text-xs font-semibold flex items-center justify-center gap-3 transition-all cursor-pointer shadow-xs active:scale-[0.99] disabled:opacity-50"
                 >
                   <GoogleIcon className="w-4 h-4 shrink-0" />
-                  <span>
-                    {isAnonymous
-                      ? "Link Google Account"
-                      : useDirectRedirect
-                      ? "Sign In with Google (Direct)"
-                      : "Continue with Google"}
-                  </span>
+                  <span>{isAnonymous ? "Link Google Account" : "Continue with Google"}</span>
                 </button>
 
                 {/* GitHub Sign In */}
@@ -170,29 +161,8 @@ export function AuthModal() {
                   className="w-full h-11 px-4 rounded-xl border border-border/80 bg-secondary/50 hover:bg-secondary hover:border-border text-foreground text-xs font-semibold flex items-center justify-center gap-3 transition-all cursor-pointer shadow-xs active:scale-[0.99] disabled:opacity-50"
                 >
                   <GithubIcon className="w-4 h-4 shrink-0" />
-                  <span>
-                    {isAnonymous
-                      ? "Link GitHub Account"
-                      : useDirectRedirect
-                      ? "Sign In with GitHub (Direct)"
-                      : "Continue with GitHub"}
-                  </span>
+                  <span>{isAnonymous ? "Link GitHub Account" : "Continue with GitHub"}</span>
                 </button>
-
-                {/* Direct Redirect Toggle */}
-                <div className="flex items-center justify-center pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setUseDirectRedirect(!useDirectRedirect)}
-                    className="text-[11px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
-                  >
-                    <span>
-                      {useDirectRedirect
-                        ? "✓ Direct Redirect mode active"
-                        : "Popups slow? Switch to Direct Redirect"}
-                    </span>
-                  </button>
-                </div>
 
                 {/* Anonymous / Guest Mode Option */}
                 {!user && (

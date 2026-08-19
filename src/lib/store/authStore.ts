@@ -23,8 +23,8 @@ interface AuthState {
   setAuthModalOpen: (open: boolean) => void;
   clearError: () => void;
   initializeAuth: () => Promise<void>;
-  signInWithGoogle: (useRedirect?: boolean) => Promise<User | null>;
-  signInWithGithub: (useRedirect?: boolean) => Promise<User | null>;
+  signInWithGoogle: () => Promise<User | null>;
+  signInWithGithub: () => Promise<User | null>;
   signInAnonymous: () => Promise<any>;
   linkWithGoogle: () => Promise<User | null>;
   linkWithGithub: () => Promise<User | null>;
@@ -42,7 +42,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
             await setPersistence(auth, browserLocalPersistence);
           } catch {}
 
-          // Check if user just returned from a redirect sign-in
+          // Seamless check if user just returned from a redirect fallback
           try {
             const redirectResult = await getRedirectResult(auth);
             if (redirectResult?.user) {
@@ -100,7 +100,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
       return;
     },
 
-    signInWithGoogle: async (useRedirect = false) => {
+    signInWithGoogle: async () => {
       try {
         set({ isLoading: true, authError: null });
         const { auth, googleProvider } = await getFirebaseAuth();
@@ -116,37 +116,34 @@ export const useAuthStore = create<AuthState>((set, get) => {
           await setPersistence(auth, browserLocalPersistence);
         } catch {}
 
-        if (useRedirect) {
-          await signInWithRedirect(auth, googleProvider);
-          return null;
+        try {
+          console.log("[Auth] Starting Google authentication...");
+          const result = await signInWithPopup(auth, googleProvider);
+          console.log("[Auth] Google Sign-in Success:", result.user);
+          
+          set({ user: result.user, isAuthModalOpen: false, isLoading: false, authError: null });
+          toast.success(`Welcome, ${result.user.displayName || result.user.email || "Creator"}!`);
+          return result.user;
+        } catch (popupErr: any) {
+          // If popup is blocked by browser, seamlessly fallback to redirect
+          if (popupErr.code === "auth/popup-blocked") {
+            console.log("[Auth] Popup blocked, falling back to redirect...");
+            await signInWithRedirect(auth, googleProvider);
+            return null;
+          }
+          throw popupErr;
         }
-
-        console.log("[Auth] Opening Google Sign-in Popup...");
-        const result = await signInWithPopup(auth, googleProvider);
-        console.log("[Auth] Google Sign-in Success:", result.user);
-        
-        set({ user: result.user, isAuthModalOpen: false, isLoading: false, authError: null });
-        toast.success(`Welcome, ${result.user.displayName || result.user.email || "Creator"}!`);
-        return result.user;
       } catch (error: any) {
         console.error("Google Sign-In Error details:", error);
         
-        // When popup is closed, immediately close the modal and reset loading
+        // When popup is closed by user, smoothly reset state
         if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
           set({ isLoading: false, isAuthModalOpen: false, authError: null });
           return null;
         }
 
         let message = error.message || "Failed to sign in with Google";
-        if (error.code === "auth/popup-blocked") {
-          message = "Popup was blocked by your browser. Trying direct redirect...";
-          toast.info(message);
-          const { auth: a, googleProvider: gp } = await getFirebaseAuth();
-          if (a && gp) {
-            await signInWithRedirect(a, gp);
-            return null;
-          }
-        } else if (error.code === "auth/account-exists-with-different-credential") {
+        if (error.code === "auth/account-exists-with-different-credential") {
           message = "An account already exists with this email address.";
         } else if (error.code === "auth/configuration-not-found" || error.code === "auth/operation-not-allowed") {
           message = "Google Sign-In is not enabled yet in Firebase Console.";
@@ -160,7 +157,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
       }
     },
 
-    signInWithGithub: async (useRedirect = false) => {
+    signInWithGithub: async () => {
       try {
         set({ isLoading: true, authError: null });
         const { auth, githubProvider } = await getFirebaseAuth();
@@ -176,37 +173,33 @@ export const useAuthStore = create<AuthState>((set, get) => {
           await setPersistence(auth, browserLocalPersistence);
         } catch {}
 
-        if (useRedirect) {
-          await signInWithRedirect(auth, githubProvider);
-          return null;
+        try {
+          console.log("[Auth] Starting GitHub authentication...");
+          const result = await signInWithPopup(auth, githubProvider);
+          console.log("[Auth] GitHub Sign-in Success:", result.user);
+
+          set({ user: result.user, isAuthModalOpen: false, isLoading: false, authError: null });
+          toast.success(`Welcome, ${result.user.displayName || "Developer"}!`);
+          return result.user;
+        } catch (popupErr: any) {
+          // If popup is blocked by browser, seamlessly fallback to redirect
+          if (popupErr.code === "auth/popup-blocked") {
+            console.log("[Auth] Popup blocked, falling back to redirect...");
+            await signInWithRedirect(auth, githubProvider);
+            return null;
+          }
+          throw popupErr;
         }
-
-        console.log("[Auth] Opening GitHub Sign-in Popup...");
-        const result = await signInWithPopup(auth, githubProvider);
-        console.log("[Auth] GitHub Sign-in Success:", result.user);
-
-        set({ user: result.user, isAuthModalOpen: false, isLoading: false, authError: null });
-        toast.success(`Welcome, ${result.user.displayName || "Developer"}!`);
-        return result.user;
       } catch (error: any) {
         console.error("GitHub Sign-In Error details:", error);
 
-        // When popup is closed, immediately close the modal and reset loading
         if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
           set({ isLoading: false, isAuthModalOpen: false, authError: null });
           return null;
         }
 
         let message = error.message || "Failed to sign in with GitHub";
-        if (error.code === "auth/popup-blocked") {
-          message = "Popup was blocked by your browser. Trying direct redirect...";
-          toast.info(message);
-          const { auth: a, githubProvider: ghp } = await getFirebaseAuth();
-          if (a && ghp) {
-            await signInWithRedirect(a, ghp);
-            return null;
-          }
-        } else if (error.code === "auth/configuration-not-found" || error.code === "auth/operation-not-allowed") {
+        if (error.code === "auth/configuration-not-found" || error.code === "auth/operation-not-allowed") {
           message = "GitHub Sign-In is not enabled yet in Firebase Console.";
         } else if (error.code === "auth/unauthorized-domain") {
           message = "This domain is not authorized in Firebase Console.";
