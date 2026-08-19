@@ -21,6 +21,7 @@ import { ConfirmActionModal } from "@/components/dashboard/ConfirmActionModal";
 import { Footer } from "@/components/dashboard/Footer";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
 
 // ── Mini Canvas Thumbnail with Real Screen Render & Multi-Screen Stack ────────
 function ProjectThumbnail({ project }: { project: Project }) {
@@ -588,15 +589,10 @@ export default function DashboardPage() {
               setSearch("");
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
-            className="flex items-center gap-3 cursor-pointer group"
+            className="flex items-center gap-2 cursor-pointer group"
           >
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-sm shadow-primary/40 group-hover:scale-105 transition-transform">
-              <Layers className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <span className="font-semibold text-lg tracking-tight group-hover:text-primary transition-colors">
-              SnapFrame
-            </span>
-            <Badge variant="secondary" className="text-xs">Beta</Badge>
+            <SnapFrameLogo size={32} withText textClassName="text-lg" />
+            <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 ml-1">Beta</Badge>
           </Link>
 
           <div className="flex items-center gap-3">

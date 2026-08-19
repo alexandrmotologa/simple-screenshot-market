@@ -2,7 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { Layers, Sparkles, ShieldCheck, Zap, Heart } from "lucide-react";
+import { Sparkles, ShieldCheck, Zap, Heart } from "lucide-react";
+import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -25,14 +26,9 @@ export function Footer() {
             <Link
               href="/"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="flex items-center gap-2.5 group w-fit"
+              className="flex items-center gap-2 group w-fit"
             >
-              <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shadow-sm shadow-primary/30 group-hover:scale-105 transition-transform">
-                <Layers className="w-4 h-4 text-primary-foreground" />
-              </div>
-              <span className="font-bold text-base tracking-tight text-foreground group-hover:text-primary transition-colors">
-                SnapFrame
-              </span>
+              <SnapFrameLogo size={28} withText textClassName="text-base" />
             </Link>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Design studio-quality App Store & Google Play screenshot sets in seconds. Free, privacy-first, and fully customizable.

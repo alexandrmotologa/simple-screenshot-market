@@ -21,9 +21,11 @@ import { ScreenStrip } from "@/components/editor/ScreenStrip";
 import { ExportModal } from "@/components/editor/ExportModal";
 import { GifExportModal } from "@/components/editor/GifExportModal";
 import { AIAutoPilotModal } from "@/components/editor/AIAutoPilotModal";
+import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
 import { ScreenshotLayer } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -282,10 +284,14 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
       {/* ── Top Navigation Bar ── */}
       <header className="h-11 border-b border-border/50 bg-card/90 backdrop-blur-md flex items-center px-3 gap-2 shrink-0 z-40 justify-between">
         <div className="flex items-center gap-2">
-          {/* Back */}
-          <IconBtn title="Back to Dashboard (Esc)" onClick={() => router.push("/")}>
-            <ArrowLeft className="w-3.5 h-3.5" />
-          </IconBtn>
+          {/* Back & Logo */}
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 p-1 rounded-lg hover:bg-secondary transition-colors group cursor-pointer"
+            title="Back to Dashboard (Esc)"
+          >
+            <SnapFrameLogo size={24} />
+          </Link>
 
           <Separator orientation="vertical" className="h-4" />
 
