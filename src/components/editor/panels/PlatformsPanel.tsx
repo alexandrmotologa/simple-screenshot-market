@@ -485,24 +485,30 @@ export function PlatformsPanel() {
                 type="button"
                 onClick={() => {
                   addScreenSet("ios");
-                  toast.success("iPhone set added!");
+                  toast.success("iPhone 17 Pro Max set added with proportional scaling!");
                 }}
-                className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-border/50 bg-secondary/20 hover:bg-secondary/50 text-center transition-all cursor-pointer group"
+                className="flex flex-col items-center justify-center p-3 rounded-xl border border-border/60 bg-secondary/30 hover:bg-secondary/70 text-center transition-all cursor-pointer group"
               >
-                <span className="text-xs font-medium text-foreground">+ Add iPhone Set</span>
-                <span className="text-[9.5px] text-muted-foreground font-mono">1320 × 2868 px</span>
+                <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
+                  <AppleStoreIcon className="w-4 h-4 text-foreground" />
+                </div>
+                <span className="text-xs font-semibold text-foreground">+ Add iPhone Set</span>
+                <span className="text-[10px] text-muted-foreground font-mono">1320 × 2868 px</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => {
                   addScreenSet("android");
-                  toast.success("Android Phone set added!");
+                  toast.success("Pixel 10 Pro XL set added with proportional scaling!");
                 }}
-                className="flex flex-col items-center justify-center p-2.5 rounded-xl border border-border/50 bg-secondary/20 hover:bg-secondary/50 text-center transition-all cursor-pointer group"
+                className="flex flex-col items-center justify-center p-3 rounded-xl border border-border/60 bg-secondary/30 hover:bg-secondary/70 text-center transition-all cursor-pointer group"
               >
-                <span className="text-xs font-medium text-foreground">+ Add Android Phone</span>
-                <span className="text-[9.5px] text-muted-foreground font-mono">1344 × 2992 px</span>
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
+                  <GooglePlayIcon className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-semibold text-foreground">+ Add Android Phone</span>
+                <span className="text-[10px] text-muted-foreground font-mono">1344 × 2992 px</span>
               </button>
             </div>
           </div>

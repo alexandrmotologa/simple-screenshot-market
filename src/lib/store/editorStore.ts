@@ -959,43 +959,90 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
 
     const isIOS = store === "ios";
     const newId = nanoid();
-    const screenId = nanoid();
+    const deviceId = isIOS ? "iphone-17-pro-max" : "pixel-10-pro-xl";
+    const deviceObj = ALL_DEVICES.find((d) => d.id === deviceId);
+
+    const sourceSet = screenSets.find((s) => s.id === get().activeSetId) || screenSets[0];
+    const newW = deviceObj?.width || (isIOS ? 1320 : 1344);
+    const newH = deviceObj?.height || (isIOS ? 2868 : 2992);
+
+    const oldW = sourceSet?.preset.width || 1290;
+    const oldH = sourceSet?.preset.height || 2796;
+    const scaleX = newW / oldW;
+    const scaleY = newH / oldH;
+    const scaleAvg = (scaleX + scaleY) / 2;
+
+    const newScreens: Screen[] = (sourceSet ? sourceSet.screens : []).map((screen, idx) => ({
+      ...screen,
+      id: nanoid(),
+      name: screen.name || `Screen ${idx + 1}`,
+      width: newW,
+      height: newH,
+      layers: screen.layers.map((layer) => {
+        const baseLayer = {
+          ...layer,
+          id: nanoid(),
+          x: Math.round(layer.x * scaleX),
+          y: Math.round(layer.y * scaleY),
+          width: Math.round(layer.width * scaleX),
+          height: Math.round(layer.height * scaleY),
+        };
+        if (layer.type === "text") {
+          return { ...baseLayer, fontSize: Math.round((layer.fontSize || 56) * scaleAvg) } as Layer;
+        }
+        if (layer.type === "shape") {
+          return {
+            ...baseLayer,
+            cornerRadius: layer.cornerRadius !== undefined ? Math.round(layer.cornerRadius * scaleAvg) : undefined,
+            strokeWidth: layer.strokeWidth !== undefined ? Math.round(layer.strokeWidth * scaleAvg) : undefined,
+          } as Layer;
+        }
+        if (layer.type === "image") {
+          return {
+            ...baseLayer,
+            cornerRadius: Math.round((layer.cornerRadius || 0) * scaleAvg),
+          } as Layer;
+        }
+        return baseLayer as Layer;
+      }),
+    }));
+
     const newSet: ScreenSet = {
       id: newId,
-      name: isIOS ? "App Store (iOS)" : "Google Play (Android)",
+      name: isIOS ? "App Store (iPhone 17 Pro Max)" : "Google Play (Pixel 10 Pro XL)",
       store,
-      deviceId: isIOS ? "iphone-17-pro-max" : "pixel-10-pro-xl",
+      deviceId,
       preset: {
-        name: isIOS ? 'iPhone 6.9"' : 'Android 6.7"',
-        width: 1290,
-        height: 2796,
+        name: isIOS ? 'iPhone 17 Pro Max (6.9")' : 'Google Pixel 10 Pro XL',
+        width: newW,
+        height: newH,
         store: isIOS ? "ios" : "android",
-        description: isIOS ? "App Store" : "Google Play — standard portrait",
+        description: isIOS ? "App Store — iPhone 6.9\"" : "Google Play — standard portrait",
       },
       mockup: {
-        device: isIOS ? "iphone-17-pro-max" : "pixel-10-pro-xl",
-        color: "black",
-        showFrame: true,
-        showReflection: true,
-        showShadow: false,
-        frameType: "3d",
+        device: deviceId,
+        color: isIOS ? "black" : "obsidian",
+        showFrame: sourceSet?.mockup?.showFrame ?? true,
+        showReflection: sourceSet?.mockup?.showReflection ?? false,
+        showShadow: sourceSet?.mockup?.showShadow ?? false,
+        frameType: sourceSet?.mockup?.frameType ?? "3d",
       },
-      screens: [
+      screens: newScreens.length > 0 ? newScreens : [
         {
-          id: screenId,
+          id: nanoid(),
           name: "Screen 1",
-          width: 1290,
-          height: 2796,
+          width: newW,
+          height: newH,
           caption: "",
           background: { type: "gradient", gradient: { direction: "to-br", stops: [{ color: "#6366f1", position: 0 }, { color: "#8b5cf6", position: 100 }] } },
           layers: [
             {
               id: nanoid(),
               type: "screenshot",
-              x: 129,
-              y: 699,
-              width: 1032,
-              height: 1957,
+              x: Math.round(newW * 0.08),
+              y: Math.round(newH * 0.28),
+              width: Math.round(newW * 0.84),
+              height: Math.round(newH * 0.72),
               rotation: 0,
               opacity: 1,
               objectFit: "cover",
@@ -1011,7 +1058,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     set({
       screenSets: [...screenSets, newSet],
       activeSetId: newId,
-      activeScreenId: screenId,
+      activeScreenId: newSet.screens[0]?.id ?? null,
     });
     get().recordHistory();
   },
