@@ -3,6 +3,7 @@ import {
   ImageLayer, ScreenshotLayer, FlagLayer, CharacterLayer
 } from "@/lib/types";
 import { ALL_DEVICES, IOS_DEVICES, ANDROID_DEVICES, COLOR_HEX_MAP, isTabletDevice } from "@/lib/devices";
+import { getTextGradientPreset } from "@/lib/textPresets";
 
 export interface RenderOptions {
   scale?: number;
@@ -377,7 +378,17 @@ export async function renderScreenToCanvas(
 
       ctx.font = `${tl.fontWeight || 600} ${tl.fontSize}px "${tl.fontFamily || "Inter"}", system-ui, sans-serif`;
 
-      if (tl.gradientColor) {
+      const preset = tl.gradientPresetId ? getTextGradientPreset(tl.gradientPresetId) : null;
+      if (preset) {
+        let grad: CanvasGradient;
+        if (preset.direction === "horizontal") grad = ctx.createLinearGradient(tl.x, 0, tl.x + tl.width, 0);
+        else if (preset.direction === "diagonal") grad = ctx.createLinearGradient(tl.x, tl.y, tl.x + tl.width, tl.y + tl.height);
+        else grad = ctx.createLinearGradient(0, tl.y, 0, tl.y + tl.height);
+        for (const stop of preset.gradientStops) {
+          grad.addColorStop(stop.position / 100, stop.color);
+        }
+        ctx.fillStyle = grad;
+      } else if (tl.gradientColor) {
         const [c1, c2, dir] = tl.gradientColor;
         let grad: CanvasGradient;
         if (dir === "horizontal") grad = ctx.createLinearGradient(tl.x, 0, tl.x + tl.width, 0);
@@ -388,6 +399,25 @@ export async function renderScreenToCanvas(
         ctx.fillStyle = grad;
       } else {
         ctx.fillStyle = tl.color || "#ffffff";
+      }
+
+      // Glow & Shadow
+      const activeGlow = tl.glow || (preset?.glow ? preset.glow : null);
+      if (activeGlow) {
+        ctx.shadowColor = activeGlow.color;
+        ctx.shadowBlur = activeGlow.blur;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+      } else if (tl.shadow) {
+        ctx.shadowColor = tl.shadow.color;
+        ctx.shadowBlur = tl.shadow.blur;
+        ctx.shadowOffsetX = tl.shadow.offsetX;
+        ctx.shadowOffsetY = tl.shadow.offsetY;
+      } else {
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
       }
 
       ctx.textAlign = (tl.align || "left") as CanvasTextAlign;
@@ -422,6 +452,9 @@ export async function renderScreenToCanvas(
       if (tl.highlight) {
         const { color, paddingX, paddingY, cornerRadius } = tl.highlight;
         const totalH = lines.length * lineH;
+        ctx.save();
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
         ctx.fillStyle = color;
         const hx = tl.x - paddingX;
         const hy = tl.y - paddingY;
@@ -430,7 +463,7 @@ export async function renderScreenToCanvas(
         if (cornerRadius > 0) ctx.roundRect(hx, hy, hw, hh, cornerRadius);
         else ctx.rect(hx, hy, hw, hh);
         ctx.fill();
-        ctx.fillStyle = tl.color || "#ffffff";
+        ctx.restore();
       }
 
       lines.forEach((line, i) => {
@@ -443,6 +476,12 @@ export async function renderScreenToCanvas(
         }
         ctx.fillText(line, xPos, yPos, tl.width);
       });
+
+      // Reset shadow
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
     }
 
     // ── SCREENSHOT ZONE (MOCKUP) ──

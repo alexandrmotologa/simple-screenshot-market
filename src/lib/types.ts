@@ -139,6 +139,13 @@ export interface TextLayer {
   color: string;
   /** Optional gradient override: [startColor, endColor, direction] */
   gradientColor?: [string, string, "horizontal" | "vertical" | "diagonal"];
+  /** Optional named metallic / glow gradient preset ID */
+  gradientPresetId?: string;
+  /** Optional glow / neon outer halo */
+  glow?: {
+    color: string;
+    blur: number;
+  };
   align: TextAlign;
   lineHeight: number;
   letterSpacing: number;

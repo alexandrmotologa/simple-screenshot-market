@@ -73,6 +73,8 @@ interface EditorStore {
   bringForward: (setId: string, screenId: string, layerId: string) => void;
   sendBackward: (setId: string, screenId: string, layerId: string) => void;
   syncTextToScreens: (setId: string, srcScreenId: string, layerIndex: number) => void;
+  syncTypographyToAllScreens: (setId: string, sourceLayerId: string) => void;
+  generateDualThemeSet: (sourceSetId: string, targetMode: "dark" | "light") => void;
 
   // Actions: i18n localizations
   updateLayerLocalization: (setId: string, screenId: string, layerId: string, langCode: string, content: string) => void;
@@ -572,6 +574,153 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         };
       }),
     }));
+    get().recordHistory();
+  },
+
+  syncTypographyToAllScreens: (setId, sourceLayerId) => {
+    set((state) => {
+      const targetSet = state.screenSets.find((ss) => ss.id === setId);
+      if (!targetSet) return state;
+
+      // Find the source screen and source text layer
+      let srcLayer: import("@/lib/types").TextLayer | null = null;
+      let srcLayerIndex = -1;
+
+      for (const scr of targetSet.screens) {
+        const idx = scr.layers.findIndex((l) => l.id === sourceLayerId && l.type === "text");
+        if (idx !== -1) {
+          srcLayer = scr.layers[idx] as import("@/lib/types").TextLayer;
+          srcLayerIndex = idx;
+          break;
+        }
+      }
+
+      if (!srcLayer) return state;
+
+      const typographyProps = {
+        fontFamily: srcLayer.fontFamily,
+        fontWeight: srcLayer.fontWeight,
+        fontSize: srcLayer.fontSize,
+        color: srcLayer.color,
+        gradientColor: srcLayer.gradientColor,
+        gradientPresetId: srcLayer.gradientPresetId,
+        glow: srcLayer.glow,
+        shadow: srcLayer.shadow,
+        stroke: srcLayer.stroke,
+        highlight: srcLayer.highlight,
+        textCase: srcLayer.textCase,
+        letterSpacing: srcLayer.letterSpacing,
+        lineHeight: srcLayer.lineHeight,
+        align: srcLayer.align,
+      };
+
+      return {
+        screenSets: state.screenSets.map((ss) => {
+          if (ss.id !== setId) return ss;
+          return {
+            ...ss,
+            screens: ss.screens.map((scr) => ({
+              ...scr,
+              layers: scr.layers.map((layer, idx) => {
+                if (layer.type !== "text") return layer;
+                const isTarget = idx === srcLayerIndex || scr.layers.filter((l) => l.type === "text").length === 1;
+                if (!isTarget) return layer;
+                return {
+                  ...layer,
+                  ...typographyProps,
+                };
+              }),
+            })),
+          };
+        }),
+      };
+    });
+    get().recordHistory();
+  },
+
+  generateDualThemeSet: (sourceSetId, targetMode) => {
+    set((state) => {
+      const sourceSet = state.screenSets.find((ss) => ss.id === sourceSetId);
+      if (!sourceSet) return state;
+
+      const newSetId = nanoid();
+      const isDark = targetMode === "dark";
+      const cleanedName = (sourceSet.name || "Screen Set").replace(/\s*\((Dark|Light)\)/gi, "").trim();
+      const newSetName = `${cleanedName} (${isDark ? "Dark" : "Light"})`;
+
+      const clone = typeof structuredClone === "function"
+        ? structuredClone
+        : (obj: any) => JSON.parse(JSON.stringify(obj));
+
+      const newScreens = clone(sourceSet.screens).map((scr: import("@/lib/types").Screen) => {
+        const newScreenId = nanoid();
+        // Invert / map background
+        const newBg: import("@/lib/types").Background = isDark
+          ? {
+              type: "gradient",
+              gradient: {
+                direction: "to-b",
+                stops: [
+                  { color: "#0F172A", position: 0 },
+                  { color: "#020617", position: 100 },
+                ],
+              },
+            }
+          : {
+              type: "gradient",
+              gradient: {
+                direction: "to-b",
+                stops: [
+                  { color: "#F8FAFC", position: 0 },
+                  { color: "#E2E8F0", position: 100 },
+                ],
+              },
+            };
+
+        // Invert text layers
+        const newLayers = scr.layers.map((l: import("@/lib/types").Layer) => {
+          const newLayerId = nanoid();
+          if (l.type === "text") {
+            const tl = l as import("@/lib/types").TextLayer;
+            const newTextColor = isDark ? "#FFFFFF" : "#0F172A";
+            return {
+              ...tl,
+              id: newLayerId,
+              color: newTextColor,
+              gradientPresetId: isDark && tl.gradientPresetId === "midnight-titanium" ? "silver-chrome" : tl.gradientPresetId,
+            };
+          }
+          return {
+            ...l,
+            id: newLayerId,
+          };
+        });
+
+        return {
+          ...scr,
+          id: newScreenId,
+          background: newBg,
+          layers: newLayers,
+        };
+      });
+
+      const newScreenSet: import("@/lib/types").ScreenSet = {
+        ...clone(sourceSet),
+        id: newSetId,
+        name: newSetName,
+        screens: newScreens,
+        mockup: {
+          ...sourceSet.mockup,
+          color: isDark ? "black" : "silver",
+        },
+      };
+
+      return {
+        screenSets: [...state.screenSets, newScreenSet],
+        activeSetId: newSetId,
+        activeScreenId: newScreens[0]?.id ?? null,
+      };
+    });
     get().recordHistory();
   },
 

@@ -22,10 +22,13 @@ import {
   RotateCcw, Upload, Maximize2, Minimize2, Smartphone,
   AlignCenterHorizontal, AlignCenterVertical,
   ArrowUpToLine, ArrowDownToLine, ArrowLeftToLine, ArrowRightToLine,
-  MoveHorizontal, MoveVertical, RefreshCw, Type, Palette, Check
+  MoveHorizontal, MoveVertical, RefreshCw, Type, Palette, Check,
+  Scissors, Link2, Sparkles
 } from "lucide-react";
 import { cn, loadGoogleFont, nanoid } from "@/lib/utils";
 import { ColorInput } from "@/components/ui/color-input";
+import { AICutoutModal } from "@/components/editor/AICutoutModal";
+import { toast } from "@/lib/store/toastStore";
 
 // ── Google Fonts list for dropdown ────────────────────────────────────────────
 const FONT_FAMILIES = [
@@ -542,7 +545,7 @@ export function FloatingToolbar() {
   const {
     getActiveLayer, getActiveScreen, getActiveSet,
     updateLayer, deleteLayer, duplicateLayer, setActiveLayer,
-    syncTextToScreens, updateScreen
+    syncTextToScreens, syncTypographyToAllScreens, updateScreen
   } = useEditorStore();
 
   const layer = getActiveLayer();
@@ -550,6 +553,7 @@ export function FloatingToolbar() {
   const set = getActiveSet();
 
   const [fontOpen, setFontOpen] = useState(false);
+  const [showCutoutModal, setShowCutoutModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!screen || !set) return null;
@@ -1014,6 +1018,17 @@ export function FloatingToolbar() {
               </PopoverContent>
             </Popover>
 
+            {/* 3D Pop-Out / AI Cutout Button */}
+            <button
+              type="button"
+              onClick={() => setShowCutoutModal(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-pink-500/15 border border-purple-500/30 hover:border-purple-500/60 text-foreground font-semibold shrink-0 transition-all cursor-pointer shadow-xs"
+              title="Extract subject from screenshot to create floating 3D layer"
+            >
+              <Scissors className="w-3.5 h-3.5 text-purple-400" />
+              <span className="hidden sm:inline">3D Pop-Out</span>
+            </button>
+
             <Separator orientation="vertical" className="h-5 mx-0.5 shrink-0" />
           </>
         )}
@@ -1324,23 +1339,25 @@ export function FloatingToolbar() {
           </>
         )}
 
-        {/* ── SYNC TEXT TO ALL SCREENS ───────────────────────────────────── */}
+        {/* ── SYNC TYPOGRAPHY TO ALL SCREENS ───────────────────────────── */}
         {isText && tl && (() => {
           const screenSet = set;
           if (!screenSet || !screen) return null;
-          const layerIndex = screen.layers.findIndex((l) => l.id === layer.id);
           const hasMultipleScreens = screenSet.screens.length > 1;
-          if (!hasMultipleScreens || layerIndex === -1) return null;
+          if (!hasMultipleScreens) return null;
           return (
             <Tooltip>
               <TooltipTrigger
-                onClick={() => syncTextToScreens(screenSet.id, screen.id, layerIndex)}
-                className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 text-xs font-medium transition-colors shrink-0"
+                onClick={() => {
+                  syncTypographyToAllScreens(screenSet.id, layer.id);
+                  toast.success(`Synced typography & style to all ${screenSet.screens.length} screens!`);
+                }}
+                className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-primary/15 hover:bg-primary/25 text-primary text-xs font-semibold transition-colors shrink-0 cursor-pointer"
               >
                 <RefreshCw className="w-3 h-3" />
-                Sync Style to All
+                <span>Sync Style to All</span>
               </TooltipTrigger>
-              <TooltipContent>Copy this text to all screens in set</TooltipContent>
+              <TooltipContent>Apply current font, gradient &amp; style to all screens in set</TooltipContent>
             </Tooltip>
           );
         })()}
@@ -1357,6 +1374,13 @@ export function FloatingToolbar() {
           <Trash2 className="w-3.5 h-3.5" />
         </Btn>
       </div>
+
+      {/* AI Cutout & 3D Pop-Out Modal */}
+      <AICutoutModal
+        open={showCutoutModal}
+        onClose={() => setShowCutoutModal(false)}
+        initialImageSrc={sl?.src || (layer.type === "image" ? (layer as any).src : undefined)}
+      />
     </TooltipProvider>
   );
 }

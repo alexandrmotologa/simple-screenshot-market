@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ColorInput } from "@/components/ui/color-input";
+import { toast } from "@/lib/store/toastStore";
 
 const POPULAR_PALETTES = [
   { name: "iOS Indigo", bg: "#4F46E5", fg: "#FFFFFF" },
@@ -33,7 +34,8 @@ const GRADIENT_DIRECTIONS: { id: GradientDirection; label: string; arrow: string
 ];
 
 export function ThemesPanel() {
-  const { themeId, applyThemeToProject, applyCustomThemeToProject } = useEditorStore();
+  const { themeId, applyThemeToProject, applyCustomThemeToProject, getActiveSet, generateDualThemeSet } = useEditorStore();
+  const activeSet = getActiveSet();
   const [activeTab, setActiveTab] = useState<"presets" | "custom">("presets");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<ThemeCategory>("all");
@@ -164,6 +166,33 @@ export function ThemesPanel() {
 
       {activeTab === "presets" ? (
         <div className="flex flex-col flex-1 min-h-0">
+          {/* Dual Theme Generator Quick Action */}
+          {activeSet && (
+            <div className="px-3 py-2 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-transparent border-b border-border/40 flex items-center justify-between gap-2 shrink-0">
+              <div className="min-w-0">
+                <span className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
+                  <Sparkles className="w-3 h-3 text-primary" />
+                  <span>Dual Dark / Light Mode</span>
+                </span>
+                <p className="text-[9.5px] text-muted-foreground truncate">
+                  Create matching {(activeSet?.name || "").toLowerCase().includes("dark") ? "Light" : "Dark"} version
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const isDark = (activeSet?.name || "").toLowerCase().includes("dark");
+                  const targetMode = isDark ? "light" : "dark";
+                  generateDualThemeSet(activeSet.id, targetMode);
+                  toast.success(`✨ Created ${targetMode === "dark" ? "Dark" : "Light"} Mode screen set!`);
+                }}
+                className="px-2 py-1 rounded-lg bg-primary/15 hover:bg-primary/25 text-primary text-[10.5px] font-bold border border-primary/30 flex items-center gap-1 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
+              >
+                <span>{(activeSet?.name || "").toLowerCase().includes("dark") ? "☀️ Make Light Set" : "🌙 Make Dark Set"}</span>
+              </button>
+            </div>
+          )}
+
           {/* Search & Category Filter Section */}
           <div className="p-3 border-b border-border/40 space-y-2.5 shrink-0 bg-card/40">
             <div className="relative">

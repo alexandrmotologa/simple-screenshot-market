@@ -6,7 +6,8 @@ import { toast } from "@/lib/store/toastStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { Lock, Sparkles } from "lucide-react";
+import { Lock, Sparkles, Link2, Palette, Check, RefreshCw, Layers } from "lucide-react";
+import { TEXT_GRADIENT_PRESETS, TextGradientPreset } from "@/lib/textPresets";
 
 // ── Google Fonts loader ────────────────────────────────────────────────────────
 const GOOGLE_FONTS = [
@@ -296,6 +297,119 @@ const PRESET_CATEGORIES: PresetCategory[] = [
     ],
   },
 ];
+
+// ── Smart Typography Sync Widget ───────────────────────────────────────────
+function SmartSyncWidget() {
+  const { getActiveSet, getActiveLayer, syncTypographyToAllScreens } = useEditorStore();
+  const set = getActiveSet();
+  const layer = getActiveLayer();
+
+  if (!set || !layer || layer.type !== "text") return null;
+
+  const handleSync = () => {
+    syncTypographyToAllScreens(set.id, layer.id);
+    toast.success(`Synced typography to all ${set.screens.length} screens in set!`);
+  };
+
+  return (
+    <div className="px-3.5 py-2.5 border-b border-border/40 bg-primary/5 flex items-center justify-between gap-2">
+      <div className="min-w-0">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+          <Link2 className="w-3.5 h-3.5 text-primary" />
+          <span>Smart Text Link</span>
+        </div>
+        <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+          Sync font, style &amp; gradients across all screens without changing copy
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={handleSync}
+        className="shrink-0 px-2.5 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-[11px] flex items-center gap-1 transition-all cursor-pointer shadow-xs active:scale-95"
+        title="Apply current font, gradient and styling to all screens in active set"
+      >
+        <RefreshCw className="w-3 h-3" />
+        <span>Sync All</span>
+      </button>
+    </div>
+  );
+}
+
+// ── Metallic & Glow Text Gradients Widget ────────────────────────────────────
+function TextGradientsWidget() {
+  const { getActiveSet, getActiveScreen, getActiveLayer, updateLayer } = useEditorStore();
+  const layer = getActiveLayer();
+  const set = getActiveSet();
+  const screen = getActiveScreen();
+
+  if (!layer || layer.type !== "text" || !set || !screen) return null;
+  const tl = layer as import("@/lib/types").TextLayer;
+
+  const handleApplyPreset = (preset: TextGradientPreset) => {
+    updateLayer(set.id, screen.id, layer.id, {
+      gradientPresetId: preset.id,
+      color: preset.textColor,
+      glow: preset.glow,
+      gradientColor: undefined, // Clears ad-hoc gradient if any
+    } as Partial<import("@/lib/types").Layer>);
+    useEditorStore.getState().recordHistory();
+    toast.success(`Applied ${preset.name} style!`);
+  };
+
+  return (
+    <div className="px-3.5 py-3 border-b border-border/40 bg-card/30 space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <Palette className="w-3.5 h-3.5 text-primary" />
+          <span>Metallic &amp; Glow Styles</span>
+        </span>
+        <span className="text-[9px] font-mono text-muted-foreground">
+          {TEXT_GRADIENT_PRESETS.length} presets
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-1.5">
+        {TEXT_GRADIENT_PRESETS.map((preset) => {
+          const isSelected = tl.gradientPresetId === preset.id;
+          return (
+            <button
+              key={preset.id}
+              type="button"
+              onClick={() => handleApplyPreset(preset)}
+              className={cn(
+                "flex items-center gap-2 p-1.5 rounded-lg border text-left transition-all cursor-pointer group relative overflow-hidden",
+                isSelected
+                  ? "bg-primary/15 border-primary shadow-xs ring-1 ring-primary/40"
+                  : "bg-secondary/40 hover:bg-secondary/80 border-border/40 hover:border-border/80"
+              )}
+            >
+              {/* Preview swatch */}
+              <div
+                className="w-5 h-5 rounded-md border border-white/20 shrink-0 flex items-center justify-center shadow-xs"
+                style={{
+                  background: preset.previewBg,
+                  boxShadow: preset.glow ? `0 0 8px ${preset.glow.color}` : undefined,
+                }}
+              >
+                {isSelected && <Check className="w-3 h-3 text-black stroke-[3]" />}
+              </div>
+
+              {/* Preset name */}
+              <div className="min-w-0 flex-1">
+                <span className={cn(
+                  "text-[11px] font-medium block truncate",
+                  isSelected ? "text-primary font-bold" : "text-foreground group-hover:text-primary"
+                )}>
+                  {preset.name}
+                </span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 // ── Font selector row ─────────────────────────────────────────────────────────
 function FontRow() {
@@ -607,6 +721,12 @@ export function TextPanel() {
 
   return (
     <div className="flex flex-col h-full min-h-0 overflow-hidden">
+      {/* Smart Typography Sync (Text Link) — shown when text layer is active */}
+      {hasTextLayer && <SmartSyncWidget />}
+
+      {/* Metallic & Glow Text Gradients Picker — shown when text layer is active */}
+      {hasTextLayer && <TextGradientsWidget />}
+
       {/* AI Copywriter Widget — shown when text layer is active */}
       {hasTextLayer && <AICopywriterWidget />}
 

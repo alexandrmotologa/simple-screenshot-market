@@ -8,7 +8,7 @@ import { ALL_DEVICES, isTabletDevice, IOS_DEVICES, ANDROID_DEVICES } from "@/lib
 import { AppleStoreIcon, GooglePlayIcon, APP_STORE_LABEL, GOOGLE_PLAY_LABEL } from "@/components/icons/StoreIcons";
 import {
   CheckCircle2, AlertTriangle, XCircle, ShieldCheck,
-  Smartphone, Tablet, Info, ChevronDown, Eye, Trash2, Plus
+  Smartphone, Tablet, Info, ChevronDown, Eye, Trash2, Plus, Sparkles
 } from "lucide-react";
 import { Screen, ScreenshotLayer, ImageLayer, ScreenSet } from "@/lib/types";
 import {
@@ -35,6 +35,7 @@ export function PlatformsPanel() {
     updateDevice,
     setActiveSet,
     setActiveScreen,
+    generateDualThemeSet,
   } = useEditorStore();
 
   const [showSimulator, setShowSimulator] = useState(false);
@@ -467,6 +468,31 @@ export function PlatformsPanel() {
                             ? "Google Play requires 7\" & 10\" tablet screenshots for Featured tab eligibility."
                             : "Google Play recommends 16:9 or 9:16 aspect ratio with min. 1080px."}
                         </span>
+                      </div>
+
+                      {/* Dual Theme Set Generator Button */}
+                      <div className="pt-2 border-t border-border/40 flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <span className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
+                            <Sparkles className="w-3 h-3 text-primary" />
+                            <span>Dual Theme Generator</span>
+                          </span>
+                          <p className="text-[9.5px] text-muted-foreground truncate">
+                            Auto-clone as {(ss.name || "").toLowerCase().includes("dark") ? "Light Mode" : "Dark Mode"} set
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const isDark = (ss.name || "").toLowerCase().includes("dark");
+                            const targetMode = isDark ? "light" : "dark";
+                            generateDualThemeSet(ss.id, targetMode);
+                            toast.success(`✨ Created ${targetMode === "dark" ? "Dark" : "Light"} Mode dual screen set!`);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-secondary/80 hover:bg-secondary text-foreground text-[11px] font-semibold border border-border/60 hover:border-primary/40 flex items-center gap-1 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
+                        >
+                          <span>{(ss.name || "").toLowerCase().includes("dark") ? "☀️ Create Light Set" : "🌙 Create Dark Set"}</span>
+                        </button>
                       </div>
                     </div>
                   </div>
