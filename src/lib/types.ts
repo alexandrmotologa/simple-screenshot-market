@@ -314,6 +314,13 @@ export type DeviceColor = string; // e.g. "black", "white", "titanium-natural", 
 
 export type FrameType = "3d" | "2d" | "clay" | "glass" | "neon" | "titanium" | "wireframe";
 
+export type DeviceShadowPreset =
+  | "none"
+  | "soft-ambient"
+  | "floating-studio"
+  | "hard-isometric"
+  | "neon-glow";
+
 export interface MockupSettings {
   device: string;
   color: DeviceColor;
@@ -321,6 +328,8 @@ export interface MockupSettings {
   frameType?: FrameType;
   showReflection: boolean;
   showShadow: boolean;
+  shadowPreset?: DeviceShadowPreset;
+  shadowGlowColor?: string;
   /** Squircle (iOS-style rounded) corners for the card */
   squircle?: boolean;
   /** Show/hide screenshots (focus mode) */

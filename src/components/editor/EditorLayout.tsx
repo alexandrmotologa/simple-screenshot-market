@@ -499,12 +499,23 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
             )}
           </button>
 
+          {/* Video / Animated GIF Studio */}
+          <button
+            type="button"
+            onClick={() => setShowGif(true)}
+            className="h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs font-bold border border-pink-500/30 bg-pink-500/10 hover:bg-pink-500/20 text-pink-500 dark:text-pink-400 transition-all cursor-pointer shadow-xs active:scale-95"
+            title="Export Video (MP4/WebM) & Animated GIF carousel for TikTok & Social Ads"
+          >
+            <Film className="w-3.5 h-3.5 text-pink-500" />
+            <span className="hidden lg:inline">Video / GIF</span>
+          </button>
+
           {/* Export Button */}
           <button
             id="export-btn"
             type="button"
             onClick={() => setShowExport(true)}
-            className="h-7 flex items-center gap-1.5 px-3 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm shadow-primary/30"
+            className="h-7 flex items-center gap-1.5 px-3 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm shadow-primary/30 cursor-pointer"
           >
             <Download className="w-3 h-3" />
             Export
@@ -548,7 +559,11 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
       )}
       {/* Export modal */}
       {showExport && (
-        <ExportModal projectId={projectId} onClose={() => setShowExport(false)} />
+        <ExportModal
+          projectId={projectId}
+          onClose={() => setShowExport(false)}
+          onOpenGifStudio={() => setShowGif(true)}
+        />
       )}
       {showGif && (
         <GifExportModal projectId={projectId} onClose={() => setShowGif(false)} />

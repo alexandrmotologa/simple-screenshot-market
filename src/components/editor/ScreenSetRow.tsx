@@ -142,6 +142,10 @@ export function ScreenSetRow({ screenSet, isDragging = false }: ScreenSetRowProp
       updateMockup(ss.id, {
         showFrame: currentMockup.showFrame,
         showShadow: currentMockup.showShadow,
+        shadowPreset: currentMockup.shadowPreset,
+        shadowGlowColor: currentMockup.shadowGlowColor,
+        cleanStatusBar: currentMockup.cleanStatusBar,
+        statusBarTheme: currentMockup.statusBarTheme,
         color: currentMockup.color,
         frameType: currentMockup.frameType,
         squircle: currentMockup.squircle,

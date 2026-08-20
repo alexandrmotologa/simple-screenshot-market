@@ -13,6 +13,7 @@ import type { Template } from "@/lib/types";
 // ── Category definitions ────────────────────────────────────────────────────
 const CATEGORIES = [
   "All",
+  "Pro Niches",
   "10 Screens",
   "6 Screens",
   "5 Screens",
@@ -88,9 +89,17 @@ function TemplateCard({
         </div>
 
         {/* Screen count badge */}
-        <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-md bg-black/50 backdrop-blur-md text-[9.5px] font-semibold text-white/90 border border-white/10 flex items-center gap-1">
-          <Layers className="w-2.5 h-2.5" />
-          <span>{screenCount} {screenCount === 1 ? "Screen" : "Screens"}</span>
+        <div className="absolute top-2 left-2 flex items-center gap-1">
+          {template.id.startsWith("niche-") && (
+            <div className="px-1.5 py-0.5 rounded-md bg-indigo-500/80 backdrop-blur-md text-[9px] font-bold text-white shadow-xs flex items-center gap-0.5">
+              <Sparkles className="w-2.5 h-2.5" />
+              <span>PRO</span>
+            </div>
+          )}
+          <div className="px-1.5 py-0.5 rounded-md bg-black/50 backdrop-blur-md text-[9.5px] font-semibold text-white/90 border border-white/10 flex items-center gap-1">
+            <Layers className="w-2.5 h-2.5" />
+            <span>{screenCount} {screenCount === 1 ? "Screen" : "Screens"}</span>
+          </div>
         </div>
 
         {/* Hover overlay */}
@@ -138,6 +147,7 @@ export function TemplatesPanel() {
       const count = t.screens?.length || 1;
       let matchCat = false;
       if (category === "All") matchCat = true;
+      else if (category === "Pro Niches") matchCat = t.id.startsWith("niche-") || t.tags.some(tag => ["fintech", "crypto", "fitness", "saas", "social", "ecommerce", "meditation"].includes(tag.toLowerCase()));
       else if (category === "10 Screens") matchCat = count === 10;
       else if (category === "6 Screens") matchCat = count === 6;
       else if (category === "5 Screens") matchCat = count === 5;

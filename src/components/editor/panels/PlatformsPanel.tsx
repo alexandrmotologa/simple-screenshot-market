@@ -25,6 +25,14 @@ import { StorePreviewModal } from "@/components/editor/StorePreviewModal";
 import { toast } from "@/lib/store/toastStore";
 import { cn } from "@/lib/utils";
 
+export const SHADOW_PRESETS_LIST = [
+  { id: "soft-ambient", label: "Soft Ambient", desc: "Natural studio elevation" },
+  { id: "floating-studio", label: "Floating Studio", desc: "Deep cinematic 3D drop shadow" },
+  { id: "hard-isometric", label: "Hard Isometric", desc: "Crisp architectural CAD shadow" },
+  { id: "neon-glow", label: "Neon Glow Halo", desc: "Vibrant luminescent light halo" },
+  { id: "none", label: "None (Flat)", desc: "Zero shadow" },
+];
+
 export function PlatformsPanel() {
   const {
     screenSets,
@@ -417,6 +425,50 @@ export function PlatformsPanel() {
                                     <span className="text-[9.5px] text-muted-foreground font-normal truncate">{item.desc}</span>
                                   </div>
                                   {getFrameStyle(ss) === item.id && <span className="text-primary font-bold ml-1">✓</span>}
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuGroup>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+
+                      {/* Device Shadow Style */}
+                      <div className="flex items-center justify-between pt-1.5 text-[11px]">
+                        <span className="text-muted-foreground flex items-center gap-1.5">
+                          <span>🌗</span>
+                          Device Shadow
+                        </span>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger className="flex items-center gap-1 px-2 py-0.5 rounded-lg border border-border/60 bg-secondary/60 hover:bg-secondary text-[11px] font-medium text-foreground transition-colors outline-none cursor-pointer">
+                            <span className="max-w-28 truncate">
+                              {SHADOW_PRESETS_LIST.find((s) => s.id === (ss.mockup?.shadowPreset || (ss.mockup?.showShadow ? "soft-ambient" : "none")))?.label || "Soft Ambient"}
+                            </span>
+                            <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-52">
+                            <DropdownMenuGroup>
+                              <DropdownMenuLabel className="text-xs">Shadow &amp; Glow Style</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              {SHADOW_PRESETS_LIST.map((item) => (
+                                <DropdownMenuItem
+                                  key={item.id}
+                                  className="text-xs cursor-pointer flex items-center justify-between py-1.5"
+                                  onClick={() => {
+                                    if (item.id === "none") {
+                                      updateMockup(ss.id, { showShadow: false, shadowPreset: "none" });
+                                    } else {
+                                      updateMockup(ss.id, { showShadow: true, shadowPreset: item.id as any });
+                                    }
+                                    useEditorStore.getState().recordHistory();
+                                  }}
+                                >
+                                  <div className="flex flex-col min-w-0">
+                                    <span className="font-medium truncate">{item.label}</span>
+                                    <span className="text-[9.5px] text-muted-foreground font-normal truncate">{item.desc}</span>
+                                  </div>
+                                  {(ss.mockup?.shadowPreset === item.id || (!ss.mockup?.shadowPreset && item.id === (ss.mockup?.showShadow ? "soft-ambient" : "none"))) && (
+                                    <span className="text-primary font-bold ml-1">✓</span>
+                                  )}
                                 </DropdownMenuItem>
                               ))}
                             </DropdownMenuGroup>

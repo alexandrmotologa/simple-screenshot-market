@@ -530,10 +530,34 @@ export async function renderScreenToCanvas(
 
       const applyShadow = () => {
         if (mockup?.showShadow === true) {
-          ctx.shadowBlur = sl.shadow?.blur ?? 80;
-          ctx.shadowColor = sl.shadow?.color ?? "rgba(0,0,0,0.35)";
-          ctx.shadowOffsetX = sl.shadow?.offsetX ?? 0;
-          ctx.shadowOffsetY = sl.shadow?.offsetY ?? 20;
+          const preset = mockup.shadowPreset || "soft-ambient";
+          if (preset === "none") {
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = "transparent";
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+          } else if (preset === "floating-studio") {
+            ctx.shadowBlur = 110;
+            ctx.shadowColor = "rgba(0,0,0,0.48)";
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 38;
+          } else if (preset === "hard-isometric") {
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = "rgba(0,0,0,0.38)";
+            ctx.shadowOffsetX = 24;
+            ctx.shadowOffsetY = 28;
+          } else if (preset === "neon-glow") {
+            ctx.shadowBlur = 95;
+            ctx.shadowColor = mockup.shadowGlowColor || "rgba(99,102,241,0.65)";
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+          } else {
+            // soft-ambient (default)
+            ctx.shadowBlur = sl.shadow?.blur ?? 75;
+            ctx.shadowColor = sl.shadow?.color ?? "rgba(0,0,0,0.28)";
+            ctx.shadowOffsetX = sl.shadow?.offsetX ?? 0;
+            ctx.shadowOffsetY = sl.shadow?.offsetY ?? 18;
+          }
         }
       };
 

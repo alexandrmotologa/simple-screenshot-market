@@ -3613,9 +3613,13 @@ const mappedFigmaTemplates: Template[] = FIGMA_TEMPLATES.map((ft) => {
   };
 });
 
-// All templates ordered: Blank, then Community Templates, then Figma Templates 1 to 27, then Core Templates
+import { NICHE_TEMPLATES } from "./nicheTemplates";
+export { NICHE_TEMPLATES };
+
+// All templates ordered: Blank, then Niche Industry Pro Templates, then Community Templates, then Figma Templates 1 to 27, then Core Templates
 export const ALL_TEMPLATES: Template[] = [
   BLANK_TEMPLATE,
+  ...NICHE_TEMPLATES,
   ...COMMUNITY_TEMPLATES,
   ...mappedFigmaTemplates,
   ...CORE_TEMPLATES,

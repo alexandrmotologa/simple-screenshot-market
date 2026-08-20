@@ -338,13 +338,18 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
                   )}
                   onClick={() => setSelectedTemplate(tpl.id)}
                 >
-                  {/* Popular Badge */}
-                  {isPopular && (
+                  {/* Pro Industry or Popular Badge */}
+                  {tpl.id.startsWith("niche-") ? (
+                    <div className="absolute top-4 left-4 z-10 flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 shadow-xs">
+                      <Sparkles className="w-3 h-3 text-indigo-500 fill-indigo-500/30" />
+                      PRO INDUSTRY
+                    </div>
+                  ) : isPopular ? (
                     <div className="absolute top-4 left-4 z-10 flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 shadow-xs">
                       <Flame className="w-3 h-3 fill-amber-500 text-amber-500" />
                       POPULAR
                     </div>
-                  )}
+                  ) : null}
 
                   {/* Selection indicator */}
                   <div className={cn(
