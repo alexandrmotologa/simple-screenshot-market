@@ -11,7 +11,7 @@ SnapFrame is optimized for zero-config deployment on Vercel.
 ### Step 1: Import Repository
 1. Log in to [Vercel](https://vercel.com).
 2. Click **"Add New..."** → **"Project"**.
-3. Select your GitHub repository (`simple-screenshot-market`).
+3. Select your GitHub repository (`snapframe.store`).
 4. Framework Preset will automatically detect **Next.js**.
 
 ### Step 2: Configure Environment Variables

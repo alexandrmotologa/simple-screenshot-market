@@ -206,7 +206,7 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="https://github.com/alexandrmotologa/simple-screenshot-market"
+                  href="https://github.com/alexandrmotologa/snapframe.store"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"

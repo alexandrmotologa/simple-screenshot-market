@@ -84,8 +84,8 @@
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/alexandrmotologa/simple-screenshot-market.git
-cd simple-screenshot-market
+git clone https://github.com/alexandrmotologa/snapframe.store.git
+cd snapframe.store
 ```
 
 ### 2. Install dependencies
@@ -124,7 +124,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## 📁 Project Structure
 
 ```
-simple-screenshot-market/
+snapframe.store/
 ├── docs/                      # Comprehensive technical documentation
 │   ├── ARCHITECTURE.md        # State management, canvas engine & layer pipeline
 │   ├── AI_SUPERPOWERS.md      # AI multi-provider failover, Vision & ASO copilot

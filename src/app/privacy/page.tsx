@@ -129,7 +129,7 @@ export default function PrivacyPolicyPage() {
             <div className="p-4 rounded-xl bg-secondary/30 border border-border/40 text-xs text-foreground space-y-1">
               <p className="font-semibold">SnapFrame Data Protection & Legal Office</p>
               <p className="text-muted-foreground">Email: <a href="mailto:privacy@snapframe.store" className="text-primary hover:underline">privacy@snapframe.store</a></p>
-              <p className="text-muted-foreground">GitHub Security: <a href="https://github.com/alexandrmotologa/simple-screenshot-market/security" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Security Advisory Hub</a></p>
+              <p className="text-muted-foreground">GitHub Security: <a href="https://github.com/alexandrmotologa/snapframe.store/security" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Security Advisory Hub</a></p>
             </div>
           </section>
 

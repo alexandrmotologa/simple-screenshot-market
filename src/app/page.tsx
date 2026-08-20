@@ -57,7 +57,7 @@ export default function LandingPage() {
               variant="ghost"
               size="sm"
               className="text-muted-foreground hidden sm:flex"
-              onClick={() => window.open("https://github.com/alexandrmotologa/simple-screenshot-market", "_blank")}
+              onClick={() => window.open("https://github.com/alexandrmotologa/snapframe.store", "_blank")}
             >
               <Globe className="w-4 h-4 mr-1.5" />
               GitHub
