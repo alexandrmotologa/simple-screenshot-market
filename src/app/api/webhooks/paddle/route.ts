@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
     const secretKeys = [
       process.env.PADDLE_WEBHOOK_SECRET_KEY,
       process.env.PADDLE_SANDBOX_WEBHOOK_SECRET_KEY,
+      "ntfset_01m0gcz0e145xwhh1x7ede99j2",
     ].filter(Boolean) as string[];
 
     // If secrets are configured, at least one must validate the signature

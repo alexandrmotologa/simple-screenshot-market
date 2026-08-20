@@ -38,29 +38,29 @@ export function getPaddleConfig() {
     environment === "sandbox"
       ? process.env.NEXT_PUBLIC_PADDLE_SANDBOX_CLIENT_TOKEN ||
         process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN ||
-        "test_token"
+        "test_4ec755383baa68f463e76e253a5"
       : process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN ||
         process.env.NEXT_PUBLIC_PADDLE_SANDBOX_CLIENT_TOKEN ||
-        "test_token";
+        "test_4ec755383baa68f463e76e253a5";
 
   // Resolve Price IDs
   const monthlyPriceId =
     environment === "sandbox"
       ? process.env.NEXT_PUBLIC_PADDLE_SANDBOX_PRICE_MONTHLY ||
         process.env.NEXT_PUBLIC_PADDLE_PRICE_MONTHLY ||
-        "pri_monthly_snapframe_pro"
+        "pri_01m0gcefx09erjdmn8z988bjgh"
       : process.env.NEXT_PUBLIC_PADDLE_PRICE_MONTHLY ||
         process.env.NEXT_PUBLIC_PADDLE_SANDBOX_PRICE_MONTHLY ||
-        "pri_monthly_snapframe_pro";
+        "pri_01m0gcefx09erjdmn8z988bjgh";
 
   const annualPriceId =
     environment === "sandbox"
       ? process.env.NEXT_PUBLIC_PADDLE_SANDBOX_PRICE_ANNUAL ||
         process.env.NEXT_PUBLIC_PADDLE_PRICE_ANNUAL ||
-        "pri_annual_snapframe_pro"
+        "pri_01m0gcg2egwg8vvcmvc4rwqjm9"
       : process.env.NEXT_PUBLIC_PADDLE_PRICE_ANNUAL ||
         process.env.NEXT_PUBLIC_PADDLE_SANDBOX_PRICE_ANNUAL ||
-        "pri_annual_snapframe_pro";
+        "pri_01m0gcg2egwg8vvcmvc4rwqjm9";
 
   return {
     environment,
