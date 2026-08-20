@@ -3,11 +3,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Plus, ExternalLink } from "lucide-react";
 import { useEditorStore } from "@/lib/store/editorStore";
+import { getCanvasBackground } from "@/lib/canvasBackgrounds";
 import { ScreenSetRow } from "@/components/editor/ScreenSetRow";
 import { cn } from "@/lib/utils";
 
 export function HorizontalCanvas() {
-  const { screenSets, zoom, setZoom } = useEditorStore();
+  const { screenSets, zoom, setZoom, canvasBackground } = useEditorStore();
+  const bgConfig = getCanvasBackground(canvasBackground);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPanning, setIsPanning] = useState(false);
   const panStateRef = useRef<{
@@ -89,14 +91,11 @@ export function HorizontalCanvas() {
       ref={containerRef}
       onMouseDown={handleMouseDown}
       className={cn(
-        "flex-1 overflow-auto bg-background transition-colors text-foreground/15",
+        "flex-1 overflow-auto bg-background transition-colors",
+        bgConfig.className,
         isPanning ? "cursor-grabbing select-none" : "cursor-grab"
       )}
-      style={{
-        backgroundImage:
-          "radial-gradient(circle, currentColor 1.2px, transparent 1.2px)",
-        backgroundSize: "24px 24px",
-      }}
+      style={bgConfig.style}
     >
       <div className="min-w-fit px-12 py-10 space-y-12">
         {screenSets.map((ss) => (

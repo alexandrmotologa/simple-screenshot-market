@@ -22,6 +22,7 @@ import { ScreenStrip } from "@/components/editor/ScreenStrip";
 import { ExportModal } from "@/components/editor/ExportModal";
 import { GifExportModal } from "@/components/editor/GifExportModal";
 import { AIAutoPilotModal } from "@/components/editor/AIAutoPilotModal";
+import { CanvasBackgroundSelector } from "@/components/editor/CanvasBackgroundSelector";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/auth/UserMenu";
@@ -399,6 +400,9 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
               </div>
             </PopoverContent>
           </Popover>
+
+          {/* Canvas Background Pattern Selector */}
+          <CanvasBackgroundSelector />
 
           <Separator orientation="vertical" className="h-4" />
 

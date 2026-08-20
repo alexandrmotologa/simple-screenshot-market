@@ -3,6 +3,7 @@ import { Layer, Screen, ScreenSet, Background, MockupSettings, ThemeId } from "@
 import { themeById } from "@/lib/themes";
 import { nanoid } from "@/lib/utils";
 import { ALL_DEVICES } from "@/lib/devices";
+import { CanvasBackgroundId, getSavedCanvasBackground, saveCanvasBackground } from "@/lib/canvasBackgrounds";
 
 interface HistoryEntry {
   screenSets: ScreenSet[];
@@ -27,6 +28,7 @@ interface EditorStore {
   zoom: number;
   showGrid: boolean;
   showGuides: boolean;
+  canvasBackground: CanvasBackgroundId;
 
   // History (undo/redo)
   history: HistoryEntry[];
@@ -88,6 +90,7 @@ interface EditorStore {
   setZoom: (zoom: number) => void;
   toggleGrid: () => void;
   toggleGuides: () => void;
+  setCanvasBackground: (bg: CanvasBackgroundId) => void;
 
   // Actions: history
   undo: () => void;
@@ -138,6 +141,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   zoom: 0.65,
   showGrid: false,
   showGuides: true,
+  canvasBackground: getSavedCanvasBackground(),
   history: [],
   historyIndex: -1,
 
@@ -776,6 +780,10 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   setZoom: (zoom) => set({ zoom: Math.min(2, Math.max(0.1, zoom)) }),
   toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
   toggleGuides: () => set((state) => ({ showGuides: !state.showGuides })),
+  setCanvasBackground: (bg) => {
+    saveCanvasBackground(bg);
+    set({ canvasBackground: bg });
+  },
 
   recordHistory: (immediate: boolean = false) => {
     if (historyDebounceTimer) {
