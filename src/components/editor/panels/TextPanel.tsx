@@ -486,8 +486,8 @@ function FontRow() {
 // ── AI Copywriter & Tone Assistant ──────────────────────────────────────────
 function AICopywriterWidget() {
   const { getActiveSet, getActiveScreen, getActiveLayer, updateLayer } = useEditorStore();
-  const { user, setAuthModalOpen } = useAuthStore();
-  const isGuest = Boolean(user && user.isAnonymous);
+  const { user, isPro, aiCredits, consumeAiCredit, setAuthModalOpen } = useAuthStore();
+  const isGuest = Boolean(!user || user.isAnonymous);
 
   const layer = getActiveLayer();
   const set = getActiveSet();
@@ -531,6 +531,9 @@ function AICopywriterWidget() {
   }
 
   const handleRunAI = async (action: "rewrite" | "shorten" | "punchy" | "emojis" | "ideas") => {
+    const creditRes = await consumeAiCredit("ai-copywriter");
+    if (!creditRes.allowed) return;
+
     try {
       setIsGenerating(true);
       setVariations([]);

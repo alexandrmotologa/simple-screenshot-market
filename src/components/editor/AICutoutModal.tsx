@@ -30,6 +30,8 @@ import { ImageLayer, ScreenshotLayer } from "@/lib/types";
 import { nanoid } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
+import { useAuthStore } from "@/lib/store/authStore";
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -38,6 +40,9 @@ interface Props {
 
 export function AICutoutModal({ open, onClose, initialImageSrc }: Props) {
   const { getActiveSet, getActiveScreen, addLayer, getActiveLayer } = useEditorStore();
+  const { user, isPro, aiCredits, consumeAiCredit, setAuthModalOpen } = useAuthStore();
+  const isGuest = Boolean(!user || user.isAnonymous);
+
   const [imageSrc, setImageSrc] = useState<string>("");
   const [tolerance, setTolerance] = useState<number>(28);
   const [feather, setFeather] = useState<number>(3);
@@ -182,7 +187,16 @@ export function AICutoutModal({ open, onClose, initialImageSrc }: Props) {
     reader.readAsDataURL(file);
   };
 
-  const handleInsertPopoutLayer = () => {
+  const handleInsertPopoutLayer = async () => {
+    if (isGuest) {
+      onClose();
+      setAuthModalOpen(true);
+      return;
+    }
+
+    const creditRes = await consumeAiCredit("ai-cutout");
+    if (!creditRes.allowed) return;
+
     const set = getActiveSet();
     const screen = getActiveScreen();
     if (!set || !screen) {

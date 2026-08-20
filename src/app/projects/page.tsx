@@ -23,6 +23,7 @@ import { ConfirmActionModal } from "@/components/dashboard/ConfirmActionModal";
 import { Footer } from "@/components/dashboard/Footer";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { UpgradeModal } from "@/components/pricing/UpgradeModal";
 import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
 import { BrandHeroIcon } from "@/components/ui/BrandHeroIcon";
 
@@ -936,6 +937,7 @@ export default function ProjectsPage() {
       />
 
       <AuthModal />
+      <UpgradeModal />
     </div>
   );
 }

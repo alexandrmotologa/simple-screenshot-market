@@ -20,10 +20,17 @@ interface AuthState {
   user: User | any | null;
   isLoading: boolean;
   isAuthModalOpen: boolean;
+  isUpgradeModalOpen: boolean;
   authError: string | null;
   isInitialized: boolean;
+  isPro: boolean;
+  plan: string | null;
+  subscriptionStatus: string | null;
+  aiCredits: number;
+  usedAiCredits: number;
 
   setAuthModalOpen: (open: boolean) => void;
+  setUpgradeModalOpen: (open: boolean) => void;
   clearError: () => void;
   initializeAuth: () => Promise<void>;
   signInWithGoogle: () => Promise<User | null>;
@@ -32,6 +39,8 @@ interface AuthState {
   linkWithGoogle: () => Promise<User | null>;
   linkWithGithub: () => Promise<User | null>;
   signOutUser: () => Promise<void>;
+  consumeAiCredit: (feature?: string) => Promise<{ allowed: boolean; remaining: number; isPro: boolean }>;
+  setProStatus: (isPro: boolean, plan?: string) => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => {
@@ -68,6 +77,11 @@ export const useAuthStore = create<AuthState>((set, get) => {
                 isLoading: false,
                 isAuthModalOpen: false,
                 isInitialized: true,
+                isPro: Boolean(verification.isPro),
+                plan: verification.plan || null,
+                subscriptionStatus: verification.subscriptionStatus || null,
+                aiCredits: typeof verification.aiCredits === "number" ? verification.aiCredits : 3,
+                usedAiCredits: typeof verification.usedAiCredits === "number" ? verification.usedAiCredits : 0,
               });
               toast.success(`Welcome, ${redirectResult.user.displayName || "Creator"}!`);
               return;
@@ -96,13 +110,18 @@ export const useAuthStore = create<AuthState>((set, get) => {
                 user: currentUser,
                 isLoading: false,
                 isInitialized: true,
+                isPro: Boolean(verification.isPro),
+                plan: verification.plan || null,
+                subscriptionStatus: verification.subscriptionStatus || null,
+                aiCredits: typeof verification.aiCredits === "number" ? verification.aiCredits : (currentUser.isAnonymous ? 0 : 3),
+                usedAiCredits: typeof verification.usedAiCredits === "number" ? verification.usedAiCredits : 0,
               });
             } else {
               const currentLocalUser = get().user;
               if (!currentLocalUser?.isAnonymous || currentLocalUser?.email) {
-                set({ user: null, isLoading: false, isInitialized: true });
+                set({ user: null, isLoading: false, isInitialized: true, isPro: false, aiCredits: 0 });
               } else {
-                set({ isLoading: false, isInitialized: true });
+                set({ isLoading: false, isInitialized: true, isPro: false, aiCredits: 0 });
               }
             }
           });
@@ -120,11 +139,79 @@ export const useAuthStore = create<AuthState>((set, get) => {
     user: null,
     isLoading: false,
     isAuthModalOpen: false,
+    isUpgradeModalOpen: false,
     authError: null,
     isInitialized: false,
+    isPro: false,
+    plan: null,
+    subscriptionStatus: null,
+    aiCredits: 0,
+    usedAiCredits: 0,
 
     setAuthModalOpen: (open) => set({ isAuthModalOpen: open, authError: null }),
+    setUpgradeModalOpen: (open) => set({ isUpgradeModalOpen: open }),
     clearError: () => set({ authError: null }),
+    setProStatus: (isPro, plan) => set({ isPro, plan: plan || null, aiCredits: isPro ? 9999 : get().aiCredits }),
+
+    consumeAiCredit: async (feature = "general") => {
+      const state = get();
+      const currentUser = state.user;
+
+      // 1. If Guest (unregistered / anonymous), block & prompt sign in
+      if (!currentUser || currentUser.isAnonymous) {
+        set({ isAuthModalOpen: true });
+        toast.info("AI features require a free account. Sign in with Google or GitHub to get 3 free AI credits!");
+        return { allowed: false, remaining: 0, isPro: false };
+      }
+
+      // 2. If Pro, unlimited
+      if (state.isPro) {
+        return { allowed: true, remaining: 9999, isPro: true };
+      }
+
+      // 3. If credits exhausted, open Upgrade modal
+      if (state.aiCredits <= 0) {
+        set({ isUpgradeModalOpen: true });
+        toast.info("You've used all 3 free AI credits. Upgrade to SnapFrame Pro for unlimited AI!");
+        return { allowed: false, remaining: 0, isPro: false };
+      }
+
+      // 4. Consume 1 credit via API
+      try {
+        const res = await fetch("/api/ai/consume-credit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ uid: currentUser.uid, feature }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.allowed) {
+            const remaining = typeof data.remaining === "number" ? data.remaining : Math.max(0, state.aiCredits - 1);
+            set({
+              aiCredits: remaining,
+              usedAiCredits: (state.usedAiCredits || 0) + 1,
+              isPro: Boolean(data.isPro),
+            });
+            if (remaining === 0) {
+              toast.info("⚡ Last free AI credit used! Upgrade to Pro anytime for unlimited generations.");
+            }
+            return { allowed: true, remaining, isPro: Boolean(data.isPro) };
+          } else {
+            set({ isUpgradeModalOpen: true, aiCredits: 0 });
+            toast.info(data.message || "Free AI credits exhausted. Upgrade to Pro for unlimited AI!");
+            return { allowed: false, remaining: 0, isPro: false };
+          }
+        }
+      } catch (err) {
+        console.warn("Credit API error, falling back locally:", err);
+      }
+
+      // Local fallback decrement
+      const nextRemaining = Math.max(0, state.aiCredits - 1);
+      set({ aiCredits: nextRemaining, usedAiCredits: (state.usedAiCredits || 0) + 1 });
+      return { allowed: true, remaining: nextRemaining, isPro: false };
+    },
 
     initializeAuth: async () => {
       const { auth } = await getFirebaseAuth();
@@ -162,7 +249,17 @@ export const useAuthStore = create<AuthState>((set, get) => {
             return null;
           }
 
-          set({ user: result.user, isAuthModalOpen: false, isLoading: false, authError: null });
+          set({
+            user: result.user,
+            isAuthModalOpen: false,
+            isLoading: false,
+            authError: null,
+            isPro: Boolean(verification.isPro),
+            plan: verification.plan || null,
+            subscriptionStatus: verification.subscriptionStatus || null,
+            aiCredits: typeof verification.aiCredits === "number" ? verification.aiCredits : 3,
+            usedAiCredits: typeof verification.usedAiCredits === "number" ? verification.usedAiCredits : 0,
+          });
           toast.success(`Welcome, ${result.user.displayName || result.user.email || "Creator"}!`);
           return result.user;
         } catch (popupErr: any) {
@@ -229,7 +326,17 @@ export const useAuthStore = create<AuthState>((set, get) => {
             return null;
           }
 
-          set({ user: result.user, isAuthModalOpen: false, isLoading: false, authError: null });
+          set({
+            user: result.user,
+            isAuthModalOpen: false,
+            isLoading: false,
+            authError: null,
+            isPro: Boolean(verification.isPro),
+            plan: verification.plan || null,
+            subscriptionStatus: verification.subscriptionStatus || null,
+            aiCredits: typeof verification.aiCredits === "number" ? verification.aiCredits : 3,
+            usedAiCredits: typeof verification.usedAiCredits === "number" ? verification.usedAiCredits : 0,
+          });
           toast.success(`Welcome, ${result.user.displayName || "Developer"}!`);
           return result.user;
         } catch (popupErr: any) {
@@ -270,7 +377,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
         if (auth) {
           try {
             const result = await signInAnonymously(auth);
-            set({ user: result.user, isAuthModalOpen: false, isLoading: false });
+            set({ user: result.user, isAuthModalOpen: false, isLoading: false, isPro: false, aiCredits: 0 });
             toast.info("Continuing in Guest Mode (30-day auto clean-up applies). Link an account to keep projects permanently.");
             return result.user;
           } catch (firebaseErr: any) {
@@ -287,7 +394,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
           email: null,
           photoURL: null,
         };
-        set({ user: guestUser, isAuthModalOpen: false, isLoading: false });
+        set({ user: guestUser, isAuthModalOpen: false, isLoading: false, isPro: false, aiCredits: 0 });
         toast.info("Continuing in Guest Mode. Note: Anonymous accounts are subject to 30-day auto clean-up.");
         return guestUser;
       } catch (error: any) {
@@ -299,7 +406,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
           email: null,
           photoURL: null,
         };
-        set({ user: fallbackGuest, isAuthModalOpen: false, isLoading: false });
+        set({ user: fallbackGuest, isAuthModalOpen: false, isLoading: false, isPro: false, aiCredits: 0 });
         toast.info("Continuing in Guest Mode.");
         return fallbackGuest;
       }
@@ -327,7 +434,17 @@ export const useAuthStore = create<AuthState>((set, get) => {
               toast.error(err);
               return null;
             }
-            set({ user: result.user, isAuthModalOpen: false, isLoading: false, authError: null });
+            set({
+              user: result.user,
+              isAuthModalOpen: false,
+              isLoading: false,
+              authError: null,
+              isPro: Boolean(verification.isPro),
+              plan: verification.plan || null,
+              subscriptionStatus: verification.subscriptionStatus || null,
+              aiCredits: typeof verification.aiCredits === "number" ? verification.aiCredits : 3,
+              usedAiCredits: typeof verification.usedAiCredits === "number" ? verification.usedAiCredits : 0,
+            });
             toast.success(`Account linked! Welcome, ${result.user.displayName || "Creator"}!`);
             return result.user;
           } catch (linkErr: any) {
@@ -377,7 +494,17 @@ export const useAuthStore = create<AuthState>((set, get) => {
               toast.error(err);
               return null;
             }
-            set({ user: result.user, isAuthModalOpen: false, isLoading: false, authError: null });
+            set({
+              user: result.user,
+              isAuthModalOpen: false,
+              isLoading: false,
+              authError: null,
+              isPro: Boolean(verification.isPro),
+              plan: verification.plan || null,
+              subscriptionStatus: verification.subscriptionStatus || null,
+              aiCredits: typeof verification.aiCredits === "number" ? verification.aiCredits : 3,
+              usedAiCredits: typeof verification.usedAiCredits === "number" ? verification.usedAiCredits : 0,
+            });
             toast.success(`Account linked! Welcome, ${result.user.displayName || "Developer"}!`);
             return result.user;
           } catch (linkErr: any) {
@@ -412,11 +539,11 @@ export const useAuthStore = create<AuthState>((set, get) => {
         if (auth) {
           await signOut(auth);
         }
-        set({ user: null, isLoading: false });
+        set({ user: null, isLoading: false, isPro: false, plan: null, subscriptionStatus: null, aiCredits: 0, usedAiCredits: 0 });
         toast.info("Signed out successfully.");
       } catch (error: any) {
         console.error("Sign-out Error:", error);
-        set({ user: null, isLoading: false });
+        set({ user: null, isLoading: false, isPro: false, plan: null, subscriptionStatus: null, aiCredits: 0, usedAiCredits: 0 });
         toast.info("Signed out.");
       }
     },

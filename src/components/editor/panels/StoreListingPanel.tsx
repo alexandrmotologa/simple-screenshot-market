@@ -36,8 +36,8 @@ export function StoreListingPanel() {
   const hasAndroid = screenSets.some((ss) => ss.store === "android");
   const { activeLang, projectLanguages, setActiveLang } = useLanguageStore();
   const currentLang = getLang(activeLang);
-  const { user, setAuthModalOpen } = useAuthStore();
-  const isGuest = Boolean(user && user.isAnonymous);
+  const { user, isPro, aiCredits, consumeAiCredit, setAuthModalOpen } = useAuthStore();
+  const isGuest = Boolean(!user || user.isAnonymous);
 
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -78,20 +78,18 @@ export function StoreListingPanel() {
 
   // Debounced auto-save to projectStore
   useEffect(() => {
-    if (!projectId) return;
-    const timer = setTimeout(() => {
-      const existingStoreListing = useProjectStore.getState().getProject(projectId)?.storeListing || {};
+    const timeout = setTimeout(() => {
       updateProject(projectId, {
         storeListing: {
-          ...existingStoreListing,
+          ...(project?.storeListing || {}),
           [activeLang]: {
             ios: appStoreData,
             android: playStoreData,
           },
         },
       });
-    }, 800);
-    return () => clearTimeout(timer);
+    }, 400);
+    return () => clearTimeout(timeout);
   }, [appStoreData, playStoreData, projectId, updateProject, activeLang]);
 
   // ── AI Generate Complete Store Listing ─────────────────────────────────────
@@ -101,6 +99,10 @@ export function StoreListingPanel() {
       toast.info("AI Store Listing generation is for registered accounts. Sign in with Google or GitHub (100% Free) to unlock.");
       return;
     }
+
+    const creditRes = await consumeAiCredit("ai-store-listing");
+    if (!creditRes.allowed) return;
+
     try {
       setIsGenerating(true);
       

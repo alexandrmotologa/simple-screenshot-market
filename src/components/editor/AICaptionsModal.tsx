@@ -49,8 +49,8 @@ interface AICaptionsModalProps {
 export function AICaptionsModal({ onClose }: AICaptionsModalProps) {
   const { getActiveSet, getActiveScreen, updateLayerLocalization } = useEditorStore();
   const { projectLanguages } = useLanguageStore();
-  const { user, setAuthModalOpen } = useAuthStore();
-  const isGuest = Boolean(user && user.isAnonymous);
+  const { user, isPro, aiCredits, consumeAiCredit, setAuthModalOpen } = useAuthStore();
+  const isGuest = Boolean(!user || user.isAnonymous);
 
   const [mistralKey, setMistralKey] = useState(
     typeof window !== "undefined" ? (localStorage.getItem("snapframe_mistral_key") ?? "") : ""
@@ -93,6 +93,10 @@ export function AICaptionsModal({ onClose }: AICaptionsModalProps) {
       return;
     }
     if (!set || !screen || textLayers.length === 0) return;
+
+    const creditRes = await consumeAiCredit("ai-translate");
+    if (!creditRes.allowed) return;
+
     setStatus("loading");
     setErrorMsg("");
     saveKeys();
@@ -132,6 +136,10 @@ export function AICaptionsModal({ onClose }: AICaptionsModalProps) {
       return;
     }
     if (!appUrl.startsWith("http")) return;
+
+    const creditRes = await consumeAiCredit("ai-scrape-captions");
+    if (!creditRes.allowed) return;
+
     setScrapeStatus("loading");
     setScrapedData(null);
     try {

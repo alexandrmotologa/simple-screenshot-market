@@ -27,6 +27,7 @@ import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { UpgradeModal } from "@/components/pricing/UpgradeModal";
 import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
 import { ScreenshotLayer } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -572,6 +573,7 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
         <KeyboardShortcutsModal open={showShortcuts} onClose={() => setShowShortcuts(false)} />
       )}
       <AuthModal />
+      <UpgradeModal />
     </div>
   );
 }

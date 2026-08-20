@@ -50,6 +50,11 @@ export interface EnvironmentVerificationResult {
   registeredEnvironment?: AppEnvironment;
   currentEnvironment: AppEnvironment;
   error?: string;
+  isPro?: boolean;
+  plan?: string | null;
+  subscriptionStatus?: string | null;
+  aiCredits?: number;
+  usedAiCredits?: number;
 }
 
 /**
@@ -62,12 +67,12 @@ export async function verifyAndSyncUserEnvironment(
   const currentEnv = getAppEnvironment();
 
   if (!user || !user.uid) {
-    return { allowed: true, currentEnvironment: currentEnv };
+    return { allowed: true, currentEnvironment: currentEnv, isPro: false, aiCredits: 0 };
   }
 
-  // Anonymous guest sessions are scoped to current environment locally
+  // Anonymous guest sessions are scoped to current environment locally with 0 AI credits
   if (user.isAnonymous) {
-    return { allowed: true, registeredEnvironment: currentEnv, currentEnvironment: currentEnv };
+    return { allowed: true, registeredEnvironment: currentEnv, currentEnvironment: currentEnv, isPro: false, aiCredits: 0 };
   }
 
   // 1. Try server-side API verification first (secure & bypasses client Firestore rules)
@@ -102,6 +107,11 @@ export async function verifyAndSyncUserEnvironment(
         allowed: true,
         registeredEnvironment: data.registeredEnvironment || currentEnv,
         currentEnvironment: currentEnv,
+        isPro: Boolean(data.isPro),
+        plan: data.plan || null,
+        subscriptionStatus: data.subscriptionStatus || null,
+        aiCredits: typeof data.aiCredits === "number" ? data.aiCredits : 3,
+        usedAiCredits: typeof data.usedAiCredits === "number" ? data.usedAiCredits : 0,
       };
     }
   } catch (apiErr) {
@@ -145,6 +155,11 @@ export async function verifyAndSyncUserEnvironment(
         allowed: true,
         registeredEnvironment: registeredEnv || currentEnv,
         currentEnvironment: currentEnv,
+        isPro: Boolean(data.isPro),
+        plan: data.plan || null,
+        subscriptionStatus: data.subscriptionStatus || null,
+        aiCredits: typeof data.aiCredits === "number" ? data.aiCredits : 3,
+        usedAiCredits: typeof data.usedAiCredits === "number" ? data.usedAiCredits : 0,
       };
     } else {
       // First-time registration for this user
@@ -181,17 +196,27 @@ export async function verifyAndSyncUserEnvironment(
         createdAt: Date.now(),
         lastLoginAt: Date.now(),
         lastLoginEnvironment: currentEnv,
+        isPro: false,
+        plan: null,
+        subscriptionStatus: null,
+        aiCredits: 3,
+        usedAiCredits: 0,
       });
 
       return {
         allowed: true,
         registeredEnvironment: currentEnv,
         currentEnvironment: currentEnv,
+        isPro: false,
+        plan: null,
+        subscriptionStatus: null,
+        aiCredits: 3,
+        usedAiCredits: 0,
       };
     }
   } catch (firestoreErr) {
     console.error("[AuthEnv] Client-side Firestore verification error:", firestoreErr);
     // In case of network error, allow local execution without crashing
-    return { allowed: true, registeredEnvironment: currentEnv, currentEnvironment: currentEnv };
+    return { allowed: true, registeredEnvironment: currentEnv, currentEnvironment: currentEnv, isPro: false, aiCredits: 3 };
   }
 }

@@ -18,10 +18,9 @@ interface AIAutoPilotModalProps {
 
 export function AIAutoPilotModal({ open, onOpenChange }: AIAutoPilotModalProps) {
   const { screenSets, activeSetId, updateScreenBackground, addLayer, updateLayer, deleteLayer } = useEditorStore();
-  const { projects } = useProjectStore();
   const { activeLang } = useLanguageStore();
-  const { user, setAuthModalOpen } = useAuthStore();
-  const isGuest = Boolean(user && user.isAnonymous);
+  const { user, isPro, aiCredits, consumeAiCredit, setAuthModalOpen, setUpgradeModalOpen } = useAuthStore();
+  const isGuest = Boolean(!user || user.isAnonymous);
 
   const activeSet = screenSets.find((s) => s.id === activeSetId) || screenSets[0];
   const screens = activeSet?.screens || [];
@@ -40,6 +39,12 @@ export function AIAutoPilotModal({ open, onOpenChange }: AIAutoPilotModalProps) 
       setAuthModalOpen(true);
       return;
     }
+
+    const creditRes = await consumeAiCredit("vision-autopilot");
+    if (!creditRes.allowed) {
+      return;
+    }
+
     try {
       setIsProcessing(true);
       setProgressStep("Analyzing screenshot layouts and context...");
@@ -191,12 +196,23 @@ export function AIAutoPilotModal({ open, onOpenChange }: AIAutoPilotModalProps) 
               </p>
             </div>
           </div>
-          <button
-            onClick={() => onOpenChange(false)}
-            className="w-7 h-7 rounded-lg hover:bg-secondary flex items-center justify-center text-muted-foreground transition-colors cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            {!isGuest && (
+              <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border ${
+                isPro
+                  ? "bg-amber-500/15 text-amber-400 border-amber-500/30 font-bold"
+                  : "bg-secondary text-muted-foreground border-border/60"
+              }`}>
+                {isPro ? "👑 Pro Unlimited" : `⚡ ${aiCredits} / 3 Credits`}
+              </span>
+            )}
+            <button
+              onClick={() => onOpenChange(false)}
+              className="w-7 h-7 rounded-lg hover:bg-secondary flex items-center justify-center text-muted-foreground transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}

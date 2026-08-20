@@ -55,6 +55,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         allowed: true,
         registeredEnvironment: registeredEnv || environment,
+        isPro: Boolean(data.isPro),
+        plan: data.plan || null,
+        subscriptionStatus: data.subscriptionStatus || null,
+        aiCredits: typeof data.aiCredits === "number" ? data.aiCredits : 3,
+        usedAiCredits: typeof data.usedAiCredits === "number" ? data.usedAiCredits : 0,
       });
     }
 
@@ -86,7 +91,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Save new user profile with registered environment
+    // Save new user profile with registered environment and 3 free AI welcome credits
     await userRef.set({
       uid,
       email: email || null,
@@ -96,11 +101,21 @@ export async function POST(req: NextRequest) {
       createdAt: Date.now(),
       lastLoginAt: Date.now(),
       lastLoginEnvironment: environment,
+      isPro: false,
+      plan: null,
+      subscriptionStatus: null,
+      aiCredits: 3, // 3 free welcome credits
+      usedAiCredits: 0,
     });
 
     return NextResponse.json({
       allowed: true,
       registeredEnvironment: environment,
+      isPro: false,
+      plan: null,
+      subscriptionStatus: null,
+      aiCredits: 3,
+      usedAiCredits: 0,
     });
   } catch (error: any) {
     console.error("[VerifyEnvironment API] Error:", error);
