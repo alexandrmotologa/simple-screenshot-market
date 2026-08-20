@@ -141,6 +141,7 @@ const jsonLd = {
 import { ThemeProvider } from "@/components/theme-provider";
 import { PostHogProvider } from "@/providers/posthog-provider";
 import { ToastContainer } from "@/components/ui/toast";
+import { CookieConsentBanner } from "@/components/ui/CookieConsentBanner";
 
 export default function RootLayout({
   children,
@@ -170,6 +171,7 @@ export default function RootLayout({
             <TooltipProvider>
               {children}
               <ToastContainer />
+              <CookieConsentBanner />
             </TooltipProvider>
           </PostHogProvider>
         </ThemeProvider>

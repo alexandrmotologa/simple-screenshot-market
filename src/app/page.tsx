@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { NewProjectModal } from "@/components/dashboard/NewProjectModal";
 import { RenameProjectModal } from "@/components/dashboard/RenameProjectModal";
 import { useProjectStore } from "@/lib/store/projectStore";
+import { useAuthStore } from "@/lib/store/authStore";
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
 import { Project, Screen } from "@/lib/types";
@@ -479,10 +480,16 @@ export type DashboardSortOption =
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { user, isInitialized, isLoading, setAuthModalOpen } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
   const { projects, deleteProject, duplicateProject, updateProject } = useProjectStore();
   const [showNewProject, setShowNewProject] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [confirmModal, setConfirmModal] = useState<{
     type: "delete" | "duplicate";
@@ -612,8 +619,16 @@ export default function DashboardPage() {
       </header>
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-10">
-        {/* ── Empty state (Hallmark Premium Style) ── */}
-        {projects.length === 0 ? (
+        {/* Loading state before auth / hydration is ready */}
+        {(!mounted || !isInitialized) ? (
+          <div className="flex flex-col items-center justify-center py-28 text-center space-y-4 animate-pulse">
+            <div className="w-16 h-16 rounded-2xl bg-secondary/80 flex items-center justify-center">
+              <SnapFrameLogo size={36} />
+            </div>
+            <p className="text-sm text-muted-foreground">Loading SnapFrame...</p>
+          </div>
+        ) : !user ? (
+          /* ── Unauthenticated Landing Hero ── */
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -658,16 +673,18 @@ export default function DashboardPage() {
                 ))}
               </div>
 
-              <div className="relative inline-block group">
-                <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-primary to-violet-600 opacity-30 blur-lg group-hover:opacity-60 transition duration-500"></div>
-                <Button
-                  size="lg"
-                  onClick={() => setShowNewProject(true)}
-                  className="relative gap-2 px-8 py-6 rounded-2xl text-base font-semibold shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95"
-                >
-                  <Plus className="w-5 h-5" />
-                  Create First Screenshot Set
-                </Button>
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <div className="relative inline-block group">
+                  <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-primary to-violet-600 opacity-30 blur-lg group-hover:opacity-60 transition duration-500"></div>
+                  <Button
+                    size="lg"
+                    onClick={() => setAuthModalOpen(true)}
+                    className="relative gap-2 px-8 py-6 rounded-2xl text-base font-semibold shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+                  >
+                    <Plus className="w-5 h-5" />
+                    Create First Screenshot Set
+                  </Button>
+                </div>
               </div>
             </motion.div>
 
@@ -695,6 +712,53 @@ export default function DashboardPage() {
                 <p className="text-xs text-muted-foreground leading-relaxed">Export perfectly sized PNGs or zip packages ready for App Store Connect & Google Play Console.</p>
               </div>
             </div>
+          </motion.div>
+        ) : projects.length === 0 ? (
+          /* ── Authenticated User with 0 Projects ── */
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="relative flex flex-col items-center justify-center py-24 text-center overflow-hidden rounded-3xl border border-border/50 bg-card/30 backdrop-blur-sm px-6"
+          >
+            {/* Background Effects */}
+            <div className="absolute inset-0 z-0 pointer-events-none">
+              <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/20 opacity-50 blur-[100px] rounded-full"></div>
+            </div>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="relative z-10 flex flex-col items-center"
+            >
+              <div className="relative mb-8 group">
+                <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-primary to-violet-600 opacity-30 blur-lg group-hover:opacity-60 transition duration-500"></div>
+                <div className="relative w-20 h-20 rounded-3xl bg-card border border-border flex items-center justify-center shadow-2xl">
+                  <Sparkles className="w-9 h-9 text-primary animate-pulse" />
+                </div>
+              </div>
+
+              <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-4 bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent max-w-2xl">
+                Ready to create your screenshot set?
+              </h1>
+              <p className="text-muted-foreground text-base sm:text-lg max-w-xl mb-10 leading-relaxed">
+                Choose from dozens of professional templates or start with a clean canvas.
+              </p>
+
+              <div className="relative inline-block group">
+                <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-primary to-violet-600 opacity-30 blur-lg group-hover:opacity-60 transition duration-500"></div>
+                <Button
+                  size="lg"
+                  onClick={() => setShowNewProject(true)}
+                  className="relative gap-2 px-8 py-6 rounded-2xl text-base font-semibold shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+                >
+                  <Plus className="w-5 h-5" />
+                  Create First Screenshot Set
+                </Button>
+              </div>
+            </motion.div>
           </motion.div>
         ) : (
           <>

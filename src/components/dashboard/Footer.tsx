@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Sparkles, ShieldCheck, Zap, Heart } from "lucide-react";
+import { Sparkles, ShieldCheck, Zap, Heart, FileText, Lock } from "lucide-react";
 import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
 
 function GithubIcon({ className }: { className?: string }) {
@@ -20,9 +20,9 @@ export function Footer() {
   return (
     <footer className="mt-auto border-t border-border/60 bg-card/40 dark:bg-card/20 backdrop-blur-md transition-colors">
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12 pb-10 border-b border-border/40">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 lg:gap-10 pb-10 border-b border-border/40">
           {/* Brand Col */}
-          <div className="space-y-3.5 md:col-span-1">
+          <div className="space-y-3.5 sm:col-span-2 md:col-span-2">
             <Link
               href="/"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
@@ -30,17 +30,17 @@ export function Footer() {
             >
               <SnapFrameLogo size={28} withText textClassName="text-base" />
             </Link>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Design studio-quality App Store & Google Play screenshot sets in seconds. Free, privacy-first, and fully customizable.
+            <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">
+              Design studio-quality App Store & Google Play screenshot sets in seconds. Privacy-first, cloud-synced, and built with modern device mockups.
             </p>
             <div className="flex items-center gap-2 pt-1 text-[11px] text-muted-foreground font-medium">
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/80 border border-border/50 text-foreground">
                 <ShieldCheck className="w-3 h-3 text-emerald-500" />
-                100% Client-Side
+                GDPR Compliant
               </span>
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary/80 border border-border/50 text-foreground">
                 <Zap className="w-3 h-3 text-amber-500" />
-                Fast Export
+                Instant 4K Export
               </span>
             </div>
           </div>
@@ -51,8 +51,8 @@ export function Footer() {
             <ul className="space-y-2 text-xs text-muted-foreground">
               <li className="hover:text-foreground transition-colors cursor-default">Curated App Templates</li>
               <li className="hover:text-foreground transition-colors cursor-default">Continuous Panorama Flow</li>
-              <li className="hover:text-foreground transition-colors cursor-default">Modern Device Mockups</li>
-              <li className="hover:text-foreground transition-colors cursor-default">Multi-Language Localization</li>
+              <li className="hover:text-foreground transition-colors cursor-default">3D Device Mockups</li>
+              <li className="hover:text-foreground transition-colors cursor-default">Multi-Language i18n</li>
               <li className="hover:text-foreground transition-colors cursor-default">Instant ZIP & PNG Export</li>
             </ul>
           </div>
@@ -69,10 +69,28 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Open Source & Community */}
+          {/* Legal & Open Source */}
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">Community & Code</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">Legal & Code</h3>
             <ul className="space-y-2 text-xs text-muted-foreground">
+              <li>
+                <Link
+                  href="/privacy"
+                  className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
+                >
+                  <Lock className="w-3.5 h-3.5 text-primary/80" />
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/terms"
+                  className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
+                >
+                  <FileText className="w-3.5 h-3.5 text-primary/80" />
+                  Terms of Service
+                </Link>
+              </li>
               <li>
                 <a
                   href="https://github.com/alexandrmotologa/simple-screenshot-market"
@@ -92,7 +110,7 @@ export function Footer() {
                   className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-primary" />
-                  Request a Feature / Bug Report
+                  Feature Request
                 </a>
               </li>
             </ul>
@@ -105,9 +123,15 @@ export function Footer() {
             © {currentYear} SnapFrame. Crafted with <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> for mobile app makers.
           </p>
           <div className="flex items-center gap-4 text-[11px]">
-            <span>Free & Open Source</span>
+            <Link href="/privacy" className="hover:text-foreground transition-colors">
+              Privacy Policy
+            </Link>
             <span className="w-1 h-1 rounded-full bg-border" />
-            <span>No account required</span>
+            <Link href="/terms" className="hover:text-foreground transition-colors">
+              Terms of Service
+            </Link>
+            <span className="w-1 h-1 rounded-full bg-border" />
+            <span className="text-muted-foreground/80">GDPR & CCPA Compliant</span>
           </div>
         </div>
       </div>

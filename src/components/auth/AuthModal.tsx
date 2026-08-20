@@ -1,12 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { X, Loader2, Sparkles, User as UserIcon, ShieldCheck, AlertCircle } from "lucide-react";
+import {
+  X,
+  Loader2,
+  Sparkles,
+  User as UserIcon,
+  ShieldCheck,
+  AlertCircle,
+  Mail,
+  Lock,
+  ArrowRight,
+} from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
 
 export function AuthModal() {
-  const [activeProvider, setActiveProvider] = useState<"google" | "github" | "guest" | null>(null);
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [activeProvider, setActiveProvider] = useState<"google" | "github" | "email" | "guest" | null>(null);
 
   const {
     isAuthModalOpen,
@@ -15,6 +29,8 @@ export function AuthModal() {
     authError,
     signInWithGoogle,
     signInWithGithub,
+    signInWithEmail,
+    signUpWithEmail,
     signInAnonymous,
     user,
     linkWithGoogle,
@@ -48,6 +64,18 @@ export function AuthModal() {
     await signInAnonymous();
   };
 
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password.trim()) return;
+
+    setActiveProvider("email");
+    if (mode === "signup") {
+      await signUpWithEmail(email, password, name);
+    } else {
+      await signInWithEmail(email, password);
+    }
+  };
+
   const handleCancel = () => {
     useAuthStore.setState({ isLoading: false, authError: null, isAuthModalOpen: false });
     setActiveProvider(null);
@@ -55,21 +83,22 @@ export function AuthModal() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200 select-none"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200 select-none overflow-y-auto"
       onClick={() => {
         if (!isLoading) setAuthModalOpen(false);
       }}
     >
       <div
-        className="bg-card border border-border/80 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 relative"
+        className="bg-card border border-border/80 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 relative my-8"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Gradient Accent */}
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
 
-        {/* Close Button (Disabled during active authentication) */}
+        {/* Close Button */}
         {!isLoading && (
           <button
+            type="button"
             onClick={() => setAuthModalOpen(false)}
             className="absolute top-4 right-4 w-8 h-8 rounded-lg hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             title="Close"
@@ -78,7 +107,7 @@ export function AuthModal() {
           </button>
         )}
 
-        <div className="p-6 space-y-5">
+        <div className="p-6 space-y-4">
           {/* Active Loading Screen */}
           {isLoading ? (
             <div className="py-8 flex flex-col items-center justify-center text-center space-y-4 animate-in fade-in duration-150">
@@ -97,11 +126,15 @@ export function AuthModal() {
                       ? "Connecting with Google..."
                       : activeProvider === "github"
                       ? "Connecting with GitHub..."
+                      : activeProvider === "email"
+                      ? mode === "signup"
+                        ? "Creating your account..."
+                        : "Signing in..."
                       : "Initializing Session..."}
                   </span>
                 </h3>
                 <p className="text-xs text-muted-foreground max-w-xs">
-                  Authenticating your session securely. Please complete the prompt...
+                  Authenticating your session securely. Please wait a moment...
                 </p>
               </div>
 
@@ -110,25 +143,65 @@ export function AuthModal() {
                 onClick={handleCancel}
                 className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 pt-2 cursor-pointer transition-colors"
               >
-                Cancel sign-in
+                Cancel
               </button>
             </div>
           ) : (
             <>
               {/* Header */}
-              <div className="text-center space-y-1.5 pt-2">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 border border-indigo-500/30 flex items-center justify-center mx-auto text-indigo-400 shadow-md">
-                  <Sparkles className="w-6 h-6" />
+              <div className="text-center space-y-1 pt-1">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 border border-indigo-500/30 flex items-center justify-center mx-auto text-indigo-400 shadow-md">
+                  <Sparkles className="w-5 h-5" />
                 </div>
                 <h2 className="text-lg font-bold text-foreground">
-                  {isAnonymous ? "Upgrade Your Account" : "Sign In to SnapFrame"}
+                  {isAnonymous
+                    ? "Upgrade Your Account"
+                    : mode === "signup"
+                    ? "Create SnapFrame Account"
+                    : "Sign In to SnapFrame"}
                 </h2>
                 <p className="text-xs text-muted-foreground max-w-xs mx-auto">
                   {isAnonymous
-                    ? "Link your Google or GitHub account to sync your projects across all your devices."
-                    : "Save projects to cloud, sync across devices, and power up with AI tools."}
+                    ? "Link your account to keep your screenshot projects synced and saved."
+                    : mode === "signup"
+                    ? "Join to create and export stunning App Store & Google Play screenshots."
+                    : "Access your saved projects, custom templates, and AI superpowers."}
                 </p>
               </div>
+
+              {/* Mode Switcher Tabs */}
+              {!isAnonymous && (
+                <div className="flex p-1 rounded-xl bg-secondary/60 border border-border/60 text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("signin");
+                      useAuthStore.setState({ authError: null });
+                    }}
+                    className={`flex-1 py-1.5 rounded-lg transition-all cursor-pointer ${
+                      mode === "signin"
+                        ? "bg-background text-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("signup");
+                      useAuthStore.setState({ authError: null });
+                    }}
+                    className={`flex-1 py-1.5 rounded-lg transition-all cursor-pointer ${
+                      mode === "signup"
+                        ? "bg-background text-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Create Account
+                  </button>
+                </div>
+              )}
 
               {/* Auth Error Banner */}
               {authError && (
@@ -140,57 +213,124 @@ export function AuthModal() {
                 </div>
               )}
 
-              {/* Auth Action Buttons */}
-              <div className="space-y-2.5 pt-1">
-                {/* Google Sign In */}
+              {/* Social Login Buttons */}
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   disabled={isLoading}
                   onClick={handleGoogle}
-                  className="w-full h-11 px-4 rounded-xl border border-border/80 bg-secondary/50 hover:bg-secondary hover:border-border text-foreground text-xs font-semibold flex items-center justify-center gap-3 transition-all cursor-pointer shadow-xs active:scale-[0.99] disabled:opacity-50"
+                  className="h-10 px-3 rounded-xl border border-border/80 bg-secondary/50 hover:bg-secondary hover:border-border text-foreground text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs active:scale-[0.99] disabled:opacity-50"
                 >
                   <GoogleIcon className="w-4 h-4 shrink-0" />
-                  <span>{isAnonymous ? "Link Google Account" : "Continue with Google"}</span>
+                  <span>Google</span>
                 </button>
 
-                {/* GitHub Sign In */}
                 <button
                   type="button"
                   disabled={isLoading}
                   onClick={handleGithub}
-                  className="w-full h-11 px-4 rounded-xl border border-border/80 bg-secondary/50 hover:bg-secondary hover:border-border text-foreground text-xs font-semibold flex items-center justify-center gap-3 transition-all cursor-pointer shadow-xs active:scale-[0.99] disabled:opacity-50"
+                  className="h-10 px-3 rounded-xl border border-border/80 bg-secondary/50 hover:bg-secondary hover:border-border text-foreground text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs active:scale-[0.99] disabled:opacity-50"
                 >
                   <GithubIcon className="w-4 h-4 shrink-0" />
-                  <span>{isAnonymous ? "Link GitHub Account" : "Continue with GitHub"}</span>
+                  <span>GitHub</span>
                 </button>
-
-                {/* Anonymous / Guest Mode Option */}
-                {!user && (
-                  <>
-                    <div className="relative py-2">
-                      <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-border/60" />
-                      </div>
-                      <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-wider">
-                        <span className="bg-card px-2 text-muted-foreground/80">or try without account</span>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      disabled={isLoading}
-                      onClick={handleGuest}
-                      className="w-full h-10 px-4 rounded-xl border border-dashed border-border/70 hover:border-primary/60 bg-transparent hover:bg-secondary/40 text-muted-foreground hover:text-foreground text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
-                    >
-                      <UserIcon className="w-3.5 h-3.5" />
-                      <span>Continue as Guest (Anonymous)</span>
-                    </button>
-                  </>
-                )}
               </div>
 
+              {/* Divider */}
+              <div className="relative py-1">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border/60" />
+                </div>
+                <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-wider">
+                  <span className="bg-card px-2 text-muted-foreground/80">or with email</span>
+                </div>
+              </div>
+
+              {/* Email / Password Form */}
+              <form onSubmit={handleEmailSubmit} className="space-y-2.5">
+                {mode === "signup" && !isAnonymous && (
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-medium text-foreground">Your Name</label>
+                    <div className="relative">
+                      <UserIcon className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <input
+                        type="text"
+                        placeholder="Alexandre Motologa"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="w-full h-9 pl-9 pr-3 rounded-xl bg-secondary/40 border border-border/70 focus:border-primary text-xs text-foreground placeholder:text-muted-foreground outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-medium text-foreground">Email Address</label>
+                  <div className="relative">
+                    <Mail className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      type="email"
+                      required
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full h-9 pl-9 pr-3 rounded-xl bg-secondary/40 border border-border/70 focus:border-primary text-xs text-foreground placeholder:text-muted-foreground outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-medium text-foreground">Password</label>
+                  <div className="relative">
+                    <Lock className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      type="password"
+                      required
+                      minLength={6}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full h-9 pl-9 pr-3 rounded-xl bg-secondary/40 border border-border/70 focus:border-primary text-xs text-foreground placeholder:text-muted-foreground outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full h-10 mt-1 rounded-xl bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all cursor-pointer shadow-md shadow-primary/20 active:scale-[0.99] disabled:opacity-50"
+                >
+                  <span>{mode === "signup" ? "Create Account" : "Sign In"}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </form>
+
+              {/* Guest Mode Option */}
+              {!user && (
+                <>
+                  <div className="relative pt-1">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-border/60" />
+                    </div>
+                    <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-wider">
+                      <span className="bg-card px-2 text-muted-foreground/80">quick start</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={isLoading}
+                    onClick={handleGuest}
+                    className="w-full h-9 px-3 rounded-xl border border-dashed border-border/70 hover:border-primary/60 bg-transparent hover:bg-secondary/40 text-muted-foreground hover:text-foreground text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    <UserIcon className="w-3.5 h-3.5" />
+                    <span>Continue as Guest (Anonymous)</span>
+                  </button>
+                </>
+              )}
+
               {/* Privacy Note */}
-              <div className="pt-2 text-center text-[10px] text-muted-foreground flex items-center justify-center gap-1.5">
+              <div className="pt-1 text-center text-[10px] text-muted-foreground flex items-center justify-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Encrypted sessions · No tracking · Free forever</span>
               </div>

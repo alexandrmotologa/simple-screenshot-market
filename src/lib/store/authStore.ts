@@ -5,6 +5,9 @@ import {
   signInWithRedirect,
   getRedirectResult,
   signInAnonymously,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
   signOut,
   onAuthStateChanged,
   browserLocalPersistence,
@@ -25,6 +28,8 @@ interface AuthState {
   initializeAuth: () => Promise<void>;
   signInWithGoogle: () => Promise<User | null>;
   signInWithGithub: () => Promise<User | null>;
+  signInWithEmail: (email: string, password: string) => Promise<User | null>;
+  signUpWithEmail: (email: string, password: string, displayName?: string) => Promise<User | null>;
   signInAnonymous: () => Promise<any>;
   linkWithGoogle: () => Promise<User | null>;
   linkWithGithub: () => Promise<User | null>;
@@ -205,6 +210,89 @@ export const useAuthStore = create<AuthState>((set, get) => {
           message = "This domain is not authorized in Firebase Console.";
         }
 
+        set({ authError: message, isLoading: false });
+        toast.error(message);
+        return null;
+      }
+    },
+
+    signInWithEmail: async (email: string, password: string) => {
+      try {
+        set({ isLoading: true, authError: null });
+        const { auth } = await getFirebaseAuth();
+
+        if (!auth) {
+          const errMsg = "Firebase Auth credentials not found. Please check .env configuration.";
+          set({ authError: errMsg, isLoading: false });
+          toast.error(errMsg);
+          return null;
+        }
+
+        try {
+          await setPersistence(auth, browserLocalPersistence);
+        } catch {}
+
+        const result = await signInWithEmailAndPassword(auth, email.trim(), password);
+        set({ user: result.user, isAuthModalOpen: false, isLoading: false, authError: null });
+        toast.success(`Welcome back, ${result.user.displayName || result.user.email || "Creator"}!`);
+        return result.user;
+      } catch (error: any) {
+        console.error("Email Sign-In Error:", error);
+        let message = error.message || "Failed to sign in with email";
+        if (
+          error.code === "auth/invalid-credential" ||
+          error.code === "auth/wrong-password" ||
+          error.code === "auth/user-not-found"
+        ) {
+          message = "Invalid email or password. Please verify or create an account.";
+        } else if (error.code === "auth/invalid-email") {
+          message = "Please enter a valid email address.";
+        } else if (error.code === "auth/user-disabled") {
+          message = "This user account has been disabled.";
+        }
+        set({ authError: message, isLoading: false });
+        toast.error(message);
+        return null;
+      }
+    },
+
+    signUpWithEmail: async (email: string, password: string, displayName?: string) => {
+      try {
+        set({ isLoading: true, authError: null });
+        const { auth } = await getFirebaseAuth();
+
+        if (!auth) {
+          const errMsg = "Firebase Auth credentials not found. Please check .env configuration.";
+          set({ authError: errMsg, isLoading: false });
+          toast.error(errMsg);
+          return null;
+        }
+
+        try {
+          await setPersistence(auth, browserLocalPersistence);
+        } catch {}
+
+        const result = await createUserWithEmailAndPassword(auth, email.trim(), password);
+        if (displayName && result.user) {
+          try {
+            await updateProfile(result.user, { displayName: displayName.trim() });
+          } catch (pErr) {
+            console.warn("Could not set displayName:", pErr);
+          }
+        }
+        set({ user: result.user, isAuthModalOpen: false, isLoading: false, authError: null });
+        toast.success(`Account created! Welcome, ${displayName || result.user.email || "Creator"}!`);
+        return result.user;
+      } catch (error: any) {
+        console.error("Email Sign-Up Error:", error);
+        let message = error.message || "Failed to create account";
+        if (error.code === "auth/email-already-in-use") {
+          message = "An account already exists with this email address. Try signing in.";
+        } else if (error.code === "auth/weak-password") {
+          message = "Password should be at least 6 characters.";
+        } else if (error.code === "auth/invalid-email") {
+          message = "Please enter a valid email address.";
+        }
         set({ authError: message, isLoading: false });
         toast.error(message);
         return null;

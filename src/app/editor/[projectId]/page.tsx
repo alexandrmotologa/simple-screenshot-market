@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, use, useCallback } from "react";
+import { useEffect, use, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useProjectStore } from "@/lib/store/projectStore";
 import { useLanguageStore } from "@/lib/store/languageStore";
 import { useEditorStore } from "@/lib/store/editorStore";
+import { useAuthStore } from "@/lib/store/authStore";
 import { EditorLayout } from "@/components/editor/EditorLayout";
+import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
 import { backgroundToCSS } from "@/lib/utils";
 import { TextLayer } from "@/lib/types";
 
@@ -79,6 +81,8 @@ function generateThumbnail(screenSets: ReturnType<typeof useEditorStore.getState
 export default function EditorPage({ params }: EditorPageProps) {
   const { projectId } = use(params);
   const router = useRouter();
+  const { user, isInitialized, setAuthModalOpen } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
   const getProject = useProjectStore((s) => s.getProject);
   const updateProject = useProjectStore((s) => s.updateProject);
   const saveProjectThumbnail = useProjectStore((s) => s.saveProjectThumbnail);
@@ -86,6 +90,20 @@ export default function EditorPage({ params }: EditorPageProps) {
   const { projectLanguages, setProjectLanguages } = useLanguageStore();
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Redirect unauthenticated users immediately
+  useEffect(() => {
+    if (mounted && isInitialized && !user) {
+      router.replace("/");
+      setAuthModalOpen(true);
+    }
+  }, [mounted, isInitialized, user, router, setAuthModalOpen]);
+
+  useEffect(() => {
+    if (!mounted || !isInitialized || !user) return;
+
     const project = getProject(projectId);
     if (!project) {
       router.replace("/");
@@ -95,7 +113,7 @@ export default function EditorPage({ params }: EditorPageProps) {
     if (project.languages && project.languages.length > 0) {
       setProjectLanguages(project.languages);
     }
-  }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [projectId, mounted, isInitialized, user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-save projectLanguages back to project store
   useEffect(() => {
@@ -120,6 +138,41 @@ export default function EditorPage({ params }: EditorPageProps) {
     }, 2000);
     return () => clearTimeout(timer);
   }, [screenSets, projectId, saveProjectThumbnail]);
+
+  if (!mounted || !isInitialized) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6 text-center space-y-4 animate-pulse">
+        <div className="w-14 h-14 rounded-2xl bg-secondary/80 flex items-center justify-center shadow-lg">
+          <SnapFrameLogo size={32} />
+        </div>
+        <p className="text-sm font-medium text-muted-foreground">Loading SnapFrame Editor...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/25 flex items-center justify-center mb-4 shadow-xl">
+          <SnapFrameLogo size={36} />
+        </div>
+        <h2 className="text-xl font-bold text-foreground mb-2">Authentication Required</h2>
+        <p className="text-xs text-muted-foreground max-w-xs mb-6">
+          Please sign in to access the screenshot editor and manage your projects.
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            router.replace("/");
+            setAuthModalOpen(true);
+          }}
+          className="h-10 px-5 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-all cursor-pointer shadow-md shadow-primary/20"
+        >
+          Sign In / Register
+        </button>
+      </div>
+    );
+  }
 
   return <EditorLayout projectId={projectId} />;
 }
