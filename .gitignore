@@ -55,4 +55,18 @@ figma_fabled_studio.json
 new_figma_data.json
 figma_outline.txt
 test.py
+test.svg
+test_img_*.png
+read-dims.js
+copy-mockups.js
+/fromfigma/
+/scripts/
+/public/templates/
+/public/logos/
+public/next.svg
+public/vercel.svg
+public/file.svg
+public/globe.svg
+public/window.svg
+
 
