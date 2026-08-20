@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
 import { LogOut, User as UserIcon, Sparkles, ChevronDown, ShieldAlert, CheckCircle2 } from "lucide-react";
 import {
@@ -18,6 +19,7 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ className }: UserMenuProps) {
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const { user, isLoading, isInitialized, setAuthModalOpen, signOutUser } = useAuthStore();
 
@@ -128,14 +130,12 @@ export function UserMenu({ className }: UserMenuProps) {
 
         <DropdownMenuSeparator className="my-1" />
 
-        <DropdownMenuItem asChild>
-          <a
-            href="/projects"
-            className="text-xs font-medium text-foreground hover:bg-secondary rounded-xl cursor-pointer p-2 flex items-center gap-2"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span>My Projects</span>
-          </a>
+        <DropdownMenuItem
+          onClick={() => router.push("/projects")}
+          className="text-xs font-medium text-foreground hover:bg-secondary rounded-xl cursor-pointer p-2 flex items-center gap-2"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-primary" />
+          <span>My Projects</span>
         </DropdownMenuItem>
 
         <DropdownMenuItem
