@@ -128,6 +128,16 @@ export function UserMenu({ className }: UserMenuProps) {
 
         <DropdownMenuSeparator className="my-1" />
 
+        <DropdownMenuItem asChild>
+          <a
+            href="/projects"
+            className="text-xs font-medium text-foreground hover:bg-secondary rounded-xl cursor-pointer p-2 flex items-center gap-2"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
+            <span>My Projects</span>
+          </a>
+        </DropdownMenuItem>
+
         <DropdownMenuItem
           onClick={() => signOutUser()}
           className="text-xs font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl cursor-pointer p-2 flex items-center gap-2"

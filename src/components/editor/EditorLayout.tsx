@@ -286,9 +286,9 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
         <div className="flex items-center gap-2">
           {/* Back & Logo */}
           <Link
-            href="/"
+            href="/projects"
             className="flex items-center gap-1.5 p-1 rounded-lg hover:bg-secondary transition-colors group cursor-pointer"
-            title="Back to Dashboard (Esc)"
+            title="Back to Projects (Esc)"
           >
             <SnapFrameLogo size={24} />
           </Link>

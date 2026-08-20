@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   X,
   Loader2,
@@ -16,6 +17,7 @@ import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
 import { getAppEnvironment, getEnvironmentLabel } from "@/lib/authEnvironment";
 
 export function AuthModal() {
+  const router = useRouter();
   const [activeProvider, setActiveProvider] = useState<"google" | "github" | "guest" | null>(null);
 
   const {
@@ -38,25 +40,36 @@ export function AuthModal() {
 
   const handleGoogle = async () => {
     setActiveProvider("google");
+    let resultUser;
     if (isAnonymous) {
-      await linkWithGoogle();
+      resultUser = await linkWithGoogle();
     } else {
-      await signInWithGoogle();
+      resultUser = await signInWithGoogle();
+    }
+    if (resultUser) {
+      router.push("/projects");
     }
   };
 
   const handleGithub = async () => {
     setActiveProvider("github");
+    let resultUser;
     if (isAnonymous) {
-      await linkWithGithub();
+      resultUser = await linkWithGithub();
     } else {
-      await signInWithGithub();
+      resultUser = await signInWithGithub();
+    }
+    if (resultUser) {
+      router.push("/projects");
     }
   };
 
   const handleGuest = async () => {
     setActiveProvider("guest");
-    await signInAnonymous();
+    const guestUser = await signInAnonymous();
+    if (guestUser) {
+      router.push("/projects");
+    }
   };
 
   const handleCancel = () => {
