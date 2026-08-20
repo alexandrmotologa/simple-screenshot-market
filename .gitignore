@@ -36,6 +36,7 @@ yarn-error.log*
 
 # env files (keep secrets private)
 .env*
+.env.paddle
 !.env.example
 
 # vercel
