@@ -225,7 +225,7 @@ export default function RefundPolicyPage() {
             </h2>
             <div className="p-4 rounded-xl bg-secondary/30 border border-border/60 text-xs space-y-2">
               <p>
-                Our order process is conducted by our online reseller <strong>Paddle.com</strong>. Paddle.com is the Merchant of Record for all our orders. Paddle provides all customer service inquiries and handles returns and chargebacks in compliance with global consumer protection regulations and European statutory withdrawal rights.
+                Our order process for SnapFrame (operated by <strong>MTLG Labs / Alexandr Motologa</strong>) is conducted by our online reseller <strong>Paddle.com</strong>. Paddle.com is the Merchant of Record for all our orders. Paddle provides all customer service inquiries and handles returns and chargebacks in compliance with global consumer protection regulations and European statutory withdrawal rights.
               </p>
             </div>
           </section>

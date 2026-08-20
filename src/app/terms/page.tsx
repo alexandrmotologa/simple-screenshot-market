@@ -121,7 +121,7 @@ export default function TermsOfServicePage() {
               Agreement to Terms
             </h2>
             <p>
-              These Terms of Service (&quot;Terms&quot;) constitute a legally binding agreement between you (whether individually or on behalf of an entity) and SnapFrame (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;), concerning your access to and use of the SnapFrame platform located at{" "}
+              These Terms of Service (&quot;Terms&quot;) constitute a legally binding agreement between you (whether individually or on behalf of an entity) and SnapFrame, operated by <strong>MTLG Labs (Alexandr Motologa)</strong> (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;), concerning your access to and use of the SnapFrame platform located at{" "}
               <a href="https://snapframe.store" className="text-primary hover:underline">https://snapframe.store</a>.
             </p>
             <p>
@@ -144,7 +144,7 @@ export default function TermsOfServicePage() {
           <section className="space-y-3">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-xs flex items-center justify-center font-bold">3</span>
-              User Accounts, Authentication & Guest Mode
+              User Accounts, Authentication &amp; Guest Mode
             </h2>
             <p>
               To access saved projects and cloud synchronization, you must authenticate via Google OAuth, GitHub OAuth, or continue in Guest Mode. You agree to:
@@ -153,7 +153,7 @@ export default function TermsOfServicePage() {
               <li>Maintain the security of your connected OAuth accounts.</li>
               <li>Remain solely responsible for all activities and designs created under your account.</li>
               <li>
-                <strong>Anonymous (Guest) Accounts & 30-Day Auto Clean-up:</strong> Auto clean-up automatically deletes anonymous accounts that are older than 30 days. When this setting is enabled, anonymous usage will no longer count towards usage or billing quotas. SnapFrame does not guarantee recovery of projects created in unlinked guest sessions that are purged. You can link your guest account to a verified Google or GitHub profile at any time to preserve your projects permanently.
+                <strong>Anonymous (Guest) Accounts &amp; 30-Day Auto Clean-up:</strong> Auto clean-up automatically deletes anonymous accounts that are older than 30 days. When this setting is enabled, anonymous usage will no longer count towards usage or billing quotas. SnapFrame does not guarantee recovery of projects created in unlinked guest sessions that are purged. You can link your guest account to a verified Google or GitHub profile at any time to preserve your projects permanently.
               </li>
             </ul>
           </section>
@@ -162,13 +162,13 @@ export default function TermsOfServicePage() {
           <section className="space-y-3">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-xs flex items-center justify-center font-bold">4</span>
-              Intellectual Property & Ownership Rights
+              Intellectual Property &amp; Ownership Rights
             </h2>
             <div className="space-y-3">
               <div className="p-4 rounded-xl bg-card border border-border/70 space-y-1.5">
                 <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                  Your Content & Exported Screenshots
+                  Your Content &amp; Exported Screenshots
                 </h3>
                 <p className="text-xs text-muted-foreground">
                   You retain 100% full intellectual property ownership, copyright, and commercial usage rights in and to all images, screenshots, logos, trademarks, and text that you upload or compose in SnapFrame. SnapFrame claims zero ownership or licensing rights over your exported screenshots.
@@ -178,10 +178,10 @@ export default function TermsOfServicePage() {
               <div className="p-4 rounded-xl bg-card border border-border/70 space-y-1.5">
                 <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
                   <Lock className="w-4 h-4 text-primary" />
-                  SnapFrame Platform & Templates
+                  SnapFrame Platform &amp; License (BSL 1.1)
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  The SnapFrame software, user interface design, device frame models, curated layout engines, code, logos, and trademarks are the proprietary intellectual property of SnapFrame and its licensors. You are granted a limited license to use these assets to generate your final screenshots.
+                  The SnapFrame software, user interface design, device frame models, curated layout engines, code, logos, and trademarks are the proprietary intellectual property of <strong>MTLG Labs (Alexandr Motologa)</strong>. The underlying source code is made available under the Business Source License 1.1 (BSL 1.1), permitting evaluation and personal testing while strictly prohibiting the unauthorized hosting of competing commercial screenshot generation services.
                 </p>
               </div>
             </div>
@@ -320,8 +320,9 @@ export default function TermsOfServicePage() {
             <div className="p-4 rounded-xl bg-card border border-border/70 space-y-2 text-xs">
               <div className="flex items-center gap-2 text-foreground font-semibold">
                 <Mail className="w-4 h-4 text-primary" />
-                <span>SnapFrame Legal Team</span>
+                <span>MTLG Labs Legal Office</span>
               </div>
+              <p className="text-muted-foreground">Operator: <strong>MTLG Labs (Alexandr Motologa)</strong></p>
               <p className="text-muted-foreground">Email: <a href="mailto:terms@snapframe.store" className="text-primary hover:underline">terms@snapframe.store</a></p>
               <p className="text-muted-foreground">Website: <a href="https://snapframe.store" className="text-primary hover:underline">https://snapframe.store</a></p>
             </div>

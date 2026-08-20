@@ -64,6 +64,11 @@ const FAQ_ITEMS: FaqItem[] = [
     answer: "Yes! 100% of all mockups, screenshots, video previews, and app icons you create with SnapFrame include a perpetual, royalty-free commercial license. You can upload them directly to App Store Connect, Google Play Console, your marketing websites, and advertising campaigns.",
   },
   {
+    category: "Store Assets",
+    question: "Can I inspect the source code and what license does SnapFrame use?",
+    answer: "SnapFrame is source-available on GitHub under the Business Source License 1.1 (BSL 1.1), maintained by MTLG Labs (Alexandr Motologa). Developers are welcome to review the codebase, submit contributions, and test locally for evaluation. However, operating a competing commercial SaaS or public screenshot generation service using this code is strictly prohibited.",
+  },
+  {
     category: "Pricing & Refunds",
     question: "What is your Refund Policy for SnapFrame Pro?",
     answer: "We offer a 14-day money-back guarantee for unutilized accounts. If you subscribe to SnapFrame Pro and request a cancellation within 14 calendar days without having consumed AI generation credits and without having synced projects to multi-device Firestore cloud storage, you will receive a 100% full refund through Paddle. Once AI compute or cloud storage infrastructure is actively utilized, third-party server and model costs are permanently incurred on your behalf and the service is considered fulfilled.",

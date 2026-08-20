@@ -122,12 +122,13 @@ export default function PrivacyPolicyPage() {
               Data Controller
             </h2>
             <p>
-              SnapFrame operates as the Data Controller under Article 4(7) of the GDPR for the personal data collected through the website (
+              <strong>MTLG Labs (Alexandr Motologa)</strong> operates as the Data Controller under Article 4(7) of the GDPR for the personal data collected through the SnapFrame website (
               <a href="https://snapframe.store" className="text-primary hover:underline">https://snapframe.store</a>
               ) and associated services.
             </p>
             <div className="p-4 rounded-xl bg-secondary/30 border border-border/40 text-xs text-foreground space-y-1">
-              <p className="font-semibold">SnapFrame Data Protection & Legal Office</p>
+              <p className="font-semibold">MTLG Labs Data Protection &amp; Legal Office</p>
+              <p className="text-muted-foreground">Operator: <strong>MTLG Labs (Alexandr Motologa)</strong></p>
               <p className="text-muted-foreground">Email: <a href="mailto:privacy@snapframe.store" className="text-primary hover:underline">privacy@snapframe.store</a></p>
               <p className="text-muted-foreground">GitHub Security: <a href="https://github.com/alexandrmotologa/snapframe.store/security" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Security Advisory Hub</a></p>
             </div>
