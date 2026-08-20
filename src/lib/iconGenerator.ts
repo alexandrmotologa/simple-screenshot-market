@@ -201,33 +201,54 @@ export async function renderIconToCanvas(
   // 5. Metallic Ring / Stroke
   if (config.metallicRing !== "none") {
     ctx.save();
-    ctx.lineWidth = size * 0.025;
+    const ringWidth = size * 0.032; // 33px at 1024
+    ctx.lineWidth = ringWidth;
+    
+    // Multi-stop realistic metallic luster gradient
     const ringGrad = ctx.createLinearGradient(0, 0, size, size);
     if (config.metallicRing === "gold") {
-      ringGrad.addColorStop(0, "#fbbf24");
-      ringGrad.addColorStop(0.5, "#d97706");
+      ringGrad.addColorStop(0, "#fffbeb");
+      ringGrad.addColorStop(0.18, "#fef08a");
+      ringGrad.addColorStop(0.42, "#d97706");
+      ringGrad.addColorStop(0.68, "#78350f");
+      ringGrad.addColorStop(0.85, "#fbbf24");
       ringGrad.addColorStop(1, "#fef3c7");
     } else if (config.metallicRing === "silver") {
-      ringGrad.addColorStop(0, "#f1f5f9");
-      ringGrad.addColorStop(0.5, "#94a3b8");
+      ringGrad.addColorStop(0, "#ffffff");
+      ringGrad.addColorStop(0.2, "#e2e8f0");
+      ringGrad.addColorStop(0.5, "#64748b");
+      ringGrad.addColorStop(0.75, "#94a3b8");
       ringGrad.addColorStop(1, "#ffffff");
     } else if (config.metallicRing === "titanium") {
-      ringGrad.addColorStop(0, "#64748b");
-      ringGrad.addColorStop(0.5, "#334155");
-      ringGrad.addColorStop(1, "#94a3b8");
+      ringGrad.addColorStop(0, "#94a3b8");
+      ringGrad.addColorStop(0.3, "#475569");
+      ringGrad.addColorStop(0.6, "#1e293b");
+      ringGrad.addColorStop(0.85, "#334155");
+      ringGrad.addColorStop(1, "#64748b");
     } else if (config.metallicRing === "neon") {
       ringGrad.addColorStop(0, "#38bdf8");
-      ringGrad.addColorStop(0.5, "#818cf8");
-      ringGrad.addColorStop(1, "#c084fc");
+      ringGrad.addColorStop(0.33, "#818cf8");
+      ringGrad.addColorStop(0.66, "#c084fc");
+      ringGrad.addColorStop(1, "#f472b6");
     }
+    
     ctx.strokeStyle = ringGrad;
+    ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
+    ctx.shadowBlur = size * 0.015;
+
+    const halfStroke = ringWidth / 2;
     if (mask === "circle") {
       ctx.beginPath();
-      ctx.arc(size / 2, size / 2, size / 2 - ctx.lineWidth / 2, 0, Math.PI * 2);
+      ctx.arc(size / 2, size / 2, size / 2 - halfStroke, 0, Math.PI * 2);
       ctx.stroke();
     } else if (mask === "squircle" || mask === "rounded") {
       ctx.beginPath();
-      ctx.roundRect(ctx.lineWidth / 2, ctx.lineWidth / 2, size - ctx.lineWidth, size - ctx.lineWidth, r);
+      ctx.roundRect(halfStroke, halfStroke, size - ringWidth, size - ringWidth, Math.max(0, r - halfStroke));
+      ctx.stroke();
+    } else {
+      // Flat Master (Square)
+      ctx.beginPath();
+      ctx.roundRect(halfStroke, halfStroke, size - ringWidth, size - ringWidth, Math.max(0, r - halfStroke));
       ctx.stroke();
     }
     ctx.restore();

@@ -370,11 +370,19 @@ export function StoreAssetsStudioModal({ open, onClose, projectId }: Props) {
                 </div>
 
                 {/* Live Icon Canvas with Ambient Shadow */}
-                <div className="relative group">
-                  <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500/30 via-purple-500/30 to-pink-500/30 rounded-3xl blur-2xl opacity-60 group-hover:opacity-100 transition-opacity" />
+                <div className="relative group p-1 flex items-center justify-center">
+                  <div
+                    className="absolute -inset-3 bg-gradient-to-r from-indigo-500/25 via-purple-500/25 to-pink-500/25 blur-2xl opacity-60 group-hover:opacity-100 transition-opacity pointer-events-none"
+                    style={{
+                      borderRadius: iconMask === "circle" ? "50%" : iconMask === "squircle" ? "22.37%" : "12px",
+                    }}
+                  />
                   <canvas
                     ref={iconCanvasRef}
-                    className="relative w-64 h-64 sm:w-80 sm:h-80 shadow-2xl rounded-3xl transition-transform"
+                    className="relative w-64 h-64 sm:w-80 sm:h-80 shadow-2xl transition-transform"
+                    style={{
+                      borderRadius: iconMask === "circle" ? "50%" : iconMask === "squircle" ? "22.37%" : "0%",
+                    }}
                   />
                 </div>
 
