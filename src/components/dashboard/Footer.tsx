@@ -199,6 +199,12 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/faq" className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors">
+                  <Sparkles className="w-3 h-3 text-primary/80" />
+                  FAQ &amp; Knowledge Base
+                </Link>
+              </li>
+              <li>
                 <a
                   href="https://github.com/alexandrmotologa/simple-screenshot-market"
                   target="_blank"

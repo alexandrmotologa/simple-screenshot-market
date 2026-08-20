@@ -99,6 +99,20 @@ export const useProjectStore = create<ProjectStore>()(
           });
         }
 
+        // Free tier project limit check (Max 3 projects for Free/Guest)
+        try {
+          const { useAuthStore } = require("@/lib/store/authStore");
+          const { isPro, setUpgradeModalOpen } = useAuthStore.getState();
+          if (!isPro && get().projects.length >= 3) {
+            const { toast } = require("@/lib/store/toastStore");
+            setUpgradeModalOpen(true);
+            toast.info("Free plan includes up to 3 local projects. Upgrade to SnapFrame Pro for unlimited projects & multi-device cloud sync!");
+            throw new Error("Free project limit reached (3 max).");
+          }
+        } catch (e: any) {
+          if (e.message?.includes("Free project limit")) throw e;
+        }
+
         const project: Project = {
           id: nanoid(),
           name,
@@ -110,12 +124,14 @@ export const useProjectStore = create<ProjectStore>()(
 
         set((state) => ({ projects: [project, ...state.projects] }));
 
-        // Cloud sync if authenticated
+        // Cloud sync if Pro subscriber
         try {
           const { useAuthStore } = require("@/lib/store/authStore");
-          const { saveProjectToCloud } = require("@/lib/cloudProjectSync");
-          const uid = useAuthStore.getState().user?.uid;
-          if (uid) saveProjectToCloud(uid, project);
+          const { isPro, user } = useAuthStore.getState();
+          if (isPro && user?.uid) {
+            const { saveProjectToCloud } = require("@/lib/cloudProjectSync");
+            saveProjectToCloud(user.uid, project);
+          }
         } catch {}
 
         return project;
@@ -134,13 +150,15 @@ export const useProjectStore = create<ProjectStore>()(
           return { projects: updatedList };
         });
 
-        // Cloud sync if authenticated
+        // Cloud sync if Pro subscriber
         try {
           if (modifiedProject) {
             const { useAuthStore } = require("@/lib/store/authStore");
-            const { saveProjectToCloud } = require("@/lib/cloudProjectSync");
-            const uid = useAuthStore.getState().user?.uid;
-            if (uid) saveProjectToCloud(uid, modifiedProject);
+            const { isPro, user } = useAuthStore.getState();
+            if (isPro && user?.uid) {
+              const { saveProjectToCloud } = require("@/lib/cloudProjectSync");
+              saveProjectToCloud(user.uid, modifiedProject);
+            }
           }
         } catch {}
       },
@@ -150,16 +168,32 @@ export const useProjectStore = create<ProjectStore>()(
           projects: state.projects.filter((p) => p.id !== id),
         }));
 
-        // Cloud sync if authenticated
+        // Cloud sync if Pro subscriber
         try {
           const { useAuthStore } = require("@/lib/store/authStore");
-          const { deleteProjectFromCloud } = require("@/lib/cloudProjectSync");
-          const uid = useAuthStore.getState().user?.uid;
-          if (uid) deleteProjectFromCloud(uid, id);
+          const { isPro, user } = useAuthStore.getState();
+          if (isPro && user?.uid) {
+            const { deleteProjectFromCloud } = require("@/lib/cloudProjectSync");
+            deleteProjectFromCloud(user.uid, id);
+          }
         } catch {}
       },
 
       duplicateProject: (id) => {
+        // Free tier project limit check
+        try {
+          const { useAuthStore } = require("@/lib/store/authStore");
+          const { isPro, setUpgradeModalOpen } = useAuthStore.getState();
+          if (!isPro && get().projects.length >= 3) {
+            const { toast } = require("@/lib/store/toastStore");
+            setUpgradeModalOpen(true);
+            toast.info("Free plan includes up to 3 local projects. Upgrade to SnapFrame Pro for unlimited projects & multi-device cloud sync!");
+            throw new Error("Free project limit reached (3 max).");
+          }
+        } catch (e: any) {
+          if (e.message?.includes("Free project limit")) throw e;
+        }
+
         const project = get().projects.find((p) => p.id === id);
         if (!project) throw new Error("Project not found");
 
@@ -184,12 +218,14 @@ export const useProjectStore = create<ProjectStore>()(
           projects: [duplicate, ...state.projects],
         }));
 
-        // Cloud sync if authenticated
+        // Cloud sync if Pro subscriber
         try {
           const { useAuthStore } = require("@/lib/store/authStore");
-          const { saveProjectToCloud } = require("@/lib/cloudProjectSync");
-          const uid = useAuthStore.getState().user?.uid;
-          if (uid) saveProjectToCloud(uid, duplicate);
+          const { isPro, user } = useAuthStore.getState();
+          if (isPro && user?.uid) {
+            const { saveProjectToCloud } = require("@/lib/cloudProjectSync");
+            saveProjectToCloud(user.uid, duplicate);
+          }
         } catch {}
 
         return duplicate;
@@ -210,13 +246,15 @@ export const useProjectStore = create<ProjectStore>()(
           return { projects: updatedList };
         });
 
-        // Cloud sync if authenticated
+        // Cloud sync if Pro subscriber
         try {
           if (modifiedProject) {
             const { useAuthStore } = require("@/lib/store/authStore");
-            const { saveProjectToCloud } = require("@/lib/cloudProjectSync");
-            const uid = useAuthStore.getState().user?.uid;
-            if (uid) saveProjectToCloud(uid, modifiedProject);
+            const { isPro, user } = useAuthStore.getState();
+            if (isPro && user?.uid) {
+              const { saveProjectToCloud } = require("@/lib/cloudProjectSync");
+              saveProjectToCloud(user.uid, modifiedProject);
+            }
           }
         } catch {}
       },

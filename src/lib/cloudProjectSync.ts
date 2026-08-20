@@ -1,17 +1,27 @@
 import { doc, setDoc, deleteDoc, getDocs, collection, onSnapshot, Unsubscribe } from "firebase/firestore";
 import { getFirebaseDb } from "@/lib/firebase";
 import { useProjectStore } from "@/lib/store/projectStore";
+import { useAuthStore } from "@/lib/store/authStore";
 import { Project } from "@/lib/types";
+import { toast } from "@/lib/store/toastStore";
 
 let currentUnsub: Unsubscribe | null = null;
 let isSyncing = false;
 
 /**
  * Initializes real-time cloud synchronization for the user's projects from Firebase Firestore.
- * Automatically merges local and cloud projects and backs up guest projects to the cloud.
+ * Cloud sync is exclusively available for SnapFrame Pro subscribers.
+ * When a free user upgrades to Pro, all their existing local projects are automatically migrated to Firestore.
  */
 export async function syncProjectsOnLogin(uid: string): Promise<void> {
   if (!uid || isSyncing) return;
+
+  const isPro = useAuthStore.getState().isPro;
+  if (!isPro) {
+    // Free users store projects locally in localStorage
+    return;
+  }
+
   isSyncing = true;
 
   try {
@@ -41,13 +51,14 @@ export async function syncProjectsOnLogin(uid: string): Promise<void> {
     // Add all cloud projects
     cloudProjects.forEach((p) => mergedMap.set(p.id, p));
 
-    // Merge in any local projects (uploading local-only or newer projects)
+    let migratedCount = 0;
+    // Migrate local projects to cloud if missing or newer
     for (const lp of localProjects) {
       const existing = mergedMap.get(lp.id);
       if (!existing) {
         mergedMap.set(lp.id, lp);
-        // Upload local guest project to cloud
         await saveProjectToCloud(uid, lp);
+        migratedCount++;
       } else {
         const localTime = new Date(lp.updatedAt || 0).getTime();
         const cloudTime = new Date(existing.updatedAt || 0).getTime();
@@ -56,6 +67,10 @@ export async function syncProjectsOnLogin(uid: string): Promise<void> {
           await saveProjectToCloud(uid, lp);
         }
       }
+    }
+
+    if (migratedCount > 0) {
+      toast.success(`☁️ Multi-device Cloud Sync enabled! Backed up ${migratedCount} local ${migratedCount === 1 ? "project" : "projects"} to your Pro Cloud.`);
     }
 
     const mergedList = Array.from(mergedMap.values());
@@ -100,9 +115,13 @@ export async function syncProjectsOnLogin(uid: string): Promise<void> {
 
 /**
  * Saves or updates a project in Firestore under users/{uid}/projects/{projectId}
+ * Only executed for Pro subscribers.
  */
 export async function saveProjectToCloud(uid: string, project: Project): Promise<void> {
   if (!uid || !project?.id) return;
+  const isPro = useAuthStore.getState().isPro;
+  if (!isPro) return;
+
   try {
     const db = await getFirebaseDb();
     if (!db) return;
@@ -121,6 +140,9 @@ export async function saveProjectToCloud(uid: string, project: Project): Promise
  */
 export async function deleteProjectFromCloud(uid: string, projectId: string): Promise<void> {
   if (!uid || !projectId) return;
+  const isPro = useAuthStore.getState().isPro;
+  if (!isPro) return;
+
   try {
     const db = await getFirebaseDb();
     if (!db) return;

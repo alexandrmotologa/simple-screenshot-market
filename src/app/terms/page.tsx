@@ -191,15 +191,31 @@ export default function TermsOfServicePage() {
           <section className="space-y-3">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-xs flex items-center justify-center font-bold">5</span>
-              Subscriptions, Billing &amp; Merchant of Record (Paddle.com)
+              Account Tiers, Subscriptions &amp; Cloud Storage
             </h2>
             <p>
-              SnapFrame offers optional paid subscriptions (&quot;SnapFrame Pro&quot;) providing access to unlimited AI generations, 4K lossless exports, animated video creation, and advanced templates.
+              SnapFrame provides multiple service tiers to accommodate independent developers, studios, and agencies:
             </p>
-            <div className="p-4 rounded-xl bg-card border border-border/70 space-y-2 text-xs">
+            <div className="space-y-3 text-xs">
+              <div className="p-3.5 rounded-xl bg-secondary/40 border border-border/60">
+                <span className="font-bold text-foreground">🟢 Free Account Tier:</span>
+                <p className="text-muted-foreground mt-0.5">
+                  Includes up to <strong>three (3) active projects</strong> stored locally within your browser storage (<code className="text-foreground">localStorage</code>), unlimited client-side Video/GIF and Store Assets exports, and three (3) complimentary AI credits upon registration. Free accounts do not include multi-device cloud synchronization.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-card border border-primary/30 shadow-xs">
+                <span className="font-bold text-foreground">⭐ SnapFrame Pro Tier ($9/month or $69/year):</span>
+                <p className="text-muted-foreground mt-0.5">
+                  Includes <strong>unlimited projects</strong>, automatic real-time <strong>Multi-Device Cloud Synchronization</strong> powered by Google Cloud Firestore (allowing instant seamless access across Mac, PC, and mobile), 4K lossless exports, and up to <strong>500 AI generations per month</strong> governed by our Fair Usage Policy.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-card border border-border/70 space-y-2 text-xs mt-3">
               <h3 className="font-bold text-foreground flex items-center gap-2">
                 <CreditCard className="w-4 h-4 text-primary" />
-                Merchant of Record &amp; Payment Processing
+                Merchant of Record &amp; Payment Processing (Paddle.com)
               </h3>
               <p className="text-muted-foreground leading-relaxed">
                 Our order process is conducted by our online reseller <strong>Paddle.com</strong>. Paddle.com is the Merchant of Record for all our orders. Paddle handles all customer service inquiries, tax calculation (VAT, Sales Tax, GST), invoice issuance, and returns. By purchasing a subscription, you agree to Paddle&apos;s Buyer Terms and Conditions.
@@ -207,7 +223,7 @@ export default function TermsOfServicePage() {
               <ul className="list-disc pl-5 space-y-1 text-muted-foreground pt-1">
                 <li><strong>Recurring Billing:</strong> Pro subscriptions are billed on a recurring basis (Monthly at $9/month or Annually at $69/year) until canceled.</li>
                 <li><strong>Cancellation:</strong> You can cancel your subscription at any time via your account settings or the Paddle customer portal. Upon cancellation, you retain access until the end of your prepaid billing period.</li>
-                <li><strong>Refunds:</strong> We provide a 14-day money-back guarantee on initial purchases. Please review our full <Link href="/refunds" className="text-primary font-semibold hover:underline">Refund Policy</Link> for details on how to request a refund.</li>
+                <li><strong>Refunds:</strong> We provide a 14-day money-back guarantee on unutilized accounts. As detailed in our <Link href="/refunds" className="text-primary font-semibold hover:underline">Refund Policy</Link>, once an account actively consumes AI generation credits or utilizes multi-device Firestore cloud storage, non-recoverable third-party server and compute expenses have been incurred, and retrospective refunds are no longer available.</li>
               </ul>
             </div>
           </section>

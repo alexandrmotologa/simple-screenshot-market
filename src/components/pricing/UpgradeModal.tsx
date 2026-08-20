@@ -9,9 +9,14 @@ import { toast } from "@/lib/store/toastStore";
 
 const PRO_FEATURES = [
   {
+    icon: Globe,
+    title: "Unlimited Projects & Multi-Device Cloud Sync",
+    desc: "Create unlimited projects with real-time automatic Firestore cloud backup across your Mac, PC, and iPad.",
+  },
+  {
     icon: Zap,
-    title: "Unlimited AI Generations",
-    desc: "Auto-Pilot vision generation, AI copywriting & instant multi-language translation in 40+ languages.",
+    title: "500 AI Generations / Month",
+    desc: "Auto-Pilot vision generation, AI copywriting & instant multi-language translation in 40+ languages (Fair Usage).",
   },
   {
     icon: Film,
@@ -27,11 +32,6 @@ const PRO_FEATURES = [
     icon: ImageIcon,
     title: "AI 3D Background Cutout",
     desc: "Automatically isolate key UI elements to pop out beyond the phone frame in full 3D.",
-  },
-  {
-    icon: Globe,
-    title: "Unlimited Projects & Cloud Sync",
-    desc: "Create and organize unlimited app projects with instant automatic cloud backup across all devices.",
   },
   {
     icon: Shield,

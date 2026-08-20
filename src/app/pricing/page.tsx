@@ -31,28 +31,28 @@ import { toast } from "@/lib/store/toastStore";
 
 const PRICING_FAQS = [
   {
-    q: "How does the subscription work?",
-    a: "SnapFrame Pro is billed either monthly ($9/month) or annually ($69/year, equivalent to $5.75/month). You get instant access to unlimited AI generations, 4K lossless exports, animated video creation, and all pro templates. You can cancel anytime with 1 click from your account.",
+    q: "How does project saving and Multi-Device Cloud Sync work?",
+    a: "Free accounts can create up to 3 projects, which are saved locally in your current browser (localStorage). When you upgrade to SnapFrame Pro, Multi-Device Cloud Sync via Google Cloud Firestore is automatically activated: all your existing local projects are securely backed up to the cloud and available in real-time across your Mac, PC, and iPad.",
   },
   {
-    q: "Who processes payments and billing?",
-    a: "Our order process is conducted by our online reseller and Merchant of Record, Paddle.com. Paddle handles all global payment processing, sales tax, VAT calculation, and automated invoice delivery.",
+    q: "What is the difference between Free and Pro AI generations?",
+    a: "Free accounts receive 3 complimentary AI credits upon registration with Google or GitHub to test our AI Auto-Pilot and copywriter. SnapFrame Pro includes up to 500 AI generations per month under our Fair Usage Policy, covering Vision Auto-Pilot, 3D Background Cutouts, and multi-language translations in 40+ languages.",
+  },
+  {
+    q: "Are Video / GIF and App Icon Studio exports free?",
+    a: "Yes! Creating and exporting 60fps MP4/WebM videos, animated GIFs, official App Store / Google Play 1024x1024 icons, and full Xcode AppIcon.appiconset.zip / Android mipmap.zip packages is 100% free and unlimited for all registered accounts.",
   },
   {
     q: "What is your refund policy?",
-    a: "We offer a 14-day no-questions-asked money-back guarantee. If you are not satisfied with SnapFrame Pro for any reason within 14 days of your purchase, contact us or Paddle for a full refund.",
+    a: "We offer a 14-day money-back guarantee for unutilized accounts. If you purchase SnapFrame Pro and request a refund within 14 calendar days without having consumed AI generation credits or stored data in multi-device cloud sync, you will receive a 100% full refund through Paddle. Once AI credits or cloud storage are actively utilized, computational costs have been incurred on your behalf and the service is considered fulfilled.",
   },
   {
     q: "Can I use the exported screenshots for commercial apps?",
-    a: "Yes! 100% of the artwork, device mockups, and screenshots you export with SnapFrame come with a perpetual commercial license. You own all rights to publish them to the App Store, Google Play, websites, and ad campaigns.",
+    a: "Yes! 100% of the artwork, device mockups, and screenshots you export with SnapFrame come with a perpetual commercial license. You own all rights to publish them to the Apple App Store, Google Play, marketing websites, and ad campaigns.",
   },
   {
-    q: "What payment methods are accepted?",
-    a: "Through Paddle, we accept all major credit and debit cards (Visa, Mastercard, American Express), Apple Pay, Google Pay, and PayPal worldwide.",
-  },
-  {
-    q: "Can I switch between monthly and annual plans?",
-    a: "Yes, you can upgrade, downgrade, or change your billing frequency at any time directly through your account dashboard or via the Paddle billing portal.",
+    q: "What payment methods are accepted and who processes billing?",
+    a: "Our order process is conducted by our online reseller and Merchant of Record, Paddle.com. Through Paddle, we accept all major credit/debit cards (Visa, Mastercard, American Express), Apple Pay, Google Pay, and PayPal worldwide with automatic VAT/sales tax invoicing.",
   },
 ];
 
@@ -180,27 +180,31 @@ export default function PricingPage() {
               <div className="pt-4 border-t border-border/50 space-y-3 text-xs">
                 <div className="flex items-center gap-2.5 text-foreground">
                   <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>3 Free AI Generations (Auto-Pilot & Copywriter)</span>
+                  <span>3 Free AI Generations (Auto-Pilot &amp; Copywriter)</span>
                 </div>
                 <div className="flex items-center gap-2.5 text-foreground">
                   <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>Standard 1x & 2x PNG / JPEG Exports</span>
+                  <span>Up to 3 Projects (Stored locally on your device)</span>
                 </div>
                 <div className="flex items-center gap-2.5 text-foreground">
                   <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>All Standard Device Frames (iPhone, Android, iPad)</span>
+                  <span>Unlimited Video &amp; Animated GIF Studio Exports</span>
                 </div>
                 <div className="flex items-center gap-2.5 text-foreground">
                   <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>Up to 3 Active Projects</span>
+                  <span>Unlimited App Icon Studio &amp; Developer Zip Packs</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-foreground">
+                  <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Standard 1x &amp; 2x PNG / JPEG Exports</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-muted-foreground opacity-60">
+                  <X className="w-4 h-4 shrink-0" />
+                  <span>Multi-Device Real-Time Cloud Sync</span>
                 </div>
                 <div className="flex items-center gap-2.5 text-muted-foreground opacity-60">
                   <X className="w-4 h-4 shrink-0" />
                   <span>4K Lossless Ultra-HD Master Exports</span>
-                </div>
-                <div className="flex items-center gap-2.5 text-muted-foreground opacity-60">
-                  <X className="w-4 h-4 shrink-0" />
-                  <span>Video & Animated GIF Studio Exporter</span>
                 </div>
               </div>
             </div>
@@ -246,7 +250,11 @@ export default function PricingPage() {
               <div className="pt-4 border-t border-border/50 space-y-3 text-xs">
                 <div className="flex items-center gap-2.5 text-foreground font-medium">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span><strong>Unlimited AI Generations</strong> (Vision Auto-Pilot, Copywriter & 40+ Languages)</span>
+                  <span><strong>Unlimited Projects &amp; Multi-Device Cloud Sync</strong> (Firestore)</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-foreground font-medium">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span><strong>500 AI Generations / Month</strong> (Vision Auto-Pilot, Copy &amp; 40+ Languages)</span>
                 </div>
                 <div className="flex items-center gap-2.5 text-foreground font-medium">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -254,23 +262,19 @@ export default function PricingPage() {
                 </div>
                 <div className="flex items-center gap-2.5 text-foreground font-medium">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span><strong>Video & Animated GIF Carousel Studio</strong> (60fps MP4/WebM)</span>
+                  <span><strong>Video &amp; Animated GIF Carousel Studio</strong> (60fps MP4/WebM)</span>
                 </div>
                 <div className="flex items-center gap-2.5 text-foreground font-medium">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span><strong>AI 3D Background Cutout & Pop-Out</strong></span>
+                  <span><strong>AI 3D Background Cutout &amp; Pop-Out</strong></span>
                 </div>
                 <div className="flex items-center gap-2.5 text-foreground font-medium">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span><strong>Unlimited Projects & Automatic Cloud Sync</strong></span>
+                  <span><strong>Fastlane &amp; Store Listing Metadata Package</strong> (.txt, .json)</span>
                 </div>
                 <div className="flex items-center gap-2.5 text-foreground font-medium">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span><strong>Fastlane & Store Listing Metadata Package</strong> (.txt, .json)</span>
-                </div>
-                <div className="flex items-center gap-2.5 text-foreground font-medium">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span><strong>All 6+ Pro Industry Niche Templates & Metallic Presets</strong></span>
+                  <span><strong>All 6+ Pro Industry Niche Templates &amp; Metallic Presets</strong></span>
                 </div>
               </div>
             </div>

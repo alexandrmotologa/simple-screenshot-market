@@ -121,7 +121,7 @@ export default function RefundPolicyPage() {
               14-Day Money-Back Guarantee
             </h2>
             <p>
-              All first-time purchases of SnapFrame Pro (both Monthly and Annual plans) are backed by our 14-day money-back guarantee. If you decide that SnapFrame is not the right tool for your workflow within 14 calendar days from the transaction date, you are entitled to a 100% full refund.
+              All first-time purchases of SnapFrame Pro (both Monthly and Annual plans) are backed by our 14-day money-back guarantee for unutilized accounts. If you decide that SnapFrame is not the right tool for your workflow within 14 calendar days from the transaction date and have not actively consumed computational or cloud resources, you are entitled to a 100% full refund.
             </p>
           </section>
 
@@ -129,6 +129,28 @@ export default function RefundPolicyPage() {
           <section className="space-y-3">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-xs flex items-center justify-center font-bold">2</span>
+              Digital Service Consumption &amp; Refund Eligibility
+            </h2>
+            <p>
+              In accordance with international digital service standards and the European Consumer Rights Directive regarding immediate digital content delivery:
+            </p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li>
+                <strong>Unutilized Accounts (Full 100% Refund):</strong> If you purchase SnapFrame Pro and request a refund within 14 days without having consumed AI compute credits on your Pro subscription and without having synced projects to multi-device Firestore cloud storage, you will receive an unconditional 100% refund.
+              </li>
+              <li>
+                <strong>Actively Utilized Accounts (Non-Refundable):</strong> Once a Pro subscriber actively utilizes the paid infrastructure — specifically by <em>performing at least one (1) AI generation (such as AI Vision Auto-Pilot, AI Background Cutout, or AI Translation)</em> or by <em>synchronizing project data to our dedicated Multi-Device Cloud Storage (Firestore)</em> — non-recoverable third-party server, database, and API expenses are permanently incurred on your behalf. Consequently, once these resources are actively consumed, the subscription is considered fulfilled and is no longer eligible for a retrospective refund.
+              </li>
+              <li>
+                <strong>Cancel Anytime:</strong> If your account has been utilized and you wish to discontinue, you can cancel your subscription with 1 click. You will retain full Pro access until the conclusion of your billing cycle and will never be charged again.
+              </li>
+            </ul>
+          </section>
+
+          {/* Section 3 */}
+          <section className="space-y-3">
+            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-xs flex items-center justify-center font-bold">3</span>
               Subscription Cancellation Terms
             </h2>
             <p>

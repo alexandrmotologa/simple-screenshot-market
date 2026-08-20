@@ -145,7 +145,7 @@ export default function PrivacyPolicyPage() {
                 <strong className="text-foreground">Account & Authentication Data:</strong> When registering or logging in via Google OAuth, GitHub OAuth, or Email & Password (managed through Google Firebase Authentication), we receive your unique User ID (UID), email address, display name, and avatar URL. Passwords are never stored directly by us and are securely salted and hashed by Firebase.
               </li>
               <li>
-                <strong className="text-foreground">Project & Design Data:</strong> Project metadata (project name, created/updated timestamps, device presets, layer coordinates, headlines, colors, and layout configurations). By default, projects are stored locally in your browser (IndexedDB / LocalStorage) and synchronized with Firebase Firestore when logged in.
+                <strong className="text-foreground">Project &amp; Design Data:</strong> Project metadata (project name, created/updated timestamps, device presets, layer coordinates, headlines, colors, and layout configurations). For Guest and Free users, projects are stored strictly locally in your browser storage (<code className="text-foreground">localStorage</code>). For SnapFrame Pro subscribers, project data is securely synchronized and backed up to encrypted Google Cloud Firestore databases under your authenticated user ID.
               </li>
               <li>
                 <strong className="text-foreground">Uploaded Screenshots & Images:</strong> App screenshots and media uploaded to the canvas are rendered client-side in HTML5 Canvas. If cloud sync or asset hosting is active, image assets are stored securely in encrypted object storage.

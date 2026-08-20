@@ -45,9 +45,29 @@
 - **GIF Animator:** Export animated showcase GIFs of your screenshot sets.
 - **1-Click 4K PNG Clipboard Copy:** Instantly copy active screens to clipboard for Figma, Slack, or Notion.
 
+### 💎 Account Tiers & Architecture
+
+| Feature | 👤 Guest Mode | 🟢 Free Registered (Google/GitHub) | ⭐ SnapFrame Pro ($9/mo or $69/yr) |
+| :--- | :--- | :--- | :--- |
+| **Max Projects** | 1 Active Project | **3 Projects** (Stored locally on device) | **Unlimited Projects** |
+| **Cloud Synchronization** | ❌ Local Browser Only | ❌ Local Browser Only | **☁️ Multi-Device Real-Time Cloud Sync** (Google Firestore) |
+| **Upgrade Migration** | N/A | Local projects automatically migrate to Cloud on Pro upgrade | Instant multi-device sync across Mac, PC, iPad |
+| **AI Generations** | 🔒 Sign in required | **3 Complimentary AI Credits** | **500 AI Generations / Month** (Fair Usage) |
+| **Video & Animated GIF Studio** | 🔒 Sign in required | **100% Free & Unlimited** (60fps MP4/WebM/GIF) | **100% Free & Unlimited** |
+| **Store App Icon & Dev Packs** | 🔒 Sign in required | **100% Free & Unlimited** (Xcode & Android zips) | **100% Free & Unlimited** |
+| **4K Lossless Master Exports** | ❌ Standard 1x/2x | Standard 1x/2x | **✅ 4K Ultra-HD Lossless Exports** |
+| **Templates** | Standard templates | Standard templates | **All 6+ Pro Industry Niche Templates** |
+| **Commercial License** | ✅ Included | ✅ Included | ✅ Included |
+
 ---
 
-## 🛠️ Tech Stack
+### 💳 Subscriptions & Transparent Refund Policy
+- **Merchant of Record:** Paddle.com processes all transactions securely worldwide with automatic invoice generation and VAT calculation.
+- **14-Day Money-Back Guarantee:** Eligible for unutilized accounts within 14 calendar days of initial purchase.
+- **Digital Resource Consumption:** Once an account actively utilizes paid compute resources (consuming at least 1 AI generation or syncing projects to dedicated Firestore cloud storage), non-recoverable third-party server and API infrastructure costs are incurred on your behalf, and the service is considered fulfilled.
+- **1-Click Cancellation:** Cancel anytime with zero penalties; full access remains until the end of your billing cycle.
+
+---
 
 - **Framework:** [Next.js 16](https://nextjs.org/) (App Router, Turbopack, React 19)
 - **Language:** [TypeScript](https://www.typescriptlang.org/) (Strict Mode)

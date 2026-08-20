@@ -136,9 +136,10 @@ function LayoutPreview({ template }: { template: Template }) {
 
 export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalProps) {
   const { createProject, projects } = useProjectStore();
-  const { user, setAuthModalOpen } = useAuthStore();
+  const { user, isPro, setAuthModalOpen, setUpgradeModalOpen } = useAuthStore();
   const isGuest = Boolean(user && user.isAnonymous);
-  const hasReachedLimit = isGuest && projects.length >= 1;
+  const hasReachedGuestLimit = isGuest && projects.length >= 1;
+  const hasReachedFreeLimit = !isGuest && !isPro && projects.length >= 3;
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [projectName, setProjectName] = useState("My App Screenshots");
   const [platforms, setPlatforms] = useState<{ ios: boolean; android: boolean }>({ ios: true, android: true });
@@ -197,8 +198,13 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
   }, [globalCounts]);
 
   const handleCreate = async () => {
-    if (hasReachedLimit) {
+    if (hasReachedGuestLimit) {
       setAuthModalOpen(true);
+      onClose();
+      return;
+    }
+    if (hasReachedFreeLimit) {
+      setUpgradeModalOpen(true);
       onClose();
       return;
     }
@@ -451,7 +457,7 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
             >
               Cancel
             </Button>
-            {hasReachedLimit ? (
+            {hasReachedGuestLimit ? (
               <Button
                 onClick={() => {
                   onClose();
@@ -460,7 +466,18 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
                 className="h-10 px-6 font-semibold gap-2 bg-amber-500 hover:bg-amber-400 text-black shadow-lg shadow-amber-500/20 cursor-pointer"
               >
                 <Lock className="w-4 h-4" />
-                Upgrade Free (1/1 Max)
+                Sign In Free (1/1 Max)
+              </Button>
+            ) : hasReachedFreeLimit ? (
+              <Button
+                onClick={() => {
+                  onClose();
+                  setUpgradeModalOpen(true);
+                }}
+                className="h-10 px-6 font-semibold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4" />
+                Upgrade to Pro (3/3 Limit)
               </Button>
             ) : (
               <Button

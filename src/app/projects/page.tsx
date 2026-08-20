@@ -6,7 +6,7 @@ import {
   Plus, Layers, Clock, Copy, Trash2, ArrowRight, Sparkles,
   Zap, Globe, Search, LayoutGrid, List, ArrowUpDown, Edit3,
   Smartphone, ExternalLink, MoreHorizontal, Calendar, X,
-  ShieldAlert, Lock,
+  ShieldAlert, Lock, Folder,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ import { AuthModal } from "@/components/auth/AuthModal";
 import { UpgradeModal } from "@/components/pricing/UpgradeModal";
 import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
 import { BrandHeroIcon } from "@/components/ui/BrandHeroIcon";
+import { toast } from "@/lib/store/toastStore";
 
 // ── Mini Canvas Thumbnail with Real Screen Render & Multi-Screen Stack ────────
 function ProjectThumbnail({ project }: { project: Project }) {
@@ -482,7 +483,7 @@ export type DashboardSortOption =
 
 export default function ProjectsPage() {
   const router = useRouter();
-  const { user, isInitialized, setAuthModalOpen } = useAuthStore();
+  const { user, isInitialized, isPro, setAuthModalOpen, setUpgradeModalOpen } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const { projects, deleteProject, duplicateProject, updateProject } = useProjectStore();
   const [showNewProject, setShowNewProject] = useState(false);
@@ -530,12 +531,22 @@ export default function ProjectsPage() {
       setAuthModalOpen(true);
       return;
     }
+    if (!isPro && projects.length >= 3) {
+      setUpgradeModalOpen(true);
+      toast.info("Free plan includes up to 3 local projects. Upgrade to SnapFrame Pro for unlimited projects & multi-device cloud sync!");
+      return;
+    }
     setConfirmModal({ type: "duplicate", projectId: id, projectName: name });
   };
 
   const handleNewProjectClick = () => {
     if (isGuest && projects.length >= 1) {
       setAuthModalOpen(true);
+      return;
+    }
+    if (!isPro && projects.length >= 3) {
+      setUpgradeModalOpen(true);
+      toast.info("Free plan includes up to 3 local projects. Upgrade to SnapFrame Pro for unlimited projects & multi-device cloud sync!");
       return;
     }
     setShowNewProject(true);
@@ -662,7 +673,7 @@ export default function ProjectsPage() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-10">
         {/* Guest Mode Status Banner */}
-        {isGuest && (
+        {isGuest ? (
           <div className="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2.5 text-amber-300">
               <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0" />
@@ -671,7 +682,7 @@ export default function ProjectsPage() {
                   Guest Account ({projects.length}/1 Active Project Used)
                 </span>
                 <p className="text-muted-foreground text-[11px] mt-0.5">
-                  Guest accounts can store 1 project and are auto-deleted after 30 days. AI superpowers are disabled in Guest mode. Sign in with Google or GitHub (100% Free) for unlimited projects and AI tools.
+                  Guest accounts can store 1 local project. Sign in with Google or GitHub (100% Free) for up to 3 projects and 3 free AI credits.
                 </p>
               </div>
             </div>
@@ -681,8 +692,45 @@ export default function ProjectsPage() {
               className="shrink-0 h-8 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs gap-1.5 shadow-sm cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Upgrade Free</span>
+              <span>Sign In Free</span>
             </Button>
+          </div>
+        ) : !isPro ? (
+          <div className="mb-6 p-4 rounded-2xl bg-secondary/50 border border-border/70 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5 text-foreground">
+              <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                <Folder className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-foreground">
+                    Free Account ({projects.length}/3 Local Projects Used)
+                  </span>
+                  <Badge variant="outline" className="text-[10px] font-semibold text-muted-foreground">
+                    Local Device Storage
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground text-[11px] mt-0.5">
+                  Projects are stored locally in your browser. Upgrade to SnapFrame Pro for unlimited projects &amp; multi-device cloud sync.
+                </p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => setUpgradeModalOpen(true)}
+              className="shrink-0 h-8 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs gap-1.5 shadow-sm cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Unlock Cloud Sync &amp; Pro</span>
+            </Button>
+          </div>
+        ) : (
+          <div className="mb-6 px-4 py-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="font-bold">☁️ SnapFrame Pro Active:</span>
+              <span>Multi-device Cloud Sync enabled • Unlimited Projects • 500 AI Generations / mo</span>
+            </div>
           </div>
         )}
 
