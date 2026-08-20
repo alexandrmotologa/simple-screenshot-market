@@ -214,6 +214,12 @@ export default function PrivacyPolicyPage() {
                 </thead>
                 <tbody className="divide-y divide-border/40">
                   <tr>
+                    <td className="p-3 font-medium text-foreground">Paddle.com (Merchant of Record)</td>
+                    <td className="p-3">Payment processing, recurring subscriptions, tax compliance, invoicing</td>
+                    <td className="p-3">UK / EU / US</td>
+                    <td className="p-3">PCI-DSS Level 1, GDPR DPA, SCCs</td>
+                  </tr>
+                  <tr>
                     <td className="p-3 font-medium text-foreground">Google Cloud / Firebase</td>
                     <td className="p-3">Authentication, Firestore database, hosting</td>
                     <td className="p-3">EU / US</td>
@@ -240,6 +246,9 @@ export default function PrivacyPolicyPage() {
                 </tbody>
               </table>
             </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              <strong>Payment Data Security:</strong> SnapFrame does not store or process raw credit card numbers or payment credentials on our servers. All financial transactions and payment data are handled directly and securely by Paddle.com in full compliance with PCI-DSS Level 1 security standards.
+            </p>
           </section>
 
           {/* Section 6 */}

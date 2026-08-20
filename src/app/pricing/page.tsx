@@ -1,0 +1,366 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import {
+  Check,
+  X,
+  Sparkles,
+  Crown,
+  Zap,
+  Shield,
+  Film,
+  Globe,
+  Image as ImageIcon,
+  ArrowLeft,
+  ArrowRight,
+  HelpCircle,
+  CreditCard,
+  RefreshCw,
+  Award,
+} from "lucide-react";
+import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { UserMenu } from "@/components/auth/UserMenu";
+import { AuthModal } from "@/components/auth/AuthModal";
+import { UpgradeModal } from "@/components/pricing/UpgradeModal";
+import { Footer } from "@/components/dashboard/Footer";
+import { useAuthStore } from "@/lib/store/authStore";
+import { openPaddleCheckout } from "@/lib/paddle";
+import { toast } from "@/lib/store/toastStore";
+
+const PRICING_FAQS = [
+  {
+    q: "How does the subscription work?",
+    a: "SnapFrame Pro is billed either monthly ($9/month) or annually ($69/year, equivalent to $5.75/month). You get instant access to unlimited AI generations, 4K lossless exports, animated video creation, and all pro templates. You can cancel anytime with 1 click from your account.",
+  },
+  {
+    q: "Who processes payments and billing?",
+    a: "Our order process is conducted by our online reseller and Merchant of Record, Paddle.com. Paddle handles all global payment processing, sales tax, VAT calculation, and automated invoice delivery.",
+  },
+  {
+    q: "What is your refund policy?",
+    a: "We offer a 14-day no-questions-asked money-back guarantee. If you are not satisfied with SnapFrame Pro for any reason within 14 days of your purchase, contact us or Paddle for a full refund.",
+  },
+  {
+    q: "Can I use the exported screenshots for commercial apps?",
+    a: "Yes! 100% of the artwork, device mockups, and screenshots you export with SnapFrame come with a perpetual commercial license. You own all rights to publish them to the App Store, Google Play, websites, and ad campaigns.",
+  },
+  {
+    q: "What payment methods are accepted?",
+    a: "Through Paddle, we accept all major credit and debit cards (Visa, Mastercard, American Express), Apple Pay, Google Pay, and PayPal worldwide.",
+  },
+  {
+    q: "Can I switch between monthly and annual plans?",
+    a: "Yes, you can upgrade, downgrade, or change your billing frequency at any time directly through your account dashboard or via the Paddle billing portal.",
+  },
+];
+
+export default function PricingPage() {
+  const { user, isPro, setAuthModalOpen, setProStatus, setUpgradeModalOpen } = useAuthStore();
+  const [billingCycle, setBillingCycle] = useState<"annual" | "monthly">("annual");
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const isGuest = Boolean(!user || user.isAnonymous);
+
+  const handleCheckout = async (plan: "annual" | "monthly") => {
+    if (isGuest) {
+      setAuthModalOpen(true);
+      toast.info("Please create a free account with Google or GitHub first to link your Pro subscription.");
+      return;
+    }
+
+    setIsProcessing(true);
+    await openPaddleCheckout({
+      plan,
+      userEmail: user?.email,
+      userId: user?.uid,
+      onSuccess: () => {
+        setProStatus(true, plan);
+        setIsProcessing(false);
+      },
+    });
+    setIsProcessing(false);
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col bg-background text-foreground selection:bg-primary/20 selection:text-primary">
+      {/* Header */}
+      <header className="border-b border-border/50 bg-card/50 backdrop-blur-md sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 group cursor-pointer">
+            <SnapFrameLogo size={32} withText textClassName="text-lg" />
+          </Link>
+
+          <div className="flex items-center gap-3">
+            <Link
+              href="/projects"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg hover:bg-secondary"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Back to Projects
+            </Link>
+            <ThemeToggle />
+            <UserMenu />
+          </div>
+        </div>
+      </header>
+
+      {/* Main Container */}
+      <main className="flex-1 max-w-6xl w-full mx-auto px-6 py-12 sm:py-16 space-y-16">
+        {/* Hero Section */}
+        <div className="text-center space-y-4 max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-wider shadow-xs">
+            <Crown className="w-3.5 h-3.5" />
+            <span>Simple, Transparent Pricing</span>
+          </div>
+
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-foreground">
+            Ship High-Converting Screenshots{" "}
+            <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+              In Seconds
+            </span>
+          </h1>
+
+          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Start for free with 3 AI credits or upgrade to SnapFrame Pro for unlimited AI Auto-Pilot, 4K lossless exports, and video preview creation.
+          </p>
+
+          {/* Billing Cycle Switcher */}
+          <div className="pt-6 flex items-center justify-center">
+            <div className="p-1 rounded-2xl bg-secondary/80 border border-border/80 flex items-center gap-1 shadow-inner">
+              <button
+                type="button"
+                onClick={() => setBillingCycle("annual")}
+                className={`px-5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  billingCycle === "annual"
+                    ? "bg-primary text-primary-foreground shadow-md"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <span>Annual Billing</span>
+                <span className="px-2 py-0.5 text-[10px] rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  Save 36%
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setBillingCycle("monthly")}
+                className={`px-5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  billingCycle === "monthly"
+                    ? "bg-primary text-primary-foreground shadow-md"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Monthly Billing
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Pricing Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
+          {/* FREE TIER CARD */}
+          <div className="p-8 rounded-3xl bg-card border border-border/70 shadow-sm flex flex-col justify-between space-y-6 hover:border-border transition-colors">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-foreground">Free Starter</h3>
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-secondary text-muted-foreground border border-border/60">
+                  Forever Free
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Perfect for indie developers testing their first mobile application screenshots.
+              </p>
+              <div className="flex items-baseline gap-1 pt-2">
+                <span className="text-4xl font-black text-foreground">$0</span>
+                <span className="text-xs text-muted-foreground font-semibold">/ forever</span>
+              </div>
+
+              <div className="pt-4 border-t border-border/50 space-y-3 text-xs">
+                <div className="flex items-center gap-2.5 text-foreground">
+                  <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>3 Free AI Generations (Auto-Pilot & Copywriter)</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-foreground">
+                  <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Standard 1x & 2x PNG / JPEG Exports</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-foreground">
+                  <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>All Standard Device Frames (iPhone, Android, iPad)</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-foreground">
+                  <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Up to 3 Active Projects</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-muted-foreground opacity-60">
+                  <X className="w-4 h-4 shrink-0" />
+                  <span>4K Lossless Ultra-HD Master Exports</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-muted-foreground opacity-60">
+                  <X className="w-4 h-4 shrink-0" />
+                  <span>Video & Animated GIF Studio Exporter</span>
+                </div>
+              </div>
+            </div>
+
+            <Link
+              href="/projects"
+              className="w-full py-3 rounded-xl bg-secondary/80 hover:bg-secondary text-foreground text-xs font-bold flex items-center justify-center gap-2 border border-border/60 transition-all cursor-pointer shadow-xs active:scale-95"
+            >
+              <span>Get Started Free</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          {/* PRO TIER CARD */}
+          <div className="relative p-8 rounded-3xl bg-gradient-to-b from-indigo-950/40 via-purple-950/20 to-card border-2 border-indigo-500/50 shadow-2xl flex flex-col justify-between space-y-6">
+            {/* Popular Badge */}
+            <div className="absolute -top-3.5 right-8 px-3.5 py-1 rounded-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white text-[11px] font-bold shadow-md uppercase tracking-wider">
+              Most Popular
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Crown className="w-5 h-5 text-amber-400" />
+                  <h3 className="text-xl font-bold text-foreground">SnapFrame Pro</h3>
+                </div>
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                  Full Access
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                For ambitious developers, agencies, and studios who want maximum downloads and conversions.
+              </p>
+              <div className="flex items-baseline gap-1 pt-2">
+                <span className="text-4xl font-black text-foreground">
+                  {billingCycle === "annual" ? "$5.75" : "$9"}
+                </span>
+                <span className="text-xs text-muted-foreground font-semibold">
+                  / month {billingCycle === "annual" && <span className="text-primary font-bold">(billed annually at $69/year)</span>}
+                </span>
+              </div>
+
+              <div className="pt-4 border-t border-border/50 space-y-3 text-xs">
+                <div className="flex items-center gap-2.5 text-foreground font-medium">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span><strong>Unlimited AI Generations</strong> (Vision Auto-Pilot, Copywriter & 40+ Languages)</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-foreground font-medium">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span><strong>4K Lossless Ultra-HD Master Exports</strong> (Pixel-perfect 3x/4K)</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-foreground font-medium">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span><strong>Video & Animated GIF Carousel Studio</strong> (60fps MP4/WebM)</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-foreground font-medium">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span><strong>AI 3D Background Cutout & Pop-Out</strong></span>
+                </div>
+                <div className="flex items-center gap-2.5 text-foreground font-medium">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span><strong>Unlimited Projects & Automatic Cloud Sync</strong></span>
+                </div>
+                <div className="flex items-center gap-2.5 text-foreground font-medium">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span><strong>Fastlane & Store Listing Metadata Package</strong> (.txt, .json)</span>
+                </div>
+                <div className="flex items-center gap-2.5 text-foreground font-medium">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span><strong>All 6+ Pro Industry Niche Templates & Metallic Presets</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleCheckout(billingCycle)}
+              disabled={isProcessing}
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>{isPro ? "Manage Pro Plan" : isGuest ? "Sign In & Upgrade to Pro" : "Upgrade to Pro ($" + (billingCycle === "annual" ? "69/yr" : "9/mo") + ")"}</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Merchant of Record & Guarantee Banner */}
+        <div className="p-6 rounded-2xl bg-card border border-border/80 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6 max-w-4xl mx-auto">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+              <Shield className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-foreground">14-Day Money-Back Guarantee</h4>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Try SnapFrame Pro risk-free. If you are not completely satisfied, get a full refund within 14 days.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0 text-xs text-muted-foreground">
+            <CreditCard className="w-4 h-4 text-primary" />
+            <span>Resold by <strong>Paddle.com</strong> (Merchant of Record)</span>
+          </div>
+        </div>
+
+        {/* FAQs Section */}
+        <div className="max-w-4xl mx-auto space-y-8 pt-6">
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl sm:text-3xl font-black text-foreground">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Everything you need to know about billing, licensing, and payment processing.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {PRICING_FAQS.map((faq, i) => (
+              <div
+                key={i}
+                className="p-5 rounded-2xl bg-card border border-border/70 space-y-2 hover:border-border transition-colors"
+              >
+                <h3 className="text-xs sm:text-sm font-bold text-foreground flex items-start gap-2">
+                  <HelpCircle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  <span>{faq.q}</span>
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed pl-6">
+                  {faq.a}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Legal Reseller Disclosure */}
+        <div className="text-center pt-8 border-t border-border/40 text-[11px] text-muted-foreground max-w-3xl mx-auto space-y-2">
+          <p>
+            Our order process is conducted by our online reseller <strong>Paddle.com</strong>. Paddle.com is the Merchant of Record for all our orders. Paddle provides all customer service inquiries and handles returns.
+          </p>
+          <div className="flex items-center justify-center gap-4 text-xs font-semibold pt-1">
+            <Link href="/terms" className="hover:text-foreground transition-colors underline">
+              Terms of Service
+            </Link>
+            <span>•</span>
+            <Link href="/privacy" className="hover:text-foreground transition-colors underline">
+              Privacy Policy
+            </Link>
+            <span>•</span>
+            <Link href="/refunds" className="hover:text-foreground transition-colors underline">
+              Refund Policy
+            </Link>
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+      <AuthModal />
+      <UpgradeModal />
+    </div>
+  );
+}

@@ -11,6 +11,7 @@ import {
   Smartphone,
   AlertTriangle,
   Mail,
+  CreditCard,
 } from "lucide-react";
 import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -190,6 +191,31 @@ export default function TermsOfServicePage() {
           <section className="space-y-3">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-xs flex items-center justify-center font-bold">5</span>
+              Subscriptions, Billing &amp; Merchant of Record (Paddle.com)
+            </h2>
+            <p>
+              SnapFrame offers optional paid subscriptions (&quot;SnapFrame Pro&quot;) providing access to unlimited AI generations, 4K lossless exports, animated video creation, and advanced templates.
+            </p>
+            <div className="p-4 rounded-xl bg-card border border-border/70 space-y-2 text-xs">
+              <h3 className="font-bold text-foreground flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-primary" />
+                Merchant of Record &amp; Payment Processing
+              </h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Our order process is conducted by our online reseller <strong>Paddle.com</strong>. Paddle.com is the Merchant of Record for all our orders. Paddle handles all customer service inquiries, tax calculation (VAT, Sales Tax, GST), invoice issuance, and returns. By purchasing a subscription, you agree to Paddle&apos;s Buyer Terms and Conditions.
+              </p>
+              <ul className="list-disc pl-5 space-y-1 text-muted-foreground pt-1">
+                <li><strong>Recurring Billing:</strong> Pro subscriptions are billed on a recurring basis (Monthly at $9/month or Annually at $69/year) until canceled.</li>
+                <li><strong>Cancellation:</strong> You can cancel your subscription at any time via your account settings or the Paddle customer portal. Upon cancellation, you retain access until the end of your prepaid billing period.</li>
+                <li><strong>Refunds:</strong> We provide a 14-day money-back guarantee on initial purchases. Please review our full <Link href="/refunds" className="text-primary font-semibold hover:underline">Refund Policy</Link> for details on how to request a refund.</li>
+              </ul>
+            </div>
+          </section>
+
+          {/* Section 6 */}
+          <section className="space-y-3">
+            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-xs flex items-center justify-center font-bold">6</span>
               Commercial License
             </h2>
             <p>
@@ -202,10 +228,10 @@ export default function TermsOfServicePage() {
             </ul>
           </section>
 
-          {/* Section 6 */}
+          {/* Section 7 */}
           <section className="space-y-3">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-              <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-xs flex items-center justify-center font-bold">6</span>
+              <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-xs flex items-center justify-center font-bold">7</span>
               Prohibited Conduct
             </h2>
             <p>You agree not to use SnapFrame to:</p>

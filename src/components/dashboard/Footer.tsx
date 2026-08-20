@@ -69,17 +69,26 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Legal & Open Source */}
+          {/* Legal & Pricing */}
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">Legal & Code</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">Plans &amp; Legal</h3>
             <ul className="space-y-2 text-xs text-muted-foreground">
               <li>
                 <Link
-                  href="/privacy"
+                  href="/pricing"
+                  className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors font-medium text-foreground"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-primary" />
+                  Pricing &amp; Plans
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/refunds"
                   className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
                 >
-                  <Lock className="w-3.5 h-3.5 text-primary/80" />
-                  Privacy Policy
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                  Refund Policy
                 </Link>
               </li>
               <li>
@@ -89,6 +98,15 @@ export function Footer() {
                 >
                   <FileText className="w-3.5 h-3.5 text-primary/80" />
                   Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/privacy"
+                  className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
+                >
+                  <Lock className="w-3.5 h-3.5 text-primary/80" />
+                  Privacy Policy
                 </Link>
               </li>
               <li>
@@ -102,17 +120,6 @@ export function Footer() {
                   GitHub Repository
                 </a>
               </li>
-              <li>
-                <a
-                  href="https://github.com/alexandrmotologa/simple-screenshot-market/issues"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-primary" />
-                  Feature Request
-                </a>
-              </li>
             </ul>
           </div>
         </div>
@@ -120,18 +127,24 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <p className="flex items-center gap-1">
-            © {currentYear} SnapFrame. Crafted with <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> for mobile app makers.
+            © {currentYear} SnapFrame. Crafted with <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> for mobile app makers. Resold by <strong>Paddle.com</strong>.
           </p>
           <div className="flex items-center gap-4 text-[11px]">
+            <Link href="/pricing" className="hover:text-foreground transition-colors font-medium">
+              Pricing
+            </Link>
+            <span className="w-1 h-1 rounded-full bg-border" />
+            <Link href="/refunds" className="hover:text-foreground transition-colors">
+              Refunds
+            </Link>
+            <span className="w-1 h-1 rounded-full bg-border" />
             <Link href="/privacy" className="hover:text-foreground transition-colors">
-              Privacy Policy
+              Privacy
             </Link>
             <span className="w-1 h-1 rounded-full bg-border" />
             <Link href="/terms" className="hover:text-foreground transition-colors">
-              Terms of Service
+              Terms
             </Link>
-            <span className="w-1 h-1 rounded-full bg-border" />
-            <span className="text-muted-foreground/80">GDPR & CCPA Compliant</span>
           </div>
         </div>
       </div>
