@@ -8,15 +8,70 @@ declare global {
   }
 }
 
-// Configurable Paddle IDs (Can be overridden via environment variables)
-export const PADDLE_CONFIG = {
-  clientToken: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || "test_token",
-  environment: (process.env.NEXT_PUBLIC_PADDLE_ENV || "sandbox") as "sandbox" | "production",
-  prices: {
-    monthly: process.env.NEXT_PUBLIC_PADDLE_PRICE_MONTHLY || "pri_monthly_snapframe_pro",
-    annual: process.env.NEXT_PUBLIC_PADDLE_PRICE_ANNUAL || "pri_annual_snapframe_pro",
-  },
-};
+/**
+ * Dynamically resolves Paddle environment and credentials based on domain & environment variables
+ */
+export function getPaddleConfig() {
+  const isBrowser = typeof window !== "undefined";
+  const hostname = isBrowser ? window.location.hostname : "";
+
+  // Auto-detect sandbox on develop.snapframe.store, localhost, or Vercel preview URLs
+  const isDevelopOrLocal =
+    hostname.includes("develop.snapframe.store") ||
+    hostname.includes("localhost") ||
+    hostname.includes("127.0.0.1") ||
+    hostname.includes("vercel.app");
+
+  // Determine active environment
+  const forcedEnv = process.env.NEXT_PUBLIC_PADDLE_ENV?.toLowerCase();
+  const environment: "sandbox" | "production" =
+    forcedEnv === "production"
+      ? "production"
+      : forcedEnv === "sandbox"
+      ? "sandbox"
+      : isDevelopOrLocal
+      ? "sandbox"
+      : "production";
+
+  // Resolve Client Token
+  const clientToken =
+    environment === "sandbox"
+      ? process.env.NEXT_PUBLIC_PADDLE_SANDBOX_CLIENT_TOKEN ||
+        process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN ||
+        "test_token"
+      : process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN ||
+        process.env.NEXT_PUBLIC_PADDLE_SANDBOX_CLIENT_TOKEN ||
+        "test_token";
+
+  // Resolve Price IDs
+  const monthlyPriceId =
+    environment === "sandbox"
+      ? process.env.NEXT_PUBLIC_PADDLE_SANDBOX_PRICE_MONTHLY ||
+        process.env.NEXT_PUBLIC_PADDLE_PRICE_MONTHLY ||
+        "pri_monthly_snapframe_pro"
+      : process.env.NEXT_PUBLIC_PADDLE_PRICE_MONTHLY ||
+        process.env.NEXT_PUBLIC_PADDLE_SANDBOX_PRICE_MONTHLY ||
+        "pri_monthly_snapframe_pro";
+
+  const annualPriceId =
+    environment === "sandbox"
+      ? process.env.NEXT_PUBLIC_PADDLE_SANDBOX_PRICE_ANNUAL ||
+        process.env.NEXT_PUBLIC_PADDLE_PRICE_ANNUAL ||
+        "pri_annual_snapframe_pro"
+      : process.env.NEXT_PUBLIC_PADDLE_PRICE_ANNUAL ||
+        process.env.NEXT_PUBLIC_PADDLE_SANDBOX_PRICE_ANNUAL ||
+        "pri_annual_snapframe_pro";
+
+  return {
+    environment,
+    clientToken,
+    prices: {
+      monthly: monthlyPriceId,
+      annual: annualPriceId,
+    },
+    isLive: environment === "production",
+  };
+}
 
 let paddleInitialized = false;
 
@@ -26,57 +81,50 @@ let paddleInitialized = false;
 export async function initializePaddle(): Promise<boolean> {
   if (typeof window === "undefined") return false;
 
+  const config = getPaddleConfig();
+
   if (paddleInitialized && window.Paddle) {
     return true;
   }
 
   return new Promise((resolve) => {
-    // If Paddle script is already loaded
-    if (window.Paddle) {
+    const initInstance = () => {
       try {
-        window.Paddle.Environment.set(PADDLE_CONFIG.environment);
+        if (!window.Paddle) {
+          resolve(false);
+          return;
+        }
+
+        window.Paddle.Environment.set(config.environment);
         window.Paddle.Initialize({
-          token: PADDLE_CONFIG.clientToken,
+          token: config.clientToken,
           eventCallback: (data: any) => {
-            console.log("[Paddle Event]", data);
+            if (process.env.NODE_ENV !== "production" || config.environment === "sandbox") {
+              console.log("[Paddle Event]", data);
+            }
           },
         });
         paddleInitialized = true;
         resolve(true);
-        return;
       } catch (e) {
-        console.warn("Paddle init error:", e);
+        console.warn("[Paddle Init Warning]:", e);
         resolve(false);
-        return;
       }
+    };
+
+    // If Paddle script is already present
+    if (window.Paddle) {
+      initInstance();
+      return;
     }
 
     // Load Paddle.js dynamically
     const script = document.createElement("script");
     script.src = "https://cdn.paddle.com/paddle/v2/paddle.js";
     script.async = true;
-    script.onload = () => {
-      try {
-        if (window.Paddle) {
-          window.Paddle.Environment.set(PADDLE_CONFIG.environment);
-          window.Paddle.Initialize({
-            token: PADDLE_CONFIG.clientToken,
-            eventCallback: (data: any) => {
-              console.log("[Paddle Event]", data);
-            },
-          });
-          paddleInitialized = true;
-          resolve(true);
-        } else {
-          resolve(false);
-        }
-      } catch (err) {
-        console.warn("Paddle setup error:", err);
-        resolve(false);
-      }
-    };
+    script.onload = () => initInstance();
     script.onerror = () => {
-      console.warn("Failed to load Paddle.js script");
+      console.warn("Failed to load Paddle.js CDN script");
       resolve(false);
     };
     document.head.appendChild(script);
@@ -91,7 +139,7 @@ export interface CheckoutOptions {
 }
 
 /**
- * Opens Paddle Checkout Overlay
+ * Opens Paddle Checkout Overlay for Subscription Upgrade
  */
 export async function openPaddleCheckout({
   plan,
@@ -99,19 +147,40 @@ export async function openPaddleCheckout({
   userId,
   onSuccess,
 }: CheckoutOptions) {
-  const isLoaded = await initializePaddle();
-  const priceId = plan === "annual" ? PADDLE_CONFIG.prices.annual : PADDLE_CONFIG.prices.monthly;
+  const config = getPaddleConfig();
+  const priceId = plan === "annual" ? config.prices.annual : config.prices.monthly;
 
-  if (!isLoaded || !window.Paddle || PADDLE_CONFIG.clientToken === "test_token") {
-    // Development / Demo Simulation mode if Paddle keys are not yet configured in .env
-    console.log("[Paddle] Simulated Checkout in Demo/Dev mode for:", { plan, priceId, userEmail, userId });
-    toast.info(`Opening test checkout for SnapFrame Pro (${plan === "annual" ? "$69/year" : "$9/month"})...`);
-    
-    // Simulate successful checkout in dev mode after short delay
+  // Fallback demo simulation if Paddle keys have not yet been provided in environment
+  if (
+    config.clientToken === "test_token" ||
+    !config.clientToken ||
+    priceId.startsWith("pri_monthly_snapframe_pro") ||
+    priceId.startsWith("pri_annual_snapframe_pro")
+  ) {
+    console.log(`[Paddle] Simulation mode (${config.environment}) for:`, {
+      plan,
+      priceId,
+      userEmail,
+      userId,
+      config,
+    });
+    toast.info(
+      `Opening test checkout (${config.environment.toUpperCase()}) for SnapFrame Pro (${
+        plan === "annual" ? "$69/year" : "$9/month"
+      })...`
+    );
+
     setTimeout(() => {
       toast.success("🎉 Payment simulated successfully! Welcome to SnapFrame Pro.");
       onSuccess?.();
     }, 1200);
+    return;
+  }
+
+  const isLoaded = await initializePaddle();
+
+  if (!isLoaded || !window.Paddle) {
+    toast.error("Unable to load Paddle payment gateway. Please check your connection or ad-blocker.");
     return;
   }
 
@@ -121,7 +190,10 @@ export async function openPaddleCheckout({
         displayMode: "overlay",
         theme: "dark",
         locale: "en",
-        successUrl: typeof window !== "undefined" ? `${window.location.origin}/projects?checkout=success` : undefined,
+        successUrl:
+          typeof window !== "undefined"
+            ? `${window.location.origin}/projects?checkout=success`
+            : undefined,
       },
       items: [
         {
@@ -134,6 +206,7 @@ export async function openPaddleCheckout({
         user_id: userId || "",
         user_email: userEmail || "",
         plan,
+        environment: config.environment,
       },
     });
   } catch (err: any) {
@@ -141,3 +214,4 @@ export async function openPaddleCheckout({
     toast.error("Failed to open payment checkout. Please try again or contact support.");
   }
 }
+

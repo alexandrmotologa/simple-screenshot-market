@@ -43,12 +43,23 @@ export async function POST(req: NextRequest) {
   try {
     const rawBody = await req.text();
     const signatureHeader = req.headers.get("paddle-signature");
-    const secretKey = process.env.PADDLE_WEBHOOK_SECRET_KEY;
+    
+    // Retrieve potential secret keys for sandbox and production
+    const secretKeys = [
+      process.env.PADDLE_WEBHOOK_SECRET_KEY,
+      process.env.PADDLE_SANDBOX_WEBHOOK_SECRET_KEY,
+    ].filter(Boolean) as string[];
 
-    // Verify signature in production if secretKey is set
-    if (secretKey && !verifyPaddleSignature(rawBody, signatureHeader, secretKey)) {
-      console.warn("[Paddle Webhook] Invalid signature rejected");
-      return NextResponse.json({ error: "Invalid webhook signature" }, { status: 401 });
+    // If secrets are configured, at least one must validate the signature
+    if (secretKeys.length > 0) {
+      const isValid = secretKeys.some((key) =>
+        verifyPaddleSignature(rawBody, signatureHeader, key)
+      );
+
+      if (!isValid) {
+        console.warn("[Paddle Webhook] Invalid signature rejected across configured secret keys");
+        return NextResponse.json({ error: "Invalid webhook signature" }, { status: 401 });
+      }
     }
 
     const payload = JSON.parse(rawBody);
