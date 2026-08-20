@@ -1,10 +1,11 @@
 import React from "react";
 
 export type CanvasBackgroundId =
+  | "blueprint-gold"
+  | "grid-blueprint"
   | "dots-subtle"
   | "dots-dense"
   | "grid-clean"
-  | "grid-blueprint"
   | "crosshairs"
   | "isometric"
   | "ambient-glow"
@@ -22,9 +23,43 @@ export interface CanvasBackgroundOption {
 
 export const CANVAS_BACKGROUNDS: CanvasBackgroundOption[] = [
   {
+    id: "blueprint-gold",
+    name: "Blueprint Gold",
+    description: "Luxury architectural gold grid with major & minor guidelines (Default)",
+    category: "grid",
+    className: "text-amber-500/20 dark:text-amber-400/20",
+    style: {
+      backgroundImage:
+        "linear-gradient(to right, rgba(217, 119, 6, 0.18) 1px, transparent 1px), linear-gradient(to bottom, rgba(217, 119, 6, 0.18) 1px, transparent 1px), linear-gradient(to right, rgba(245, 158, 11, 0.08) 0.5px, transparent 0.5px), linear-gradient(to bottom, rgba(245, 158, 11, 0.08) 0.5px, transparent 0.5px)",
+      backgroundSize: "96px 96px, 96px 96px, 24px 24px, 24px 24px",
+    },
+    previewStyle: {
+      backgroundImage:
+        "linear-gradient(to right, rgba(217, 119, 6, 0.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(217, 119, 6, 0.35) 1px, transparent 1px)",
+      backgroundSize: "10px 10px",
+    },
+  },
+  {
+    id: "grid-blueprint",
+    name: "Blueprint Grid",
+    description: "Architectural major & minor grid lines",
+    category: "grid",
+    className: "text-foreground/10",
+    style: {
+      backgroundImage:
+        "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px), linear-gradient(to right, currentColor 0.5px, transparent 0.5px), linear-gradient(to bottom, currentColor 0.5px, transparent 0.5px)",
+      backgroundSize: "96px 96px, 96px 96px, 24px 24px, 24px 24px",
+    },
+    previewStyle: {
+      backgroundImage:
+        "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
+      backgroundSize: "12px 12px",
+    },
+  },
+  {
     id: "dots-subtle",
     name: "Fine Dots",
-    description: "Classic subtle 24px dot matrix (Default)",
+    description: "Classic subtle 24px dot matrix",
     category: "dots",
     className: "text-foreground/15",
     style: {
@@ -66,23 +101,6 @@ export const CANVAS_BACKGROUNDS: CanvasBackgroundOption[] = [
       backgroundImage:
         "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
       backgroundSize: "8px 8px",
-    },
-  },
-  {
-    id: "grid-blueprint",
-    name: "Blueprint Grid",
-    description: "Architectural major & minor grid lines",
-    category: "grid",
-    className: "text-foreground/10",
-    style: {
-      backgroundImage:
-        "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px), linear-gradient(to right, currentColor 0.5px, transparent 0.5px), linear-gradient(to bottom, currentColor 0.5px, transparent 0.5px)",
-      backgroundSize: "96px 96px, 96px 96px, 24px 24px, 24px 24px",
-    },
-    previewStyle: {
-      backgroundImage:
-        "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
-      backgroundSize: "12px 12px",
     },
   },
   {
@@ -155,7 +173,7 @@ export const CANVAS_BACKGROUNDS: CanvasBackgroundOption[] = [
 const STORAGE_KEY = "snapframe_canvas_bg";
 
 export function getSavedCanvasBackground(): CanvasBackgroundId {
-  if (typeof window === "undefined") return "dots-subtle";
+  if (typeof window === "undefined") return "blueprint-gold";
   try {
     const saved = localStorage.getItem(STORAGE_KEY) as CanvasBackgroundId;
     if (saved && CANVAS_BACKGROUNDS.some((bg) => bg.id === saved)) {
@@ -164,7 +182,7 @@ export function getSavedCanvasBackground(): CanvasBackgroundId {
   } catch {
     // fallback
   }
-  return "dots-subtle";
+  return "blueprint-gold";
 }
 
 export function saveCanvasBackground(id: CanvasBackgroundId): void {
