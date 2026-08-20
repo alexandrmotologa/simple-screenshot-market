@@ -3,11 +3,10 @@ import {
   User,
   signInWithPopup,
   signInWithRedirect,
+  linkWithPopup,
+  linkWithRedirect,
   getRedirectResult,
   signInAnonymously,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  updateProfile,
   signOut,
   onAuthStateChanged,
   browserLocalPersistence,
@@ -15,6 +14,7 @@ import {
 } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebase";
 import { toast } from "@/lib/store/toastStore";
+import { verifyAndSyncUserEnvironment } from "@/lib/authEnvironment";
 
 interface AuthState {
   user: User | any | null;
@@ -28,8 +28,6 @@ interface AuthState {
   initializeAuth: () => Promise<void>;
   signInWithGoogle: () => Promise<User | null>;
   signInWithGithub: () => Promise<User | null>;
-  signInWithEmail: (email: string, password: string) => Promise<User | null>;
-  signUpWithEmail: (email: string, password: string, displayName?: string) => Promise<User | null>;
   signInAnonymous: () => Promise<any>;
   linkWithGoogle: () => Promise<User | null>;
   linkWithGithub: () => Promise<User | null>;
@@ -51,6 +49,20 @@ export const useAuthStore = create<AuthState>((set, get) => {
           try {
             const redirectResult = await getRedirectResult(auth);
             if (redirectResult?.user) {
+              const verification = await verifyAndSyncUserEnvironment(redirectResult.user);
+              if (!verification.allowed) {
+                await signOut(auth);
+                set({
+                  user: null,
+                  isLoading: false,
+                  isAuthModalOpen: true,
+                  authError: verification.error || "Account environment mismatch.",
+                  isInitialized: true,
+                });
+                toast.error(verification.error || "Access denied for this environment.");
+                return;
+              }
+
               set({
                 user: redirectResult.user,
                 isLoading: false,
@@ -64,8 +76,22 @@ export const useAuthStore = create<AuthState>((set, get) => {
             console.warn("Redirect result check:", redirectErr);
           }
 
-          onAuthStateChanged(auth, (currentUser) => {
+          onAuthStateChanged(auth, async (currentUser) => {
             if (currentUser) {
+              const verification = await verifyAndSyncUserEnvironment(currentUser);
+              if (!verification.allowed) {
+                await signOut(auth);
+                set({
+                  user: null,
+                  isLoading: false,
+                  isAuthModalOpen: false,
+                  authError: verification.error || "Account environment mismatch.",
+                  isInitialized: true,
+                });
+                toast.error(verification.error || "Access denied for this environment.");
+                return;
+              }
+
               set({
                 user: currentUser,
                 isLoading: false,
@@ -125,7 +151,17 @@ export const useAuthStore = create<AuthState>((set, get) => {
           console.log("[Auth] Starting Google authentication...");
           const result = await signInWithPopup(auth, googleProvider);
           console.log("[Auth] Google Sign-in Success:", result.user);
-          
+
+          // Environment validation & automatic user registration in Firestore
+          const verification = await verifyAndSyncUserEnvironment(result.user);
+          if (!verification.allowed) {
+            await signOut(auth);
+            const err = verification.error || "This account is not allowed on this environment.";
+            set({ user: null, isAuthModalOpen: true, isLoading: false, authError: err });
+            toast.error(err);
+            return null;
+          }
+
           set({ user: result.user, isAuthModalOpen: false, isLoading: false, authError: null });
           toast.success(`Welcome, ${result.user.displayName || result.user.email || "Creator"}!`);
           return result.user;
@@ -140,7 +176,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
         }
       } catch (error: any) {
         console.error("Google Sign-In Error details:", error);
-        
+
         // When popup is closed by user, smoothly reset state
         if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
           set({ isLoading: false, isAuthModalOpen: false, authError: null });
@@ -155,7 +191,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
         } else if (error.code === "auth/unauthorized-domain") {
           message = "This domain is not authorized in Firebase Console.";
         }
-        
+
         set({ authError: message, isLoading: false });
         toast.error(message);
         return null;
@@ -182,6 +218,16 @@ export const useAuthStore = create<AuthState>((set, get) => {
           console.log("[Auth] Starting GitHub authentication...");
           const result = await signInWithPopup(auth, githubProvider);
           console.log("[Auth] GitHub Sign-in Success:", result.user);
+
+          // Environment validation & automatic user registration in Firestore
+          const verification = await verifyAndSyncUserEnvironment(result.user);
+          if (!verification.allowed) {
+            await signOut(auth);
+            const err = verification.error || "This account is not allowed on this environment.";
+            set({ user: null, isAuthModalOpen: true, isLoading: false, authError: err });
+            toast.error(err);
+            return null;
+          }
 
           set({ user: result.user, isAuthModalOpen: false, isLoading: false, authError: null });
           toast.success(`Welcome, ${result.user.displayName || "Developer"}!`);
@@ -216,89 +262,6 @@ export const useAuthStore = create<AuthState>((set, get) => {
       }
     },
 
-    signInWithEmail: async (email: string, password: string) => {
-      try {
-        set({ isLoading: true, authError: null });
-        const { auth } = await getFirebaseAuth();
-
-        if (!auth) {
-          const errMsg = "Firebase Auth credentials not found. Please check .env configuration.";
-          set({ authError: errMsg, isLoading: false });
-          toast.error(errMsg);
-          return null;
-        }
-
-        try {
-          await setPersistence(auth, browserLocalPersistence);
-        } catch {}
-
-        const result = await signInWithEmailAndPassword(auth, email.trim(), password);
-        set({ user: result.user, isAuthModalOpen: false, isLoading: false, authError: null });
-        toast.success(`Welcome back, ${result.user.displayName || result.user.email || "Creator"}!`);
-        return result.user;
-      } catch (error: any) {
-        console.error("Email Sign-In Error:", error);
-        let message = error.message || "Failed to sign in with email";
-        if (
-          error.code === "auth/invalid-credential" ||
-          error.code === "auth/wrong-password" ||
-          error.code === "auth/user-not-found"
-        ) {
-          message = "Invalid email or password. Please verify or create an account.";
-        } else if (error.code === "auth/invalid-email") {
-          message = "Please enter a valid email address.";
-        } else if (error.code === "auth/user-disabled") {
-          message = "This user account has been disabled.";
-        }
-        set({ authError: message, isLoading: false });
-        toast.error(message);
-        return null;
-      }
-    },
-
-    signUpWithEmail: async (email: string, password: string, displayName?: string) => {
-      try {
-        set({ isLoading: true, authError: null });
-        const { auth } = await getFirebaseAuth();
-
-        if (!auth) {
-          const errMsg = "Firebase Auth credentials not found. Please check .env configuration.";
-          set({ authError: errMsg, isLoading: false });
-          toast.error(errMsg);
-          return null;
-        }
-
-        try {
-          await setPersistence(auth, browserLocalPersistence);
-        } catch {}
-
-        const result = await createUserWithEmailAndPassword(auth, email.trim(), password);
-        if (displayName && result.user) {
-          try {
-            await updateProfile(result.user, { displayName: displayName.trim() });
-          } catch (pErr) {
-            console.warn("Could not set displayName:", pErr);
-          }
-        }
-        set({ user: result.user, isAuthModalOpen: false, isLoading: false, authError: null });
-        toast.success(`Account created! Welcome, ${displayName || result.user.email || "Creator"}!`);
-        return result.user;
-      } catch (error: any) {
-        console.error("Email Sign-Up Error:", error);
-        let message = error.message || "Failed to create account";
-        if (error.code === "auth/email-already-in-use") {
-          message = "An account already exists with this email address. Try signing in.";
-        } else if (error.code === "auth/weak-password") {
-          message = "Password should be at least 6 characters.";
-        } else if (error.code === "auth/invalid-email") {
-          message = "Please enter a valid email address.";
-        }
-        set({ authError: message, isLoading: false });
-        toast.error(message);
-        return null;
-      }
-    },
-
     signInAnonymous: async () => {
       try {
         set({ isLoading: true, authError: null });
@@ -308,7 +271,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
           try {
             const result = await signInAnonymously(auth);
             set({ user: result.user, isAuthModalOpen: false, isLoading: false });
-            toast.info("Continuing in Guest Mode. Projects will save locally.");
+            toast.info("Continuing in Guest Mode (30-day auto clean-up applies). Link an account to keep projects permanently.");
             return result.user;
           } catch (firebaseErr: any) {
             console.warn("Firebase Anonymous Sign-In fallback to local guest:", firebaseErr);
@@ -325,7 +288,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
           photoURL: null,
         };
         set({ user: guestUser, isAuthModalOpen: false, isLoading: false });
-        toast.info("Continuing in Guest Mode. Projects will save locally.");
+        toast.info("Continuing in Guest Mode. Note: Anonymous accounts are subject to 30-day auto clean-up.");
         return guestUser;
       } catch (error: any) {
         console.error("Anonymous Sign-In Error:", error);
@@ -343,11 +306,103 @@ export const useAuthStore = create<AuthState>((set, get) => {
     },
 
     linkWithGoogle: async () => {
-      return await get().signInWithGoogle();
+      try {
+        set({ isLoading: true, authError: null });
+        const { auth, googleProvider } = await getFirebaseAuth();
+        if (!auth || !googleProvider) {
+          const errMsg = "Firebase Auth credentials not found.";
+          set({ authError: errMsg, isLoading: false });
+          toast.error(errMsg);
+          return null;
+        }
+
+        if (auth.currentUser && auth.currentUser.isAnonymous) {
+          try {
+            const result = await linkWithPopup(auth.currentUser, googleProvider);
+            const verification = await verifyAndSyncUserEnvironment(result.user);
+            if (!verification.allowed) {
+              await signOut(auth);
+              const err = verification.error || "Account environment mismatch.";
+              set({ user: null, isAuthModalOpen: true, isLoading: false, authError: err });
+              toast.error(err);
+              return null;
+            }
+            set({ user: result.user, isAuthModalOpen: false, isLoading: false, authError: null });
+            toast.success(`Account linked! Welcome, ${result.user.displayName || "Creator"}!`);
+            return result.user;
+          } catch (linkErr: any) {
+            if (linkErr.code === "auth/credential-already-in-use") {
+              // Account exists -> sign in directly
+              return await get().signInWithGoogle();
+            }
+            if (linkErr.code === "auth/popup-blocked") {
+              await linkWithRedirect(auth.currentUser, googleProvider);
+              return null;
+            }
+            throw linkErr;
+          }
+        }
+        return await get().signInWithGoogle();
+      } catch (error: any) {
+        if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
+          set({ isLoading: false, isAuthModalOpen: false, authError: null });
+          return null;
+        }
+        const message = error.message || "Failed to link Google account";
+        set({ authError: message, isLoading: false });
+        toast.error(message);
+        return null;
+      }
     },
 
     linkWithGithub: async () => {
-      return await get().signInWithGithub();
+      try {
+        set({ isLoading: true, authError: null });
+        const { auth, githubProvider } = await getFirebaseAuth();
+        if (!auth || !githubProvider) {
+          const errMsg = "Firebase Auth credentials not found.";
+          set({ authError: errMsg, isLoading: false });
+          toast.error(errMsg);
+          return null;
+        }
+
+        if (auth.currentUser && auth.currentUser.isAnonymous) {
+          try {
+            const result = await linkWithPopup(auth.currentUser, githubProvider);
+            const verification = await verifyAndSyncUserEnvironment(result.user);
+            if (!verification.allowed) {
+              await signOut(auth);
+              const err = verification.error || "Account environment mismatch.";
+              set({ user: null, isAuthModalOpen: true, isLoading: false, authError: err });
+              toast.error(err);
+              return null;
+            }
+            set({ user: result.user, isAuthModalOpen: false, isLoading: false, authError: null });
+            toast.success(`Account linked! Welcome, ${result.user.displayName || "Developer"}!`);
+            return result.user;
+          } catch (linkErr: any) {
+            if (linkErr.code === "auth/credential-already-in-use") {
+              // Account exists -> sign in directly
+              return await get().signInWithGithub();
+            }
+            if (linkErr.code === "auth/popup-blocked") {
+              await linkWithRedirect(auth.currentUser, githubProvider);
+              return null;
+            }
+            throw linkErr;
+          }
+        }
+        return await get().signInWithGithub();
+      } catch (error: any) {
+        if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
+          set({ isLoading: false, isAuthModalOpen: false, authError: null });
+          return null;
+        }
+        const message = error.message || "Failed to link GitHub account";
+        set({ authError: message, isLoading: false });
+        toast.error(message);
+        return null;
+      }
     },
 
     signOutUser: async () => {

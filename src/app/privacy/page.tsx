@@ -289,7 +289,10 @@ export default function PrivacyPolicyPage() {
               <li>All web traffic is encrypted with Transport Layer Security (TLS 1.3).</li>
               <li>Database records and authentication tokens are encrypted at rest with AES-256.</li>
               <li>Local projects stored in your browser persist only on your device until manually cleared.</li>
-              <li>Cloud-synchronized project data is retained until you delete the project or close your account.</li>
+              <li>Cloud-synchronized project data for registered accounts is retained until you delete the project or close your account.</li>
+              <li>
+                <strong>Anonymous / Guest Accounts Auto Clean-up:</strong> In accordance with data minimization policies and Firebase standards, anonymous accounts older than 30 days are automatically deleted. When auto clean-up is active, anonymous usage will no longer count towards usage or billing quotas. You can link your guest session to Google or GitHub at any time to preserve your projects permanently.
+              </li>
             </ul>
           </section>
 

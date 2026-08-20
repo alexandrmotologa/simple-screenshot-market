@@ -143,15 +143,17 @@ export default function TermsOfServicePage() {
           <section className="space-y-3">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-xs flex items-center justify-center font-bold">3</span>
-              User Accounts & Authentication
+              User Accounts, Authentication & Guest Mode
             </h2>
             <p>
-              To access saved projects and cloud synchronization, you must register or sign in via Google OAuth, GitHub OAuth, or Email & Password. You are responsible for:
+              To access saved projects and cloud synchronization, you must authenticate via Google OAuth, GitHub OAuth, or continue in Guest Mode. You agree to:
             </p>
             <ul className="list-disc pl-6 space-y-1.5">
-              <li>Maintaining the confidentiality of your authentication credentials.</li>
-              <li>All activities and changes performed under your authenticated account.</li>
-              <li>Notifying us immediately of any unauthorized access or security breach.</li>
+              <li>Maintain the security of your connected OAuth accounts.</li>
+              <li>Remain solely responsible for all activities and designs created under your account.</li>
+              <li>
+                <strong>Anonymous (Guest) Accounts & 30-Day Auto Clean-up:</strong> Auto clean-up automatically deletes anonymous accounts that are older than 30 days. When this setting is enabled, anonymous usage will no longer count towards usage or billing quotas. SnapFrame does not guarantee recovery of projects created in unlinked guest sessions that are purged. You can link your guest account to a verified Google or GitHub profile at any time to preserve your projects permanently.
+              </li>
             </ul>
           </section>
 

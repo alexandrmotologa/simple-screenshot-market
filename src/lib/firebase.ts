@@ -103,6 +103,14 @@ export async function getFirebaseAuth(): Promise<{
   return { auth, googleProvider, githubProvider };
 }
 
+export async function getFirebaseDb(): Promise<Firestore | null> {
+  if (db) {
+    return db;
+  }
+  await getFirebaseAuth();
+  return db;
+}
+
 export const isFirebaseConfigured = Boolean(
   inlineFirebaseConfig.apiKey && inlineFirebaseConfig.projectId
 );

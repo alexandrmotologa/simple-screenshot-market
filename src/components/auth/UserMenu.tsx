@@ -106,13 +106,13 @@ export function UserMenu({ className }: UserMenuProps) {
         {isAnonymous && (
           <>
             <DropdownMenuSeparator className="my-1" />
-            <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] space-y-2 mb-1">
-              <div className="flex items-center gap-1.5 font-semibold">
-                <ShieldAlert className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <span>Guest Mode</span>
+            <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-300 text-[11px] space-y-2 mb-1">
+              <div className="flex items-center gap-1.5 font-semibold text-amber-400">
+                <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+                <span>Guest Mode (30-day Auto Clean-up)</span>
               </div>
               <p className="text-[10px] text-muted-foreground leading-tight">
-                Link with Google or GitHub to keep your projects synced.
+                Anonymous accounts older than 30 days are automatically deleted. Link with Google or GitHub to keep your projects permanently.
               </p>
               <button
                 type="button"
