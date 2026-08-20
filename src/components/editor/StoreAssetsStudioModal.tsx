@@ -66,7 +66,8 @@ export function StoreAssetsStudioModal({ open, onClose, projectId }: Props) {
   const [isExporting, setIsExporting] = useState(false);
 
   // ── 1. App Icon State ───────────────────────────────────────────────────────
-  const [iconMask, setIconMask] = useState<"squircle" | "circle" | "none">("squircle");
+  const [iconMask, setIconMask] = useState<"squircle" | "circle" | "none" | "custom">("squircle");
+  const [cornerRadius, setCornerRadius] = useState<number>(22.4); // 0 to 50%
   const [iconConfig, setIconConfig] = useState<IconStyleConfig>({
     type: "glyph",
     symbolName: "Sparkles",
@@ -121,8 +122,11 @@ export function StoreAssetsStudioModal({ open, onClose, projectId }: Props) {
   // Re-render Icon Canvas
   const updateIconCanvas = useCallback(async () => {
     if (!iconCanvasRef.current) return;
-    await renderIconToCanvas(iconCanvasRef.current, iconConfig, 1024, { mask: iconMask });
-  }, [iconConfig, iconMask]);
+    await renderIconToCanvas(iconCanvasRef.current, iconConfig, 1024, {
+      mask: iconMask,
+      cornerRadiusRatio: cornerRadius / 100,
+    });
+  }, [iconConfig, iconMask, cornerRadius]);
 
   // Re-render Feature Graphic Canvas
   const updateFeatureCanvas = useCallback(async () => {
@@ -332,40 +336,63 @@ export function StoreAssetsStudioModal({ open, onClose, projectId }: Props) {
           <div className="lg:col-span-7 p-6 sm:p-8 flex flex-col items-center justify-center bg-secondary/30 border-r border-border/50 relative overflow-auto">
             {activeTab === "icon" ? (
               <div className="flex flex-col items-center gap-6">
-                {/* Mask Frame Toggle Bar */}
-                <div className="flex items-center gap-1 p-1 rounded-xl bg-card border border-border/80 shadow-sm">
+                {/* Mask Frame Preset Bar */}
+                <div className="flex flex-wrap items-center justify-center gap-1 p-1 rounded-xl bg-card border border-border/80 shadow-sm">
                   <button
                     type="button"
-                    onClick={() => setIconMask("squircle")}
+                    onClick={() => {
+                      setIconMask("squircle");
+                      setCornerRadius(22.4);
+                    }}
                     className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                      iconMask === "squircle"
-                        ? "bg-primary text-primary-foreground"
+                      Math.abs(cornerRadius - 22.4) < 0.2
+                        ? "bg-primary text-primary-foreground shadow-xs"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    iOS Squircle (1024)
+                    🍏 iOS Squircle (22.4%)
                   </button>
                   <button
                     type="button"
-                    onClick={() => setIconMask("circle")}
+                    onClick={() => {
+                      setIconMask("circle");
+                      setCornerRadius(50);
+                    }}
                     className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                      iconMask === "circle"
-                        ? "bg-primary text-primary-foreground"
+                      cornerRadius >= 49.5
+                        ? "bg-primary text-primary-foreground shadow-xs"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    Android Circle (512)
+                    🤖 Android Circle (50%)
                   </button>
                   <button
                     type="button"
-                    onClick={() => setIconMask("none")}
+                    onClick={() => {
+                      setIconMask("none");
+                      setCornerRadius(0);
+                    }}
                     className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                      iconMask === "none"
-                        ? "bg-primary text-primary-foreground"
+                      cornerRadius === 0
+                        ? "bg-primary text-primary-foreground shadow-xs"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    Flat Master (Square)
+                    📦 Flat Master (0%)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIconMask("custom");
+                      setCornerRadius(18);
+                    }}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      Math.abs(cornerRadius - 18) < 0.2
+                        ? "bg-primary text-primary-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    💻 macOS (18%)
                   </button>
                 </div>
 
@@ -374,14 +401,14 @@ export function StoreAssetsStudioModal({ open, onClose, projectId }: Props) {
                   <div
                     className="absolute -inset-3 bg-gradient-to-r from-indigo-500/25 via-purple-500/25 to-pink-500/25 blur-2xl opacity-60 group-hover:opacity-100 transition-opacity pointer-events-none"
                     style={{
-                      borderRadius: iconMask === "circle" ? "50%" : iconMask === "squircle" ? "22.37%" : "12px",
+                      borderRadius: `${cornerRadius}%`,
                     }}
                   />
                   <canvas
                     ref={iconCanvasRef}
                     className="relative w-64 h-64 sm:w-80 sm:h-80 shadow-2xl transition-transform"
                     style={{
-                      borderRadius: iconMask === "circle" ? "50%" : iconMask === "squircle" ? "22.37%" : "0%",
+                      borderRadius: `${cornerRadius}%`,
                     }}
                   />
                 </div>
@@ -596,6 +623,88 @@ export function StoreAssetsStudioModal({ open, onClose, projectId }: Props) {
                   </div>
                 </div>
 
+                {/* Corner Radius & Standards Compliance */}
+                <div className="space-y-2.5 p-3 rounded-2xl bg-secondary/40 border border-border/70">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                      <CircleDot className="w-3.5 h-3.5 text-primary" />
+                      Corner Radius / Curvature
+                    </label>
+                    <span className="text-xs font-mono font-bold text-foreground px-2 py-0.5 rounded-md bg-background border border-border/60">
+                      {cornerRadius.toFixed(1)}%
+                    </span>
+                  </div>
+
+                  <input
+                    type="range"
+                    min={0}
+                    max={50}
+                    step={0.5}
+                    value={cornerRadius}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      setCornerRadius(val);
+                      if (val === 0) setIconMask("none");
+                      else if (val >= 49.5) setIconMask("circle");
+                      else if (Math.abs(val - 22.4) < 0.2) setIconMask("squircle");
+                      else setIconMask("custom");
+                    }}
+                    className="w-full accent-primary cursor-pointer"
+                  />
+
+                  {/* Standard Guidance Indicator */}
+                  <div className="text-[11px] p-2.5 rounded-xl border bg-card/70 border-border/60 leading-relaxed">
+                    {Math.abs(cornerRadius - 22.4) < 0.2 ? (
+                      <div className="text-emerald-500 dark:text-emerald-400 font-medium">
+                        <span className="font-bold flex items-center gap-1">🍏 Official Apple iOS Standard (22.4%)</span>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          Exact mathematical squircle applied by iOS on iPhone &amp; iPad home screens.
+                        </p>
+                      </div>
+                    ) : cornerRadius >= 49.5 ? (
+                      <div className="text-emerald-500 dark:text-emerald-400 font-medium">
+                        <span className="font-bold flex items-center gap-1">🤖 Official Android &amp; Google Play Standard (50.0%)</span>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          Standard circular adaptive icon mask used on Android &amp; Pixel launcher.
+                        </p>
+                      </div>
+                    ) : cornerRadius === 0 ? (
+                      <div className="text-emerald-500 dark:text-emerald-400 font-medium">
+                        <span className="font-bold flex items-center gap-1">📦 Official Store Upload Standard (0% Full-Bleed)</span>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          Required for upload in App Store Connect &amp; Google Play Console. Stores auto-clip on devices.
+                        </p>
+                      </div>
+                    ) : Math.abs(cornerRadius - 18) < 0.2 ? (
+                      <div className="text-blue-500 dark:text-blue-400 font-medium">
+                        <span className="font-bold flex items-center gap-1">💻 Official Apple macOS Standard (18.0%)</span>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          Standard curvature used on macOS Dock and Application icons.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-amber-500 dark:text-amber-400 font-medium">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold flex items-center gap-1">⚠️ Custom Radius ({cornerRadius.toFixed(1)}%)</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIconMask("squircle");
+                              setCornerRadius(22.4);
+                            }}
+                            className="text-[10px] underline font-semibold text-primary hover:text-primary/80 cursor-pointer"
+                          >
+                            Reset to iOS Standard
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          Non-standard curvature. App Store will auto-mask to 22.4% on iOS and 50% on Android.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Sliders: Icon Scale */}
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs text-muted-foreground">
@@ -609,7 +718,7 @@ export function StoreAssetsStudioModal({ open, onClose, projectId }: Props) {
                     step={0.02}
                     value={iconConfig.iconSizeRatio}
                     onChange={(e) => setIconConfig((p) => ({ ...p, iconSizeRatio: parseFloat(e.target.value) }))}
-                    className="w-full accent-primary"
+                    className="w-full accent-primary cursor-pointer"
                   />
                 </div>
               </div>

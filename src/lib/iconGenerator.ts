@@ -44,6 +44,7 @@ export interface IconStyleConfig {
   ambientGlow: boolean;
   glowColor: string;
   metallicRing: "none" | "gold" | "silver" | "titanium" | "neon";
+  cornerRadiusRatio?: number; // 0.0 to 0.5 (0 = square, 0.2237 = iOS squircle, 0.5 = circle)
 }
 
 export const ICON_GRADIENT_PRESETS = [
@@ -77,7 +78,8 @@ export async function renderIconToCanvas(
   config: IconStyleConfig,
   size: number = 1024,
   options?: {
-    mask?: "none" | "squircle" | "circle" | "rounded";
+    mask?: "none" | "squircle" | "circle" | "rounded" | "custom";
+    cornerRadiusRatio?: number;
     withShadow?: boolean;
   }
 ) {
@@ -89,16 +91,22 @@ export async function renderIconToCanvas(
   ctx.clearRect(0, 0, size, size);
 
   const mask = options?.mask || "none";
-  const r = size * 0.2237; // Standard iOS 1024 squircle corner radius ratio
+  const radiusRatio = options?.cornerRadiusRatio !== undefined
+    ? options.cornerRadiusRatio
+    : (config.cornerRadiusRatio !== undefined
+      ? config.cornerRadiusRatio
+      : (mask === "circle" ? 0.5 : mask === "squircle" ? 0.2237 : 0));
+
+  const r = size * radiusRatio;
 
   ctx.save();
 
   // Apply Clipping Mask if requested
-  if (mask === "circle") {
+  if (radiusRatio >= 0.495) {
     ctx.beginPath();
     ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
     ctx.clip();
-  } else if (mask === "squircle" || mask === "rounded") {
+  } else if (r > 0) {
     ctx.beginPath();
     ctx.roundRect(0, 0, size, size, r);
     ctx.clip();
@@ -237,16 +245,16 @@ export async function renderIconToCanvas(
     ctx.shadowBlur = size * 0.015;
 
     const halfStroke = ringWidth / 2;
-    if (mask === "circle") {
+    if (radiusRatio >= 0.495) {
       ctx.beginPath();
       ctx.arc(size / 2, size / 2, size / 2 - halfStroke, 0, Math.PI * 2);
       ctx.stroke();
-    } else if (mask === "squircle" || mask === "rounded") {
+    } else if (r > 0) {
       ctx.beginPath();
       ctx.roundRect(halfStroke, halfStroke, size - ringWidth, size - ringWidth, Math.max(0, r - halfStroke));
       ctx.stroke();
     } else {
-      // Flat Master (Square): Border around the entire perimeter of the square
+      // 0% - Square perimeter border
       ctx.beginPath();
       ctx.strokeRect(halfStroke, halfStroke, size - ringWidth, size - ringWidth);
     }
