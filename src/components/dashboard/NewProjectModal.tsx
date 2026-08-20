@@ -340,9 +340,9 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
                 >
                   {/* Pro Industry or Popular Badge */}
                   {tpl.id.startsWith("niche-") ? (
-                    <div className="absolute top-4 left-4 z-10 flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 shadow-xs">
-                      <Sparkles className="w-3 h-3 text-indigo-500 fill-indigo-500/30" />
-                      PRO INDUSTRY
+                    <div className="absolute top-4 left-4 z-10 flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-zinc-950 border border-amber-300/40 shadow-sm">
+                      <Sparkles className="w-3 h-3 text-zinc-950 fill-zinc-950" />
+                      PRO SUITE
                     </div>
                   ) : isPopular ? (
                     <div className="absolute top-4 left-4 z-10 flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 shadow-xs">

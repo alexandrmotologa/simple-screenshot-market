@@ -88,15 +88,15 @@ function TemplateCard({
           </div>
         </div>
 
-        {/* Screen count badge */}
-        <div className="absolute top-2 left-2 flex items-center gap-1">
-          {template.id.startsWith("niche-") && (
-            <div className="px-1.5 py-0.5 rounded-md bg-indigo-500/80 backdrop-blur-md text-[9px] font-bold text-white shadow-xs flex items-center gap-0.5">
-              <Sparkles className="w-2.5 h-2.5" />
+        {/* Screen count & Pro badges */}
+        <div className="absolute top-2 left-2 flex items-center gap-1.5">
+          {(template.id.startsWith("niche-") || template.id.includes("pro") || screenCount >= 6) && (
+            <div className="px-1.5 py-0.5 rounded-md bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-zinc-950 text-[9px] font-black tracking-wide shadow-md flex items-center gap-1 border border-amber-300/40">
+              <Sparkles className="w-2.5 h-2.5 text-zinc-950 fill-zinc-950" />
               <span>PRO</span>
             </div>
           )}
-          <div className="px-1.5 py-0.5 rounded-md bg-black/50 backdrop-blur-md text-[9.5px] font-semibold text-white/90 border border-white/10 flex items-center gap-1">
+          <div className="px-1.5 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-[9.5px] font-semibold text-white/95 border border-white/15 flex items-center gap-1">
             <Layers className="w-2.5 h-2.5" />
             <span>{screenCount} {screenCount === 1 ? "Screen" : "Screens"}</span>
           </div>

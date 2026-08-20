@@ -505,23 +505,65 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
           {/* Store Assets & Icon Studio */}
           <button
             type="button"
-            onClick={() => setShowAssetsStudio(true)}
-            className="h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs font-bold border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 transition-all cursor-pointer shadow-xs active:scale-95"
-            title="App Icon Creator & Google Play 1024x500 Feature Graphic Studio"
+            onClick={() => {
+              if (isGuest) {
+                setAuthModalOpen(true);
+                toast.info("Store Assets Studio requires a free account. Sign in with Google or GitHub (100% Free) to unlock.");
+                return;
+              }
+              setShowAssetsStudio(true);
+            }}
+            className={`h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95 ${
+              isGuest
+                ? "bg-secondary/60 text-muted-foreground border border-purple-500/30 hover:border-purple-500/60"
+                : "border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400"
+            }`}
+            title={isGuest ? "Store Assets Studio (Sign in with Google or GitHub to unlock)" : "App Icon Creator & Google Play 1024x500 Feature Graphic Studio"}
           >
-            <Palette className="w-3.5 h-3.5 text-purple-500" />
-            <span className="hidden lg:inline">Assets Studio</span>
+            {isGuest ? (
+              <>
+                <Lock className="w-3 h-3 text-purple-400" />
+                <span className="hidden lg:inline text-purple-400 font-semibold">Assets Studio</span>
+                <span className="text-[9px] px-1 py-0.2 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30">Free Reg</span>
+              </>
+            ) : (
+              <>
+                <Palette className="w-3.5 h-3.5 text-purple-500" />
+                <span className="hidden lg:inline">Assets Studio</span>
+              </>
+            )}
           </button>
 
           {/* Video / Animated GIF Studio */}
           <button
             type="button"
-            onClick={() => setShowGif(true)}
-            className="h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs font-bold border border-pink-500/30 bg-pink-500/10 hover:bg-pink-500/20 text-pink-500 dark:text-pink-400 transition-all cursor-pointer shadow-xs active:scale-95"
-            title="Export Video (MP4/WebM) & Animated GIF carousel for TikTok & Social Ads"
+            onClick={() => {
+              if (isGuest) {
+                setAuthModalOpen(true);
+                toast.info("Video & Animated GIF Studio requires a free account. Sign in with Google or GitHub (100% Free) to unlock.");
+                return;
+              }
+              setShowGif(true);
+            }}
+            className={`h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95 ${
+              isGuest
+                ? "bg-secondary/60 text-muted-foreground border border-pink-500/30 hover:border-pink-500/60"
+                : "border border-pink-500/30 bg-pink-500/10 hover:bg-pink-500/20 text-pink-500 dark:text-pink-400"
+            }`}
+            title={isGuest ? "Video / GIF Studio (Sign in with Google or GitHub to unlock)" : "Export Video (MP4/WebM) & Animated GIF carousel for TikTok & Social Ads"}
           >
-            <Film className="w-3.5 h-3.5 text-pink-500" />
-            <span className="hidden lg:inline">Video / GIF</span>
+            {isGuest ? (
+              <>
+                <Lock className="w-3 h-3 text-pink-400" />
+                <span className="hidden lg:inline text-pink-400 font-semibold">Video / GIF</span>
+                <span className="text-[9px] px-1 py-0.2 rounded bg-pink-500/20 text-pink-400 border border-pink-500/30">Free Reg</span>
+              </>
+            ) : (
+              <>
+                <Film className="w-3.5 h-3.5 text-pink-500" />
+                <span className="hidden lg:inline">Video / GIF</span>
+              </>
+            )}
           </button>
 
           {/* Export Button */}

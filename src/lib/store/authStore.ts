@@ -116,7 +116,19 @@ export const useAuthStore = create<AuthState>((set, get) => {
                 aiCredits: typeof verification.aiCredits === "number" ? verification.aiCredits : (currentUser.isAnonymous ? 0 : 3),
                 usedAiCredits: typeof verification.usedAiCredits === "number" ? verification.usedAiCredits : 0,
               });
+
+              // Trigger multi-device cloud project sync
+              if (!currentUser.isAnonymous) {
+                try {
+                  const { syncProjectsOnLogin } = require("@/lib/cloudProjectSync");
+                  syncProjectsOnLogin(currentUser.uid);
+                } catch {}
+              }
             } else {
+              try {
+                const { stopCloudSync } = require("@/lib/cloudProjectSync");
+                stopCloudSync();
+              } catch {}
               const currentLocalUser = get().user;
               if (!currentLocalUser?.isAnonymous || currentLocalUser?.email) {
                 set({ user: null, isLoading: false, isInitialized: true, isPro: false, aiCredits: 0 });
@@ -148,10 +160,10 @@ export const useAuthStore = create<AuthState>((set, get) => {
     aiCredits: 0,
     usedAiCredits: 0,
 
-    setAuthModalOpen: (open) => set({ isAuthModalOpen: open, authError: null }),
+    setAuthModalOpen: (open) => set({ isAuthModalOpen: open }),
     setUpgradeModalOpen: (open) => set({ isUpgradeModalOpen: open }),
     clearError: () => set({ authError: null }),
-    setProStatus: (isPro, plan) => set({ isPro, plan: plan || null, aiCredits: isPro ? 9999 : get().aiCredits }),
+    setProStatus: (isPro, plan) => set({ isPro, plan: plan || (isPro ? "pro-monthly" : null) }),
 
     consumeAiCredit: async (feature = "general") => {
       const state = get();
@@ -164,8 +176,20 @@ export const useAuthStore = create<AuthState>((set, get) => {
         return { allowed: false, remaining: 0, isPro: false };
       }
 
-      // 2. If Pro, unlimited
+      // 2. If Pro, check daily Fair-Use safety limit (50 AI calls / day)
       if (state.isPro) {
+        if (typeof window !== "undefined") {
+          const todayStr = new Date().toISOString().split("T")[0];
+          const usageKey = `sf_pro_ai_usage_${currentUser.uid}_${todayStr}`;
+          const currentDailyUsage = parseInt(localStorage.getItem(usageKey) || "0", 10);
+
+          if (currentDailyUsage >= 50) {
+            toast.info("⚡ You've reached today's 50 AI generations limit (Fair Usage Policy). Resets at midnight UTC.");
+            return { allowed: false, remaining: 0, isPro: true };
+          }
+
+          localStorage.setItem(usageKey, (currentDailyUsage + 1).toString());
+        }
         return { allowed: true, remaining: 9999, isPro: true };
       }
 

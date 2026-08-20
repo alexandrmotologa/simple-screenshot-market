@@ -109,21 +109,54 @@ export const useProjectStore = create<ProjectStore>()(
         };
 
         set((state) => ({ projects: [project, ...state.projects] }));
+
+        // Cloud sync if authenticated
+        try {
+          const { useAuthStore } = require("@/lib/store/authStore");
+          const { saveProjectToCloud } = require("@/lib/cloudProjectSync");
+          const uid = useAuthStore.getState().user?.uid;
+          if (uid) saveProjectToCloud(uid, project);
+        } catch {}
+
         return project;
       },
 
       updateProject: (id, updates) => {
-        set((state) => ({
-          projects: state.projects.map((p) =>
-            p.id === id ? { ...p, ...updates, updatedAt: Date.now() } : p
-          ),
-        }));
+        let modifiedProject: Project | undefined;
+        set((state) => {
+          const updatedList = state.projects.map((p) => {
+            if (p.id === id) {
+              modifiedProject = { ...p, ...updates, updatedAt: Date.now() };
+              return modifiedProject;
+            }
+            return p;
+          });
+          return { projects: updatedList };
+        });
+
+        // Cloud sync if authenticated
+        try {
+          if (modifiedProject) {
+            const { useAuthStore } = require("@/lib/store/authStore");
+            const { saveProjectToCloud } = require("@/lib/cloudProjectSync");
+            const uid = useAuthStore.getState().user?.uid;
+            if (uid) saveProjectToCloud(uid, modifiedProject);
+          }
+        } catch {}
       },
 
       deleteProject: (id) => {
         set((state) => ({
           projects: state.projects.filter((p) => p.id !== id),
         }));
+
+        // Cloud sync if authenticated
+        try {
+          const { useAuthStore } = require("@/lib/store/authStore");
+          const { deleteProjectFromCloud } = require("@/lib/cloudProjectSync");
+          const uid = useAuthStore.getState().user?.uid;
+          if (uid) deleteProjectFromCloud(uid, id);
+        } catch {}
       },
 
       duplicateProject: (id) => {
@@ -150,17 +183,42 @@ export const useProjectStore = create<ProjectStore>()(
         set((state) => ({
           projects: [duplicate, ...state.projects],
         }));
+
+        // Cloud sync if authenticated
+        try {
+          const { useAuthStore } = require("@/lib/store/authStore");
+          const { saveProjectToCloud } = require("@/lib/cloudProjectSync");
+          const uid = useAuthStore.getState().user?.uid;
+          if (uid) saveProjectToCloud(uid, duplicate);
+        } catch {}
+
         return duplicate;
       },
 
       getProject: (id) => get().projects.find((p) => p.id === id),
 
       saveProjectThumbnail: (id, dataUrl) => {
-        set((state) => ({
-          projects: state.projects.map((p) =>
-            p.id === id ? { ...p, thumbnail: dataUrl } : p
-          ),
-        }));
+        let modifiedProject: Project | undefined;
+        set((state) => {
+          const updatedList = state.projects.map((p) => {
+            if (p.id === id) {
+              modifiedProject = { ...p, thumbnail: dataUrl };
+              return modifiedProject;
+            }
+            return p;
+          });
+          return { projects: updatedList };
+        });
+
+        // Cloud sync if authenticated
+        try {
+          if (modifiedProject) {
+            const { useAuthStore } = require("@/lib/store/authStore");
+            const { saveProjectToCloud } = require("@/lib/cloudProjectSync");
+            const uid = useAuthStore.getState().user?.uid;
+            if (uid) saveProjectToCloud(uid, modifiedProject);
+          }
+        } catch {}
       },
     }),
     {
