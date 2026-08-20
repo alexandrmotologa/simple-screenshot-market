@@ -222,7 +222,7 @@ export function Footer() {
         {/* Bottom Bar with Merchant of Record and Payment Trust */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <div className="flex flex-col sm:flex-row items-center gap-2 text-center sm:text-left">
-            <p>© {currentYear} SnapFrame.</p>
+            <p>© {currentYear} SnapFrame by <strong>MTLG Labs</strong>. All rights reserved.</p>
             <span className="hidden sm:inline text-border">•</span>
             <p className="flex items-center gap-1 text-[11px]">
               <CreditCard className="w-3.5 h-3.5 text-primary/80" />
