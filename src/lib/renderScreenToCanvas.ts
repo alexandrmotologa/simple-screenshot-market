@@ -377,13 +377,38 @@ export async function renderScreenToCanvas(
       }
 
       ctx.font = `${tl.fontWeight || 600} ${tl.fontSize}px "${tl.fontFamily || "Inter"}", system-ui, sans-serif`;
+      ctx.textAlign = (tl.align || "left") as CanvasTextAlign;
+      if (tl.letterSpacing) ctx.letterSpacing = `${tl.letterSpacing}px`;
+
+      const rawParagraphs = displayContent.split("\n");
+      const lines: string[] = [];
+
+      for (const paragraph of rawParagraphs) {
+        const words = paragraph.split(" ");
+        let currentLine = "";
+
+        for (let i = 0; i < words.length; i++) {
+          const testLine = currentLine ? `${currentLine} ${words[i]}` : words[i];
+          const metrics = ctx.measureText(testLine);
+          if (metrics.width > tl.width && currentLine) {
+            lines.push(currentLine);
+            currentLine = words[i];
+          } else {
+            currentLine = testLine;
+          }
+        }
+        if (currentLine) lines.push(currentLine);
+      }
+
+      const lineH = tl.fontSize * (tl.lineHeight ?? 1.18);
+      const textActualH = Math.max(tl.fontSize, lines.length * lineH);
 
       const preset = tl.gradientPresetId ? getTextGradientPreset(tl.gradientPresetId) : null;
       if (preset) {
         let grad: CanvasGradient;
         if (preset.direction === "horizontal") grad = ctx.createLinearGradient(tl.x, 0, tl.x + tl.width, 0);
-        else if (preset.direction === "diagonal") grad = ctx.createLinearGradient(tl.x, tl.y, tl.x + tl.width, tl.y + tl.height);
-        else grad = ctx.createLinearGradient(0, tl.y, 0, tl.y + tl.height);
+        else if (preset.direction === "diagonal") grad = ctx.createLinearGradient(tl.x, tl.y, tl.x + tl.width, tl.y + textActualH);
+        else grad = ctx.createLinearGradient(0, tl.y, 0, tl.y + textActualH);
         for (const stop of preset.gradientStops) {
           grad.addColorStop(stop.position / 100, stop.color);
         }
@@ -392,8 +417,8 @@ export async function renderScreenToCanvas(
         const [c1, c2, dir] = tl.gradientColor;
         let grad: CanvasGradient;
         if (dir === "horizontal") grad = ctx.createLinearGradient(tl.x, 0, tl.x + tl.width, 0);
-        else if (dir === "diagonal") grad = ctx.createLinearGradient(tl.x, tl.y, tl.x + tl.width, tl.y + tl.height);
-        else grad = ctx.createLinearGradient(0, tl.y, 0, tl.y + tl.height);
+        else if (dir === "diagonal") grad = ctx.createLinearGradient(tl.x, tl.y, tl.x + tl.width, tl.y + textActualH);
+        else grad = ctx.createLinearGradient(0, tl.y, 0, tl.y + textActualH);
         grad.addColorStop(0, c1);
         grad.addColorStop(1, c2);
         ctx.fillStyle = grad;
@@ -420,30 +445,6 @@ export async function renderScreenToCanvas(
         ctx.shadowOffsetY = 0;
       }
 
-      ctx.textAlign = (tl.align || "left") as CanvasTextAlign;
-      if (tl.letterSpacing) ctx.letterSpacing = `${tl.letterSpacing}px`;
-
-      const rawParagraphs = displayContent.split("\n");
-      const lines: string[] = [];
-
-      for (const paragraph of rawParagraphs) {
-        const words = paragraph.split(" ");
-        let currentLine = "";
-
-        for (let i = 0; i < words.length; i++) {
-          const testLine = currentLine ? `${currentLine} ${words[i]}` : words[i];
-          const metrics = ctx.measureText(testLine);
-          if (metrics.width > tl.width && currentLine) {
-            lines.push(currentLine);
-            currentLine = words[i];
-          } else {
-            currentLine = testLine;
-          }
-        }
-        if (currentLine) lines.push(currentLine);
-      }
-
-      const lineH = tl.fontSize * (tl.lineHeight ?? 1.18);
       const xPos =
         tl.align === "center" ? tl.x + tl.width / 2
         : tl.align === "right" ? tl.x + tl.width

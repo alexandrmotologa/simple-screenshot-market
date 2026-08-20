@@ -32,6 +32,8 @@ const SHORTCUT_GROUPS = [
     shortcuts: [
       { key: "Ctrl + D", label: "Duplicate selected layer" },
       { key: "Delete / Backspace", label: "Delete selected layer" },
+      { key: "Arrow Keys", label: "Nudge layer position (1px)" },
+      { key: "Shift + Arrow Keys", label: "Fast nudge layer position (10px)" },
       { key: "Shift + Click", label: "Multi-select layers" },
       { key: "Double Click Text", label: "Direct inline text edit" },
       { key: "Drag from files", label: "Drop image/screenshot onto canvas" },

@@ -73,7 +73,7 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
   const {
     zoom, setZoom, undo, redo, canUndo, canRedo,
     activeLayerId, activeSetId, activeScreenId,
-    setActiveLayer, deleteLayer, duplicateLayer, updateLayer, getActiveSet, getActiveScreen,
+    setActiveLayer, deleteLayer, duplicateLayer, updateLayer, getActiveSet, getActiveScreen, getActiveLayer,
   } = useEditorStore();
   const saveProjectThumbnail = useProjectStore((s) => s.saveProjectThumbnail);
   const screenSets = useEditorStore((s) => s.screenSets);
@@ -261,6 +261,23 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
           duplicateLayer(set.id, screen.id, activeLayerId);
         }
       }
+      // Arrow keys nudge selected layer (1px or 10px with Shift)
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key) && activeLayerId) {
+        e.preventDefault();
+        const set = getActiveSet();
+        const screen = getActiveScreen();
+        const layer = getActiveLayer();
+        if (set && screen && layer && !layer.locked) {
+          const step = e.shiftKey ? 10 : 1;
+          const dx = e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
+          const dy = e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
+          updateLayer(set.id, screen.id, activeLayerId, {
+            x: Math.round(layer.x + dx),
+            y: Math.round(layer.y + dy),
+          });
+          useEditorStore.getState().recordHistory();
+        }
+      }
       // Zoom shortcuts
       if ((e.ctrlKey || e.metaKey) && e.key === "=") {
         e.preventDefault();
@@ -281,7 +298,7 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [zoom, activeLayerId, activeSetId, activeScreenId, undo, redo, setZoom, deleteLayer, duplicateLayer, setActiveLayer, getActiveSet, getActiveScreen]);
+  }, [zoom, activeLayerId, activeSetId, activeScreenId, undo, redo, setZoom, deleteLayer, duplicateLayer, updateLayer, setActiveLayer, getActiveSet, getActiveScreen, getActiveLayer]);
 
   return (
     <div className="relative flex flex-col h-screen bg-background overflow-hidden select-none">

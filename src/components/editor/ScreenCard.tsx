@@ -352,14 +352,37 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           displayContent = displayContent.replace(/\b\w/g, (c) => c.toUpperCase());
 
         ctx.font = `${tl.fontWeight} ${tl.fontSize}px "${tl.fontFamily}", -apple-system, sans-serif`;
+        ctx.textAlign = tl.align as CanvasTextAlign;
+        if (tl.letterSpacing) ctx.letterSpacing = `${tl.letterSpacing}px`;
 
-        // Gradient text support
+        const words = displayContent.split(/\s+/);
+        let currentLine = "";
+        const lines: string[] = [];
+
+        for (let i = 0; i < words.length; i++) {
+          const testLine = currentLine + words[i] + " ";
+          const metrics = ctx.measureText(testLine);
+          const testWidth = metrics.width;
+          if (testWidth > tl.width && i > 0) {
+            lines.push(currentLine.trim());
+            currentLine = words[i] + " ";
+          } else {
+            currentLine = testLine;
+          }
+        }
+        lines.push(currentLine.trim());
+
+        // Also split by explicit newlines if the user typed them
+        const finalLines = lines.flatMap(line => line.split("\n"));
+        const lineH = tl.fontSize * (tl.lineHeight ?? 1.25);
+        const textActualH = Math.max(tl.fontSize, finalLines.length * lineH);
+
         const preset = tl.gradientPresetId ? getTextGradientPreset(tl.gradientPresetId) : null;
         if (preset) {
           let grad: CanvasGradient;
           if (preset.direction === "horizontal") grad = ctx.createLinearGradient(tl.x, 0, tl.x + tl.width, 0);
-          else if (preset.direction === "diagonal") grad = ctx.createLinearGradient(tl.x, tl.y, tl.x + tl.width, tl.y + tl.height);
-          else grad = ctx.createLinearGradient(0, tl.y, 0, tl.y + tl.height);
+          else if (preset.direction === "diagonal") grad = ctx.createLinearGradient(tl.x, tl.y, tl.x + tl.width, tl.y + textActualH);
+          else grad = ctx.createLinearGradient(0, tl.y, 0, tl.y + textActualH);
           for (const stop of preset.gradientStops) {
             grad.addColorStop(stop.position / 100, stop.color);
           }
@@ -368,8 +391,8 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           const [c1, c2, dir] = tl.gradientColor;
           let grad: CanvasGradient;
           if (dir === "horizontal") grad = ctx.createLinearGradient(tl.x, 0, tl.x + tl.width, 0);
-          else if (dir === "diagonal") grad = ctx.createLinearGradient(tl.x, tl.y, tl.x + tl.width, tl.y + tl.height);
-          else grad = ctx.createLinearGradient(0, tl.y, 0, tl.y + tl.height);
+          else if (dir === "diagonal") grad = ctx.createLinearGradient(tl.x, tl.y, tl.x + tl.width, tl.y + textActualH);
+          else grad = ctx.createLinearGradient(0, tl.y, 0, tl.y + textActualH);
           grad.addColorStop(0, c1);
           grad.addColorStop(1, c2);
           ctx.fillStyle = grad;
@@ -396,30 +419,6 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
           ctx.shadowOffsetY = 0;
         }
 
-        ctx.textAlign = tl.align as CanvasTextAlign;
-        if (tl.letterSpacing) ctx.letterSpacing = `${tl.letterSpacing}px`;
-
-        const words = displayContent.split(/\s+/);
-        let currentLine = "";
-        const lines: string[] = [];
-
-        for (let i = 0; i < words.length; i++) {
-          const testLine = currentLine + words[i] + " ";
-          const metrics = ctx.measureText(testLine);
-          const testWidth = metrics.width;
-          if (testWidth > tl.width && i > 0) {
-            lines.push(currentLine.trim());
-            currentLine = words[i] + " ";
-          } else {
-            currentLine = testLine;
-          }
-        }
-        lines.push(currentLine.trim());
-
-        // Also split by explicit newlines if the user typed them
-        const finalLines = lines.flatMap(line => line.split("\n"));
-
-        const lineH = tl.fontSize * (tl.lineHeight ?? 1.25);
         const xPos =
           tl.align === "center" ? tl.x + tl.width / 2
           : tl.align === "right" ? tl.x + tl.width
