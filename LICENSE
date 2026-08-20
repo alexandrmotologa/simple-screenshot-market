@@ -1,0 +1,55 @@
+Business Source License 1.1
+
+Parameters:
+
+Licensor: Alexandr Motologa
+Licensed Work: SnapFrame (simple-screenshot-market)
+Additional Use Grant:
+  You may use the Licensed Work for personal evaluation, non-commercial testing, 
+  and internal development purposes. 
+  
+  You may NOT use the Licensed Work to provide a hosted, managed, or 
+  software-as-a-service (SaaS) product or application that offers mobile app 
+  screenshot creation, app store mockup generation, app icon generation, 
+  or competing design tools to third parties.
+
+Change Date: 2030-01-01
+Change License: Apache License, Version 2.0
+
+==============================================================================
+
+Terms
+
+The Licensor hereby grants you the right to copy, modify, create derivative
+works, redistribute, and make non-production use of the Licensed Work. The
+Licensor may also grant you additional use rights in the Additional Use Grant
+above.
+
+Any use of the Licensed Work must include the prominent display of this
+license and its parameters.
+
+No portion of the Licensed Work may be used in production until the Change
+Date, except as explicitly permitted by the Additional Use Grant.
+
+Effective on the Change Date, or the second anniversary of the first public
+release of the Licensed Work, whichever is later, the Licensor hereby grants
+you rights under the terms of the Change License, and the terms of this
+License are terminated.
+
+This License is subject to the following conditions and terms:
+
+1. INTELLECTUAL PROPERTY. Licensor retains all right, title, and interest
+(including all copyright, patent, and other intellectual property rights) in
+and to the Licensed Work.
+
+2. DISCLAIMER OF WARRANTIES. THE LICENSED WORK IS PROVIDED "AS IS", WITHOUT
+WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE LICENSED WORK OR THE
+USE OR OTHER DEALINGS IN THE LICENSED WORK.
+
+3. TRADEMARKS. This License does not grant permission to use the trade names,
+trademarks, service marks, or product names of the Licensor, except as required
+for reasonable and customary use in describing the origin of the Licensed Work.

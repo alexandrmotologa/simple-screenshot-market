@@ -179,4 +179,4 @@ For in-depth documentation, please explore the [`docs/`](./docs/) directory:
 
 ## 📄 License
 
-This project is open-source under the MIT License. Feel free to use, modify, and build upon it!
+This repository is licensed under the **Business Source License 1.1 (BSL 1.1)**. You are free to view, test, and contribute to the code, but you may not use it to operate a competing commercial SaaS or hosted screenshot service. See the [LICENSE](./LICENSE) file for details.
