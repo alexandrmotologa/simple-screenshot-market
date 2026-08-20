@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { X, Search, Check, Sparkles, ArrowRight, Monitor, Plus, Flame, ArrowUpDown, Tag } from "lucide-react";
+import { X, Search, Check, Sparkles, ArrowRight, Monitor, Plus, Flame, ArrowUpDown, Tag, ShieldAlert, Lock } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ALL_TEMPLATES, TEMPLATE_CATEGORIES, LAYOUT_META } from "@/lib/templates";
 import { useProjectStore } from "@/lib/store/projectStore";
+import { useAuthStore } from "@/lib/store/authStore";
 import {
   sortAndFilterTemplates,
   recordTemplateSelection,
@@ -134,7 +135,10 @@ function LayoutPreview({ template }: { template: Template }) {
 }
 
 export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalProps) {
-  const { createProject } = useProjectStore();
+  const { createProject, projects } = useProjectStore();
+  const { user, setAuthModalOpen } = useAuthStore();
+  const isGuest = Boolean(user && user.isAnonymous);
+  const hasReachedLimit = isGuest && projects.length >= 1;
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [projectName, setProjectName] = useState("My App Screenshots");
   const [platforms, setPlatforms] = useState<{ ios: boolean; android: boolean }>({ ios: true, android: true });
@@ -193,6 +197,11 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
   }, [globalCounts]);
 
   const handleCreate = async () => {
+    if (hasReachedLimit) {
+      setAuthModalOpen(true);
+      onClose();
+      return;
+    }
     if (!projectName.trim() || !selectedTemplate || (!platforms.ios && !platforms.android)) return;
     setCreating(true);
     try {
@@ -437,23 +446,36 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleCreate}
-              disabled={!projectName.trim() || !selectedTemplate || (!platforms.ios && !platforms.android) || creating}
-              className="h-10 px-8 font-semibold gap-2 shadow-lg shadow-primary/20"
-            >
-              {creating ? (
-                <span className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                  Creating…
-                </span>
-              ) : (
-                <>
-                  Select a Theme
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </Button>
+            {hasReachedLimit ? (
+              <Button
+                onClick={() => {
+                  onClose();
+                  setAuthModalOpen(true);
+                }}
+                className="h-10 px-6 font-semibold gap-2 bg-amber-500 hover:bg-amber-400 text-black shadow-lg shadow-amber-500/20 cursor-pointer"
+              >
+                <Lock className="w-4 h-4" />
+                Upgrade Free (1/1 Max)
+              </Button>
+            ) : (
+              <Button
+                onClick={handleCreate}
+                disabled={!projectName.trim() || !selectedTemplate || (!platforms.ios && !platforms.android) || creating}
+                className="h-10 px-8 font-semibold gap-2 shadow-lg shadow-primary/20"
+              >
+                {creating ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                    Creating…
+                  </span>
+                ) : (
+                  <>
+                    Select a Theme
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>

@@ -3,16 +3,20 @@
 import { useState, useRef, useEffect } from "react";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { useLanguageStore, getLang, SUPPORTED_LANGUAGES } from "@/lib/store/languageStore";
+import { useAuthStore } from "@/lib/store/authStore";
+import { toast } from "@/lib/store/toastStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TextLayer } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Globe, Sparkles, Copy, Check, Plus, X, ChevronDown } from "lucide-react";
+import { Globe, Sparkles, Copy, Check, Plus, X, ChevronDown, Lock } from "lucide-react";
 import { AICaptionsModal } from "@/components/editor/AICaptionsModal";
 
 export function LocalizationPanel() {
   const { getActiveSet, getActiveScreen, updateLayerLocalization, clearLayerLocalization } =
     useEditorStore();
   const { projectLanguages, activeLang, setActiveLang, addLanguage, removeLanguage } = useLanguageStore();
+  const { user, setAuthModalOpen } = useAuthStore();
+  const isGuest = Boolean(user && user.isAnonymous);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showPicker, setShowPicker] = useState(false);
   const [search, setSearch] = useState("");
@@ -262,11 +266,34 @@ export function LocalizationPanel() {
       {/* AI Generate Action */}
       <div className="shrink-0 p-3 border-t border-border/30">
         <button
-          onClick={() => setShowAI(true)}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 text-xs font-semibold text-violet-400 hover:bg-violet-500/20 hover:border-violet-500/30 transition-all"
+          type="button"
+          onClick={() => {
+            if (isGuest) {
+              setAuthModalOpen(true);
+              toast.info("AI Captions & Auto-Translate is for registered accounts. Sign in with Google or GitHub (100% Free) to unlock.");
+              return;
+            }
+            setShowAI(true);
+          }}
+          className={`w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+            isGuest
+              ? "bg-secondary/60 text-muted-foreground border-amber-500/30 hover:border-amber-500/60"
+              : "bg-violet-500/10 border-violet-500/20 text-violet-400 hover:bg-violet-500/20 hover:border-violet-500/30"
+          }`}
+          title={isGuest ? "AI Captions & Auto-Translate (Sign in to unlock)" : "AI Captions & Auto-Translate"}
         >
-          <Sparkles className="w-4 h-4" />
-          AI Captions & Auto-Translate
+          {isGuest ? (
+            <>
+              <Lock className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-amber-400 font-bold">AI Captions &amp; Translate</span>
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-semibold">Registered only</span>
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4" />
+              <span>AI Captions &amp; Auto-Translate</span>
+            </>
+          )}
         </button>
       </div>
 

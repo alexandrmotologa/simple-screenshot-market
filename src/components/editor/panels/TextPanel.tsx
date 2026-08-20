@@ -1,10 +1,12 @@
 "use client";
 
 import { useEditorStore } from "@/lib/store/editorStore";
+import { useAuthStore } from "@/lib/store/authStore";
 import { toast } from "@/lib/store/toastStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { Lock, Sparkles } from "lucide-react";
 
 // ── Google Fonts loader ────────────────────────────────────────────────────────
 const GOOGLE_FONTS = [
@@ -370,6 +372,9 @@ function FontRow() {
 // ── AI Copywriter & Tone Assistant ──────────────────────────────────────────
 function AICopywriterWidget() {
   const { getActiveSet, getActiveScreen, getActiveLayer, updateLayer } = useEditorStore();
+  const { user, setAuthModalOpen } = useAuthStore();
+  const isGuest = Boolean(user && user.isAnonymous);
+
   const layer = getActiveLayer();
   const set = getActiveSet();
   const screen = getActiveScreen();
@@ -383,6 +388,33 @@ function AICopywriterWidget() {
   const currentText = tl.content || "";
   const charCount = currentText.length;
   const isOverLimit = charCount > 30;
+
+  if (isGuest) {
+    return (
+      <div className="px-3.5 py-3 border-b border-border/40 bg-gradient-to-b from-indigo-500/5 via-purple-500/5 to-transparent space-y-2">
+        <div className="flex items-center justify-between text-xs">
+          <span className="font-bold flex items-center gap-1.5 text-foreground">
+            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+            <span>AI Copywriter &amp; Tone</span>
+          </span>
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+            <Lock className="w-2.5 h-2.5" /> Registered only
+          </span>
+        </div>
+        <p className="text-[11px] text-muted-foreground leading-tight">
+          AI caption generation and tone adjustments are available for registered accounts.
+        </p>
+        <button
+          type="button"
+          onClick={() => setAuthModalOpen(true)}
+          className="w-full h-7 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+        >
+          <Sparkles className="w-3 h-3" />
+          <span>Sign In (Free)</span>
+        </button>
+      </div>
+    );
+  }
 
   const handleRunAI = async (action: "rewrite" | "shorten" | "punchy" | "emojis" | "ideas") => {
     try {

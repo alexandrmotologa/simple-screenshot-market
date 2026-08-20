@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, X, Loader2, CheckCircle2, Globe, AlertCircle, Link2, Search } from "lucide-react";
+import { Sparkles, X, Loader2, CheckCircle2, Globe, AlertCircle, Link2, Search, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { useLanguageStore, getLang } from "@/lib/store/languageStore";
+import { useAuthStore } from "@/lib/store/authStore";
 import { TextLayer } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -48,6 +49,8 @@ interface AICaptionsModalProps {
 export function AICaptionsModal({ onClose }: AICaptionsModalProps) {
   const { getActiveSet, getActiveScreen, updateLayerLocalization } = useEditorStore();
   const { projectLanguages } = useLanguageStore();
+  const { user, setAuthModalOpen } = useAuthStore();
+  const isGuest = Boolean(user && user.isAnonymous);
 
   const [mistralKey, setMistralKey] = useState(
     typeof window !== "undefined" ? (localStorage.getItem("snapframe_mistral_key") ?? "") : ""
@@ -84,6 +87,11 @@ export function AICaptionsModal({ onClose }: AICaptionsModalProps) {
   };
 
   const handleGenerate = async () => {
+    if (isGuest) {
+      onClose();
+      setAuthModalOpen(true);
+      return;
+    }
     if (!set || !screen || textLayers.length === 0) return;
     setStatus("loading");
     setErrorMsg("");
@@ -118,6 +126,11 @@ export function AICaptionsModal({ onClose }: AICaptionsModalProps) {
 
   // ── URL Scrape + AI Generate captions ────────────────────────────────────────
   const handleScrapeAndGenerate = async () => {
+    if (isGuest) {
+      onClose();
+      setAuthModalOpen(true);
+      return;
+    }
     if (!appUrl.startsWith("http")) return;
     setScrapeStatus("loading");
     setScrapedData(null);
@@ -139,6 +152,11 @@ export function AICaptionsModal({ onClose }: AICaptionsModalProps) {
   };
 
   const handleGenerateFromUrl = async () => {
+    if (isGuest) {
+      onClose();
+      setAuthModalOpen(true);
+      return;
+    }
     if (!scrapedData || !set || !screen || textLayers.length === 0) return;
     setStatus("loading");
     setErrorMsg("");
@@ -229,32 +247,62 @@ export function AICaptionsModal({ onClose }: AICaptionsModalProps) {
           </button>
         </div>
 
-        {/* Tab switcher */}
-        <div className="flex border-b border-border/40 px-6 gap-1">
-          {(["translate", "scrape"] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setActiveTab(t)}
-              className={cn(
-                "flex items-center gap-1.5 py-2.5 px-3 text-xs font-medium border-b-2 -mb-px transition-all",
-                activeTab === t
-                  ? "border-violet-500 text-violet-400"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {t === "translate" ? <Globe className="w-3.5 h-3.5" /> : <Link2 className="w-3.5 h-3.5" />}
-              {t === "translate" ? "Translate" : "From URL"}
-            </button>
-          ))}
-        </div>
+        {/* Tab switcher & Content */}
+        {isGuest ? (
+          <div className="p-7 space-y-5 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400 shadow-md">
+              <Lock className="w-7 h-7" />
+            </div>
+            <div className="space-y-1.5">
+              <h3 className="text-base font-bold text-foreground">Registered Feature Only</h3>
+              <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                AI automated multi-language translation and App Store URL scraping are available for registered accounts. Sign in with Google or GitHub (100% Free) to unlock.
+              </p>
+            </div>
+            <div className="flex gap-2.5 pt-3">
+              <Button
+                variant="outline"
+                onClick={onClose}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  onClose();
+                  setAuthModalOpen(true);
+                }}
+                className="flex-1 bg-amber-500 hover:bg-amber-400 text-black font-bold gap-2 shadow-md cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Sign In (Free)</span>
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="flex border-b border-border/40 px-6 gap-1">
+              {(["translate", "scrape"] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setActiveTab(t)}
+                  className={cn(
+                    "flex items-center gap-1.5 py-2.5 px-3 text-xs font-medium border-b-2 -mb-px transition-all",
+                    activeTab === t
+                      ? "border-violet-500 text-violet-400"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {t === "translate" ? <Globe className="w-3.5 h-3.5" /> : <Link2 className="w-3.5 h-3.5" />}
+                  {t === "translate" ? "Translate" : "From URL"}
+                </button>
+              ))}
+            </div>
 
-        <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
-
-          {/* ══════════════════════════════════════════════════════════════════ */}
-          {/* TAB: TRANSLATE                                                     */}
-          {/* ══════════════════════════════════════════════════════════════════ */}
-          {activeTab === "translate" && (
-            <>
+            <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
+              {/* TAB: TRANSLATE */}
+              {activeTab === "translate" && (
+                <>
               {/* API Keys */}
               <div className="space-y-3">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -534,6 +582,8 @@ export function AICaptionsModal({ onClose }: AICaptionsModalProps) {
           )}
 
         </div>
+        </>
+      )}
       </div>
     </div>
   );

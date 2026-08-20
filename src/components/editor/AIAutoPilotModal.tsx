@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, X, Loader2, CheckCircle2, Wand2, Palette, Type, Layers, ArrowRight } from "lucide-react";
+import { Sparkles, X, Loader2, CheckCircle2, Wand2, Palette, Type, Layers, ArrowRight, Lock, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { useProjectStore } from "@/lib/store/projectStore";
 import { useLanguageStore } from "@/lib/store/languageStore";
+import { useAuthStore } from "@/lib/store/authStore";
 import { toast } from "@/lib/store/toastStore";
 import { TextLayer, ScreenshotLayer, ImageLayer, Screen, Layer } from "@/lib/types";
 import { nanoid } from "nanoid";
@@ -19,6 +20,8 @@ export function AIAutoPilotModal({ open, onOpenChange }: AIAutoPilotModalProps) 
   const { screenSets, activeSetId, updateScreenBackground, addLayer, updateLayer, deleteLayer } = useEditorStore();
   const { projects } = useProjectStore();
   const { activeLang } = useLanguageStore();
+  const { user, setAuthModalOpen } = useAuthStore();
+  const isGuest = Boolean(user && user.isAnonymous);
 
   const activeSet = screenSets.find((s) => s.id === activeSetId) || screenSets[0];
   const screens = activeSet?.screens || [];
@@ -32,6 +35,11 @@ export function AIAutoPilotModal({ open, onOpenChange }: AIAutoPilotModalProps) 
   if (!open || !activeSet) return null;
 
   const handleRunAutoPilot = async () => {
+    if (isGuest) {
+      onOpenChange(false);
+      setAuthModalOpen(true);
+      return;
+    }
     try {
       setIsProcessing(true);
       setProgressStep("Analyzing screenshot layouts and context...");
@@ -192,117 +200,150 @@ export function AIAutoPilotModal({ open, onOpenChange }: AIAutoPilotModalProps) 
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-4.5">
-          {/* Niche Input */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-              <span>🎯</span> App Category / Niche (Optional)
-            </label>
-            <input
-              type="text"
-              value={niche}
-              onChange={(e) => setNiche(e.target.value)}
-              placeholder="e.g., AI Photo Editor, Fitness Tracker, Crypto Wallet..."
-              className="w-full h-9 px-3 text-xs bg-secondary/60 border border-border/60 rounded-xl outline-none focus:border-primary focus:ring-1 focus:ring-primary/40 transition-all placeholder:text-muted-foreground/60"
-            />
-          </div>
-
-          {/* Tone Selector */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-              <span>🪄</span> Marketing Tone
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { id: "high-energy", label: "🚀 High Energy", desc: "Bold & inspiring" },
-                { id: "minimalist", label: "✨ Minimalist", desc: "Short & punchy" },
-                { id: "benefit-driven", label: "🎯 Benefit Driven", desc: "Problem solver" },
-                { id: "fomo", label: "🔥 Social / FOMO", desc: "Community hype" },
-                { id: "b2b", label: "💼 B2B Enterprise", desc: "Professional trust" },
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setTargetTone(t.id as any)}
-                  className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
-                    targetTone === t.id
-                      ? "bg-indigo-500/15 border-indigo-500/50 text-foreground ring-1 ring-indigo-500/30"
-                      : "bg-secondary/40 border-border/40 text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
-                  }`}
-                >
-                  <p className="text-xs font-bold">{t.label}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">{t.desc}</p>
-                </button>
-              ))}
+        {isGuest ? (
+          <div className="p-7 space-y-5 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400 shadow-md">
+              <Lock className="w-7 h-7" />
             </div>
-          </div>
-
-          {/* Color Palettes Option */}
-          <label className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-secondary/30 hover:bg-secondary/60 cursor-pointer transition-colors text-xs select-none">
-            <input
-              type="checkbox"
-              checked={applyGradients}
-              onChange={(e) => setApplyGradients(e.target.checked)}
-              className="w-4 h-4 rounded-md accent-primary"
-            />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 font-semibold text-foreground">
-                <Palette className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Auto-match panoramic color gradients</span>
-              </div>
-              <p className="text-[11px] text-muted-foreground">
-                Generates harmonious multi-screen gradients matching your screenshot colors
+            <div className="space-y-1.5">
+              <h3 className="text-base font-bold text-foreground">Registered Feature Only</h3>
+              <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                AI Auto-Pilot analyzes your screenshots using vision AI and automatically crafts high-converting App Store copy, colors, and headlines. Sign in with Google or GitHub (100% Free) to unlock.
               </p>
             </div>
-          </label>
-
-          {/* Target Set Info */}
-          <div className="p-3 rounded-xl bg-secondary/50 border border-border/40 flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">
-              Target: <strong className="text-foreground">{activeSet.name}</strong> ({screens.length} screens)
-            </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-background border border-border/50 text-foreground">
-              {activeLang.toUpperCase()}
-            </span>
-          </div>
-
-          {/* Progress Indicator */}
-          {isProcessing && (
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs animate-pulse">
-              <Loader2 className="w-4 h-4 animate-spin shrink-0 text-indigo-400" />
-              <span>{progressStep}</span>
+            <div className="flex gap-2.5 pt-3">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  onOpenChange(false);
+                  setAuthModalOpen(true);
+                }}
+                className="flex-1 bg-amber-500 hover:bg-amber-400 text-black font-bold gap-2 shadow-md cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Sign In (Free)</span>
+              </Button>
             </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex gap-2.5 pt-2">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isProcessing}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleRunAutoPilot}
-              disabled={isProcessing || screens.length === 0}
-              className="flex-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-90 text-white font-bold gap-2 shadow-md shadow-indigo-500/25 cursor-pointer"
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Generating...</span>
-                </>
-              ) : (
-                <>
-                  <Wand2 className="w-4 h-4" />
-                  <span>Generate All {screens.length} Screens</span>
-                </>
-              )}
-            </Button>
           </div>
-        </div>
+        ) : (
+          <div className="p-6 space-y-4.5">
+            {/* Niche Input */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <span>🎯</span> App Category / Niche (Optional)
+              </label>
+              <input
+                type="text"
+                value={niche}
+                onChange={(e) => setNiche(e.target.value)}
+                placeholder="e.g., AI Photo Editor, Fitness Tracker, Crypto Wallet..."
+                className="w-full h-9 px-3 text-xs bg-secondary/60 border border-border/60 rounded-xl outline-none focus:border-primary focus:ring-1 focus:ring-primary/40 transition-all placeholder:text-muted-foreground/60"
+              />
+            </div>
+
+            {/* Tone Selector */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <span>🪄</span> Marketing Tone
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { id: "high-energy", label: "🚀 High Energy", desc: "Bold & inspiring" },
+                  { id: "minimalist", label: "✨ Minimalist", desc: "Short & punchy" },
+                  { id: "benefit-driven", label: "🎯 Benefit Driven", desc: "Problem solver" },
+                  { id: "fomo", label: "🔥 Social / FOMO", desc: "Community hype" },
+                  { id: "b2b", label: "💼 B2B Enterprise", desc: "Professional trust" },
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setTargetTone(t.id as any)}
+                    className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                      targetTone === t.id
+                        ? "bg-indigo-500/15 border-indigo-500/50 text-foreground ring-1 ring-indigo-500/30"
+                        : "bg-secondary/40 border-border/40 text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
+                    }`}
+                  >
+                    <p className="text-xs font-bold">{t.label}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{t.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Color Palettes Option */}
+            <label className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-secondary/30 hover:bg-secondary/60 cursor-pointer transition-colors text-xs select-none">
+              <input
+                type="checkbox"
+                checked={applyGradients}
+                onChange={(e) => setApplyGradients(e.target.checked)}
+                className="w-4 h-4 rounded-md accent-primary"
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                  <Palette className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Auto-match panoramic color gradients</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Generates harmonious multi-screen gradients matching your screenshot colors
+                </p>
+              </div>
+            </label>
+
+            {/* Target Set Info */}
+            <div className="p-3 rounded-xl bg-secondary/50 border border-border/40 flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">
+                Target: <strong className="text-foreground">{activeSet.name}</strong> ({screens.length} screens)
+              </span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-background border border-border/50 text-foreground">
+                {activeLang.toUpperCase()}
+              </span>
+            </div>
+
+            {/* Progress Indicator */}
+            {isProcessing && (
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs animate-pulse">
+                <Loader2 className="w-4 h-4 animate-spin shrink-0 text-indigo-400" />
+                <span>{progressStep}</span>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex gap-2.5 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isProcessing}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleRunAutoPilot}
+                disabled={isProcessing || screens.length === 0}
+                className="flex-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-90 text-white font-bold gap-2 shadow-md shadow-indigo-500/25 cursor-pointer"
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Generating...</span>
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="w-4 h-4" />
+                    <span>Generate All {screens.length} Screens</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

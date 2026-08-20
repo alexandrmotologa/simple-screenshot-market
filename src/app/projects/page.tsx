@@ -6,6 +6,7 @@ import {
   Plus, Layers, Clock, Copy, Trash2, ArrowRight, Sparkles,
   Zap, Globe, Search, LayoutGrid, List, ArrowUpDown, Edit3,
   Smartphone, ExternalLink, MoreHorizontal, Calendar, X,
+  ShieldAlert, Lock,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -513,6 +514,8 @@ export default function ProjectsPage() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<DashboardSortOption>("updated-desc");
 
+  const isGuest = Boolean(user && user.isAnonymous);
+
   const promptDelete = (e: React.MouseEvent, id: string, name: string) => {
     e.preventDefault();
     e.stopPropagation();
@@ -522,7 +525,19 @@ export default function ProjectsPage() {
   const promptDuplicate = (e: React.MouseEvent, id: string, name: string) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isGuest) {
+      setAuthModalOpen(true);
+      return;
+    }
     setConfirmModal({ type: "duplicate", projectId: id, projectName: name });
+  };
+
+  const handleNewProjectClick = () => {
+    if (isGuest && projects.length >= 1) {
+      setAuthModalOpen(true);
+      return;
+    }
+    setShowNewProject(true);
   };
 
   const promptRename = (e: React.MouseEvent, id: string, name: string) => {
@@ -645,6 +660,31 @@ export default function ProjectsPage() {
       </header>
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-10">
+        {/* Guest Mode Status Banner */}
+        {isGuest && (
+          <div className="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5 text-amber-300">
+              <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0" />
+              <div>
+                <span className="font-bold text-amber-400">
+                  Guest Account ({projects.length}/1 Active Project Used)
+                </span>
+                <p className="text-muted-foreground text-[11px] mt-0.5">
+                  Guest accounts can store 1 project and are auto-deleted after 30 days. AI superpowers are disabled in Guest mode. Sign in with Google or GitHub (100% Free) for unlimited projects and AI tools.
+                </p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => setAuthModalOpen(true)}
+              className="shrink-0 h-8 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs gap-1.5 shadow-sm cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Upgrade Free</span>
+            </Button>
+          </div>
+        )}
+
         {projects.length === 0 ? (
           /* ── Empty Projects State ── */
           <motion.div 
@@ -666,7 +706,7 @@ export default function ProjectsPage() {
 
             <Button
               size="lg"
-              onClick={() => setShowNewProject(true)}
+              onClick={handleNewProjectClick}
               className="gap-2 px-8 py-6 rounded-2xl text-base font-semibold shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
             >
               <Plus className="w-5 h-5" />
@@ -681,7 +721,7 @@ export default function ProjectsPage() {
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Your Projects</h1>
                 <Badge variant="secondary" className="text-xs font-semibold px-2.5 py-0.5 rounded-full border border-border/50">
-                  {projects.length}
+                  {projects.length}{isGuest ? "/1 (Guest Limit)" : ""}
                 </Badge>
               </div>
 
@@ -777,11 +817,25 @@ export default function ProjectsPage() {
 
                 {/* Primary CTA: New Project */}
                 <Button
-                  onClick={() => setShowNewProject(true)}
-                  className="gap-2 rounded-xl shadow-md hover:shadow-primary/20 transition-all cursor-pointer h-9 px-4 font-semibold"
+                  onClick={handleNewProjectClick}
+                  className={`gap-2 rounded-xl shadow-md transition-all cursor-pointer h-9 px-4 font-semibold ${
+                    isGuest && projects.length >= 1
+                      ? "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-amber-500/30"
+                      : "hover:shadow-primary/20"
+                  }`}
+                  title={isGuest && projects.length >= 1 ? "Guest limit reached (1 active project)" : "Create a new screenshot set"}
                 >
-                  <Plus className="w-4 h-4" />
-                  New Project
+                  {isGuest && projects.length >= 1 ? (
+                    <>
+                      <Lock className="w-3.5 h-3.5 text-amber-400" />
+                      <span>New Project (1/1 Max)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" />
+                      <span>New Project</span>
+                    </>
+                  )}
                 </Button>
               </div>
             </div>

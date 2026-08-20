@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, ChevronDown, Check, Copy, Loader2, Wand2, RefreshCw } from "lucide-react";
+import { Sparkles, ChevronDown, Check, Copy, Loader2, Wand2, RefreshCw, Lock } from "lucide-react";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { useProjectStore } from "@/lib/store/projectStore";
+import { useAuthStore } from "@/lib/store/authStore";
 import { useLanguageStore, getLang } from "@/lib/store/languageStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -33,9 +34,10 @@ export function StoreListingPanel() {
   const screenSets = useEditorStore((s) => s.screenSets);
   const hasIOS = screenSets.some((ss) => ss.store === "ios");
   const hasAndroid = screenSets.some((ss) => ss.store === "android");
-
   const { activeLang, projectLanguages, setActiveLang } = useLanguageStore();
   const currentLang = getLang(activeLang);
+  const { user, setAuthModalOpen } = useAuthStore();
+  const isGuest = Boolean(user && user.isAnonymous);
 
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -94,6 +96,11 @@ export function StoreListingPanel() {
 
   // ── AI Generate Complete Store Listing ─────────────────────────────────────
   const handleAIGenerateListing = async () => {
+    if (isGuest) {
+      setAuthModalOpen(true);
+      toast.info("AI Store Listing generation is for registered accounts. Sign in with Google or GitHub (100% Free) to unlock.");
+      return;
+    }
     try {
       setIsGenerating(true);
       
@@ -123,38 +130,38 @@ export function StoreListingPanel() {
         throw new Error(data.error || "Failed to generate listing");
       }
 
-      const listing = data.listing;
-      if (listing.ios) {
-        setAppStoreData({
-          name: listing.ios.name || appStoreData.name,
-          subtitle: listing.ios.subtitle || appStoreData.subtitle,
-          promotionalText: listing.ios.promotionalText || appStoreData.promotionalText,
-          keywords: listing.ios.keywords || appStoreData.keywords,
-          description: listing.ios.description || appStoreData.description,
-          whatsNew: listing.ios.whatsNew || appStoreData.whatsNew,
-        });
+      if (data.appStore) {
+        setAppStoreData((prev) => ({
+          ...prev,
+          name: data.appStore.name || prev.name,
+          subtitle: data.appStore.subtitle || prev.subtitle,
+          description: data.appStore.description || prev.description,
+          promotionalText: data.appStore.promotionalText || prev.promotionalText,
+          keywords: data.appStore.keywords || prev.keywords,
+        }));
       }
 
-      if (listing.android) {
-        setPlayStoreData({
-          title: listing.android.title || playStoreData.title,
-          shortDescription: listing.android.shortDescription || playStoreData.shortDescription,
-          fullDescription: listing.android.fullDescription || playStoreData.fullDescription,
-          whatsNew: listing.android.whatsNew || playStoreData.whatsNew,
-        });
+      if (data.googlePlay) {
+        setPlayStoreData((prev) => ({
+          ...prev,
+          title: data.googlePlay.title || prev.title,
+          shortDescription: data.googlePlay.shortDescription || prev.shortDescription,
+          fullDescription: data.googlePlay.fullDescription || prev.fullDescription,
+        }));
       }
 
-      toast.success("AI generated full App Store & Google Play metadata!");
+      toast.success("AI generated App Store & Google Play metadata!");
     } catch (err: any) {
       console.error(err);
-      toast.error(err.message || "AI Listing generation failed");
+      toast.error(err.message || "Failed to generate listing with AI");
     } finally {
       setIsGenerating(false);
     }
   };
 
   return (
-    <div className="flex flex-col h-full relative">
+    <div className="flex flex-col h-full bg-card">
+      {/* Header with Language Selector */}
       <div className="shrink-0 p-3 border-b border-border/30 flex items-center justify-between">
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 bg-secondary hover:bg-secondary/80 rounded-md cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
@@ -194,9 +201,20 @@ export function StoreListingPanel() {
             type="button"
             onClick={handleAIGenerateListing}
             disabled={isGenerating}
-            className="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-pink-500/15 border border-indigo-500/30 hover:border-indigo-500/50 text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-all shadow-xs cursor-pointer active:scale-[0.98]"
+            className={`w-full flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-[0.98] ${
+              isGuest
+                ? "bg-secondary/60 text-muted-foreground border-amber-500/30 hover:border-amber-500/60"
+                : "bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-pink-500/15 border-indigo-500/30 hover:border-indigo-500/50 text-indigo-400 hover:text-indigo-300"
+            }`}
+            title={isGuest ? "AI Store Listing (Sign in to unlock)" : "AI Auto-Generate Store Listing"}
           >
-            {isGenerating ? (
+            {isGuest ? (
+              <>
+                <Lock className="w-3.5 h-3.5 text-amber-400" />
+                <span className="text-amber-400">AI Store Listing</span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-semibold">Registered only</span>
+              </>
+            ) : isGenerating ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
                 <span>Generating ASO metadata...</span>

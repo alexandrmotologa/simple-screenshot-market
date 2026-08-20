@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import {
   ArrowLeft, Undo2, Redo2, Download,
   Share2, ZoomIn, ZoomOut, Upload, Sparkles, Film,
-  Copy, Keyboard, Check, ChevronDown, Eye
+  Copy, Keyboard, Check, ChevronDown, Eye, Lock,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { KeyboardShortcutsModal } from "@/components/editor/KeyboardShortcutsModal";
@@ -14,6 +14,7 @@ import { toast } from "@/lib/store/toastStore";
 import { Separator } from "@/components/ui/separator";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { useProjectStore } from "@/lib/store/projectStore";
+import { useAuthStore } from "@/lib/store/authStore";
 import { EditorSidebar } from "@/components/editor/EditorSidebar";
 import { HorizontalCanvas } from "@/components/editor/HorizontalCanvas";
 import { FloatingToolbar } from "@/components/editor/FloatingToolbar";
@@ -66,6 +67,8 @@ function IconBtn({
 export function EditorLayout({ projectId }: EditorLayoutProps) {
   const router = useRouter();
   const project = useProjectStore((s) => s.getProject(projectId));
+  const { user, setAuthModalOpen } = useAuthStore();
+  const isGuest = Boolean(user && user.isAnonymous);
   const {
     zoom, setZoom, undo, redo, canUndo, canRedo,
     activeLayerId, activeSetId, activeScreenId,
@@ -446,12 +449,33 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
           {/* AI Auto-Pilot */}
           <button
             type="button"
-            onClick={() => setShowAIAutoPilot(true)}
-            className="h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs font-bold bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 text-indigo-400 hover:text-indigo-300 border border-indigo-500/40 hover:border-indigo-500/60 transition-all cursor-pointer shadow-xs active:scale-95"
-            title="AI Auto-Pilot: 1-Click Vision Screen Generation"
+            onClick={() => {
+              if (isGuest) {
+                setAuthModalOpen(true);
+                toast.info("AI Auto-Pilot is for registered accounts. Sign in with Google or GitHub (100% Free) to unlock.");
+                return;
+              }
+              setShowAIAutoPilot(true);
+            }}
+            className={`h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95 ${
+              isGuest
+                ? "bg-secondary/60 text-muted-foreground border border-amber-500/30 hover:border-amber-500/60"
+                : "bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 text-indigo-400 hover:text-indigo-300 border border-indigo-500/40 hover:border-indigo-500/60"
+            }`}
+            title={isGuest ? "AI Auto-Pilot (Sign in with Google or GitHub to unlock)" : "AI Auto-Pilot: 1-Click Vision Screen Generation"}
           >
-            <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
-            <span className="hidden md:inline">AI Auto-Pilot</span>
+            {isGuest ? (
+              <>
+                <Lock className="w-3 h-3 text-amber-400" />
+                <span className="hidden md:inline text-amber-400 font-semibold">AI Auto-Pilot</span>
+                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Free Reg</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
+                <span className="hidden md:inline">AI Auto-Pilot</span>
+              </>
+            )}
           </button>
 
           {/* Export Button */}
