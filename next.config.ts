@@ -37,19 +37,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  async headers() {
-    return [
-      {
-        // Apply Cross-Origin isolation headers with popup support
-        // Required for SharedArrayBuffer / FFmpeg while allowing OAuth Popups (Google, GitHub)
-        source: "/(.*)",
-        headers: [
-          { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
-          { key: "Cross-Origin-Embedder-Policy", value: "credentialless" },
-        ],
-      },
-    ];
-  },
 };
 
 export default nextConfig;
