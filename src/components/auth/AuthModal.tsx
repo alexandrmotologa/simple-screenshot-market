@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
+import { BrandHeroIcon } from "@/components/ui/BrandHeroIcon";
 import { getAppEnvironment, getEnvironmentLabel } from "@/lib/authEnvironment";
 
 export function AuthModal() {
@@ -142,8 +143,8 @@ export function AuthModal() {
             <>
               {/* Header */}
               <div className="text-center space-y-2 pt-1">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 border border-indigo-500/30 flex items-center justify-center mx-auto text-indigo-400 shadow-md">
-                  <Sparkles className="w-6 h-6" />
+                <div className="flex justify-center pb-1">
+                  <BrandHeroIcon size="md" />
                 </div>
                 <div>
                   <h2 className="text-xl font-extrabold text-foreground tracking-tight">

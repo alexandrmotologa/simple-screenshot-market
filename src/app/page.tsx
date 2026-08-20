@@ -17,6 +17,7 @@ import { Footer } from "@/components/dashboard/Footer";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
+import { BrandHeroIcon } from "@/components/ui/BrandHeroIcon";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -82,11 +83,8 @@ export default function LandingPage() {
           </div>
 
           <div className="relative z-10 flex flex-col items-center max-w-3xl">
-            <div className="relative mb-8 group">
-              <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-primary to-pink-500 opacity-40 blur-xl group-hover:opacity-70 transition duration-500" />
-              <div className="relative w-20 h-20 rounded-3xl bg-card border border-border flex items-center justify-center shadow-2xl">
-                <SnapFrameLogo size={48} />
-              </div>
+            <div className="mb-8">
+              <BrandHeroIcon size="xl" />
             </div>
 
             <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight mb-5 bg-gradient-to-b from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent leading-[1.15]">

@@ -23,6 +23,7 @@ import { Footer } from "@/components/dashboard/Footer";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
+import { BrandHeroIcon } from "@/components/ui/BrandHeroIcon";
 
 // ── Mini Canvas Thumbnail with Real Screen Render & Multi-Screen Stack ────────
 function ProjectThumbnail({ project }: { project: Project }) {
@@ -652,11 +653,8 @@ export default function ProjectsPage() {
             transition={{ duration: 0.5, ease: "easeOut" }}
             className="relative flex flex-col items-center justify-center py-24 text-center overflow-hidden rounded-3xl border border-border/50 bg-card/30 backdrop-blur-sm px-6"
           >
-            <div className="relative mb-6 group">
-              <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-primary to-violet-600 opacity-30 blur-lg group-hover:opacity-60 transition duration-500"></div>
-              <div className="relative w-20 h-20 rounded-3xl bg-card border border-border flex items-center justify-center shadow-2xl">
-                <Sparkles className="w-9 h-9 text-primary animate-pulse" />
-              </div>
+            <div className="mb-6">
+              <BrandHeroIcon size="lg" />
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3 text-foreground">
