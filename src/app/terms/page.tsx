@@ -38,11 +38,11 @@ export default function TermsOfServicePage() {
 
           <div className="flex items-center gap-3">
             <Link
-              href="/"
+              href="/projects"
               className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg hover:bg-secondary"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              Back to Dashboard
+              Back to Projects
             </Link>
             <ThemeToggle />
             <UserMenu />

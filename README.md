@@ -111,26 +111,34 @@ simple-screenshot-market/
 │   ├── DEVICES_AND_CANVAS.md  # Device matrix, vector frames, and tablet support
 │   ├── EXPORT_AND_ASO.md      # Fastlane, store submission guidelines & ZIP builder
 │   └── DEPLOYMENT.md          # Vercel & Firebase deployment guide
-├── public/                    # Static assets, device mockups & fonts
+├── public/                    # Static assets, logos, device mockups & favicons
+│   ├── logos/                 # High-resolution vector and 3D brand logo assets
 │   └── mockups/               # SVG & PNG vector device frames
 ├── src/
 │   ├── app/                   # Next.js App Router (pages & API routes)
 │   │   ├── api/
 │   │   │   └── ai/            # AI endpoints (vision-screens, copywriter, store-listing, translate, palette)
-│   │   ├── editor/[projectId]/# Main interactive studio page
-│   │   └── page.tsx           # Projects dashboard & template catalog
+│   │   ├── editor/[projectId]/# Main interactive studio workspace
+│   │   ├── projects/          # Dedicated Projects dashboard, search, sort & management
+│   │   ├── terms/             # Terms of Service & Commercial licensing
+│   │   ├── privacy/           # Privacy Policy & Data protection (GDPR/CCPA)
+│   │   └── page.tsx           # High-converting Landing page & Feature showcase
 │   ├── components/
-│   │   ├── editor/            # Canvas, toolbar, timeline, filmstrip & modals
+│   │   ├── editor/            # Canvas, toolbar, timeline, filmstrip, background selector & modals
 │   │   │   ├── panels/        # Sidebar panels (Text, Background, Platforms, Blocks, StoreListing, Localization, etc.)
 │   │   │   ├── AIAutoPilotModal.tsx
+│   │   │   ├── CanvasBackgroundSelector.tsx
 │   │   │   ├── ExportModal.tsx
 │   │   │   └── StorePreviewModal.tsx
+│   │   ├── dashboard/         # Project cards, creation modal, rename modal & footer
+│   │   ├── auth/              # Google & GitHub OAuth modal, User Menu & account linking
 │   │   └── ui/                # UI primitives (buttons, dropdowns, inputs, dialogs)
 │   └── lib/
 │       ├── ai/                # Unified server-side AI provider service
+│       ├── canvasBackgrounds.ts # 8 workspace background patterns (Square Grid, Dots, Blueprint, Isometric, etc.)
 │       ├── devices.ts         # Device database (iPhone, iPad, Pixel, Galaxy, Tabs)
 │       ├── renderScreenToCanvas.ts # Universal 4K Canvas 2D rendering engine
-│       ├── store/             # Zustand stores (editorStore, projectStore, languageStore)
+│       ├── store/             # Zustand stores (editorStore, projectStore, languageStore, authStore)
 │       └── types.ts           # Core TypeScript types & layer schemas
 ├── .env.example               # Environment variables template
 └── package.json

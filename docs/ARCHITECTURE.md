@@ -66,6 +66,15 @@ SnapFrame uses three primary Zustand stores designed for reactivity, persistence
 - **Project Languages:** Array of configured languages enabled for multi-language export.
 - **Language Registry:** 20+ supported locales with native flag emojis and locale codes.
 
+### 4. `authStore.ts`
+- **Authentication & User Profile:** Firebase Auth integration with Google, GitHub OAuth, and Anonymous Guest accounts.
+- **Account Linking & Cloud Sync:** Allows seamless migration from guest session to permanent account without losing active projects.
+- **Environment Isolation:** Tags registered users with current deployment environment (`production`, `develop`, `localhost`).
+
+### 5. `canvasBackgrounds.ts`
+- **Workspace Canvas Patterns:** 8 theme-adaptive workspace background styles (Square Grid, Fine Dots, Bold Dots, Blueprint Grid, Technical Plus, Isometric 3D, Ambient Studio, Blank Solid).
+- **Light/Dark Calibration:** Automatic opacity and color scaling using `currentColor` and `hsl(var(--foreground))`.
+
 ---
 
 ## 3. Universal Canvas 2D Rendering Engine (`renderScreenToCanvas.ts`)
