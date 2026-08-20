@@ -105,7 +105,7 @@ export async function openPaddleCheckout({
   if (!isLoaded || !window.Paddle || PADDLE_CONFIG.clientToken === "test_token") {
     // Development / Demo Simulation mode if Paddle keys are not yet configured in .env
     console.log("[Paddle] Simulated Checkout in Demo/Dev mode for:", { plan, priceId, userEmail, userId });
-    toast.info(`Opening test checkout for SnapFrame Pro (${plan === "annual" ? "$144/year" : "$19/month"})...`);
+    toast.info(`Opening test checkout for SnapFrame Pro (${plan === "annual" ? "$69/year" : "$9/month"})...`);
     
     // Simulate successful checkout in dev mode after short delay
     setTimeout(() => {

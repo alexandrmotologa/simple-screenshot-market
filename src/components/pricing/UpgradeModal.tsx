@@ -143,15 +143,15 @@ export function UpgradeModal() {
             <div className="md:col-span-2">
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl sm:text-4xl font-black text-foreground">
-                  {billingCycle === "annual" ? "$12" : "$19"}
+                  {billingCycle === "annual" ? "$5.75" : "$9"}
                 </span>
                 <span className="text-xs text-muted-foreground font-semibold">
-                  / month {billingCycle === "annual" && <span className="text-primary font-bold">(billed annually at $144/year)</span>}
+                  / month {billingCycle === "annual" && <span className="text-primary font-bold">(billed annually at $69/year)</span>}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 {billingCycle === "annual"
-                  ? "🎉 Includes 2 months free + all future feature updates and pro niches."
+                  ? "🎉 Includes 4+ months free + all future feature updates and pro niches."
                   : "Cancel anytime with 1 click. Instant access to all Pro features."}
               </p>
             </div>
