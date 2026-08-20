@@ -246,10 +246,9 @@ export async function renderIconToCanvas(
       ctx.roundRect(halfStroke, halfStroke, size - ringWidth, size - ringWidth, Math.max(0, r - halfStroke));
       ctx.stroke();
     } else {
-      // Flat Master (Square)
+      // Flat Master (Square): Border around the entire perimeter of the square
       ctx.beginPath();
-      ctx.roundRect(halfStroke, halfStroke, size - ringWidth, size - ringWidth, Math.max(0, r - halfStroke));
-      ctx.stroke();
+      ctx.strokeRect(halfStroke, halfStroke, size - ringWidth, size - ringWidth);
     }
     ctx.restore();
   }
