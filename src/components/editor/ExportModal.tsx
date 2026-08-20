@@ -18,12 +18,13 @@ interface ExportModalProps {
   projectId: string;
   onClose: () => void;
   onOpenGifStudio?: () => void;
+  onOpenAssetsStudio?: () => void;
 }
 
 type ScaleOption = 1 | 2 | 3;
 type FormatOption = "png" | "jpg" | "webp";
 
-export function ExportModal({ projectId, onClose, onOpenGifStudio }: ExportModalProps) {
+export function ExportModal({ projectId, onClose, onOpenGifStudio, onOpenAssetsStudio }: ExportModalProps) {
   const { screenSets, activeScreenId } = useEditorStore();
   const { projects } = useProjectStore();
   const { projectLanguages, activeLang } = useLanguageStore();
@@ -534,33 +535,63 @@ export function ExportModal({ projectId, onClose, onOpenGifStudio }: ExportModal
           </label>
 
           {/* Video / Animated GIF Studio Shortcut */}
-          {onOpenGifStudio && (
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                onOpenGifStudio();
-              }}
-              className="w-full flex items-center justify-between p-3 rounded-xl border border-pink-500/30 bg-pink-500/5 hover:bg-pink-500/10 transition-all text-xs group cursor-pointer"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-pink-500/20 text-pink-500 flex items-center justify-center">
-                  <Film className="w-4 h-4" />
-                </div>
-                <div className="text-left">
-                  <div className="font-bold text-foreground group-hover:text-pink-500 transition-colors">
-                    Need a Video or Animated GIF Carousel?
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {onOpenAssetsStudio && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenAssetsStudio();
+                }}
+                className="flex items-center justify-between p-3 rounded-xl border border-purple-500/30 bg-purple-500/5 hover:bg-purple-500/10 transition-all text-xs group cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-500 flex items-center justify-center shrink-0">
+                    <Package className="w-4 h-4" />
                   </div>
-                  <div className="text-[11px] text-muted-foreground">
-                    Export TikTok, Reels, and social media animated slideshows
+                  <div className="text-left">
+                    <div className="font-bold text-foreground group-hover:text-purple-500 transition-colors">
+                      Icon &amp; Feature Graphic
+                    </div>
+                    <div className="text-[10px] text-muted-foreground">
+                      App icons, 1024×500 banner &amp; Xcode
+                    </div>
                   </div>
                 </div>
-              </div>
-              <span className="text-[11px] font-bold text-pink-500 px-2 py-0.5 rounded-md bg-pink-500/10 border border-pink-500/20">
-                Open Studio →
-              </span>
-            </button>
-          )}
+                <span className="text-[10px] font-bold text-purple-500 px-1.5 py-0.5 rounded-md bg-purple-500/10 border border-purple-500/20 shrink-0">
+                  Open →
+                </span>
+              </button>
+            )}
+
+            {onOpenGifStudio && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenGifStudio();
+                }}
+                className="flex items-center justify-between p-3 rounded-xl border border-pink-500/30 bg-pink-500/5 hover:bg-pink-500/10 transition-all text-xs group cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-pink-500/20 text-pink-500 flex items-center justify-center shrink-0">
+                    <Film className="w-4 h-4" />
+                  </div>
+                  <div className="text-left">
+                    <div className="font-bold text-foreground group-hover:text-pink-500 transition-colors">
+                      Video / GIF Studio
+                    </div>
+                    <div className="text-[10px] text-muted-foreground">
+                      TikTok &amp; social animated reels
+                    </div>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold text-pink-500 px-1.5 py-0.5 rounded-md bg-pink-500/10 border border-pink-500/20 shrink-0">
+                  Open →
+                </span>
+              </button>
+            )}
+          </div>
 
           {/* Export summary */}
           <div className="px-4 py-3 rounded-xl bg-secondary/50 border border-border/50 text-xs">

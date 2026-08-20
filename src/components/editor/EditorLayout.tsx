@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import {
   ArrowLeft, Undo2, Redo2, Download,
   Share2, ZoomIn, ZoomOut, Upload, Sparkles, Film,
-  Copy, Keyboard, Check, ChevronDown, Eye, Lock,
+  Copy, Keyboard, Check, ChevronDown, Eye, Lock, Palette,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { KeyboardShortcutsModal } from "@/components/editor/KeyboardShortcutsModal";
@@ -22,6 +22,7 @@ import { ScreenStrip } from "@/components/editor/ScreenStrip";
 import { ExportModal } from "@/components/editor/ExportModal";
 import { GifExportModal } from "@/components/editor/GifExportModal";
 import { AIAutoPilotModal } from "@/components/editor/AIAutoPilotModal";
+import { StoreAssetsStudioModal } from "@/components/editor/StoreAssetsStudioModal";
 import { CanvasBackgroundSelector } from "@/components/editor/CanvasBackgroundSelector";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -80,6 +81,7 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
   const screenSets = useEditorStore((s) => s.screenSets);
   const [showExport, setShowExport] = useState(false);
   const [showGif, setShowGif] = useState(false);
+  const [showAssetsStudio, setShowAssetsStudio] = useState(false);
   const [showStorePreview, setShowStorePreview] = useState(false);
   const [showAIAutoPilot, setShowAIAutoPilot] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -500,6 +502,17 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
             )}
           </button>
 
+          {/* Store Assets & Icon Studio */}
+          <button
+            type="button"
+            onClick={() => setShowAssetsStudio(true)}
+            className="h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs font-bold border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 transition-all cursor-pointer shadow-xs active:scale-95"
+            title="App Icon Creator & Google Play 1024x500 Feature Graphic Studio"
+          >
+            <Palette className="w-3.5 h-3.5 text-purple-500" />
+            <span className="hidden lg:inline">Assets Studio</span>
+          </button>
+
           {/* Video / Animated GIF Studio */}
           <button
             type="button"
@@ -543,6 +556,14 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
         </div>
       </div>
 
+      {/* Store Assets Studio Modal */}
+      {showAssetsStudio && (
+        <StoreAssetsStudioModal
+          open={showAssetsStudio}
+          onClose={() => setShowAssetsStudio(false)}
+        />
+      )}
+
       {/* AI Auto-Pilot Modal */}
       {showAIAutoPilot && (
         <AIAutoPilotModal
@@ -564,6 +585,7 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
           projectId={projectId}
           onClose={() => setShowExport(false)}
           onOpenGifStudio={() => setShowGif(true)}
+          onOpenAssetsStudio={() => setShowAssetsStudio(true)}
         />
       )}
       {showGif && (
