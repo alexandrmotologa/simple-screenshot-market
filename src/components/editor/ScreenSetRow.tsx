@@ -509,15 +509,15 @@ export function ScreenSetRow({ screenSet, isDragging = false }: ScreenSetRowProp
                     id={`add-screen-row-${screenSet.id}`}
                     onClick={handleAddScreen}
                     type="button"
-                    className="flex flex-col items-center justify-center gap-2.5 rounded-2xl border-2 border-dashed border-border/60 hover:border-primary/60 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all cursor-pointer group"
+                    className="flex flex-col items-center justify-center gap-2.5 rounded-2xl border-2 border-dashed border-slate-400/60 dark:border-slate-600/80 hover:border-primary dark:hover:border-primary bg-card/40 dark:bg-slate-900/40 hover:bg-primary/5 dark:hover:bg-primary/10 text-muted-foreground hover:text-primary transition-all duration-200 cursor-pointer group shadow-2xs hover:shadow-md hover:-translate-y-0.5"
                     style={{ width: cardW, height: cardH }}
                     title={`Add new screen (${screenSet.screens.length}/10)`}
                   >
-                    <div className="w-10 h-10 rounded-full bg-secondary/80 border border-border/40 flex items-center justify-center text-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors shadow-2xs">
-                      <Plus className="w-5 h-5" />
+                    <div className="w-11 h-11 rounded-2xl bg-secondary border border-border/80 group-hover:border-primary/50 flex items-center justify-center text-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all shadow-xs group-hover:scale-105">
+                      <Plus className="w-5 h-5 transition-transform group-hover:rotate-90 duration-300" />
                     </div>
                     <div className="flex flex-col items-center gap-0.5">
-                      <span className="text-xs font-semibold">Add Screen</span>
+                      <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">Add Screen</span>
                       <span className="text-[10px] text-muted-foreground font-mono font-medium">{screenSet.screens.length}/10</span>
                     </div>
                   </button>
@@ -526,7 +526,7 @@ export function ScreenSetRow({ screenSet, isDragging = false }: ScreenSetRowProp
                 <div className="shrink-0 flex flex-col gap-1.5 opacity-60">
                   <div className="h-5 pointer-events-none" />
                   <div
-                    className="flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-border/50 bg-secondary/15 text-muted-foreground select-none"
+                    className="flex flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed border-slate-300/60 dark:border-slate-700/60 bg-secondary/15 text-muted-foreground select-none"
                     style={{ width: cardW, height: cardH }}
                     title="Maximum 10 screenshots reached (Store Limit)"
                   >

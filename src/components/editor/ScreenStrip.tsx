@@ -250,13 +250,13 @@ export function ScreenStrip() {
                     title={`Add Screen (${ss.screens.length}/10)`}
                     onClick={() => addScreen(ss.id)}
                     className={cn(
-                      "rounded-xl border-2 border-dashed border-border/80 hover:border-primary/60 hover:bg-primary/5 flex items-center justify-center text-muted-foreground hover:text-primary transition-all shrink-0 cursor-pointer shadow-2xs",
-                      isCompact ? "h-6 px-2 text-xs" : "w-[42px] h-[82px] flex-col gap-1"
+                      "rounded-xl border-2 border-dashed border-slate-400/60 dark:border-slate-600/80 hover:border-primary dark:hover:border-primary bg-secondary/40 hover:bg-primary/10 flex items-center justify-center text-muted-foreground hover:text-primary transition-all shrink-0 cursor-pointer shadow-2xs group",
+                      isCompact ? "h-6 px-2 text-xs gap-1 font-semibold" : "w-[42px] h-[82px] flex-col gap-1"
                     )}
                   >
-                    <Plus className="w-3.5 h-3.5" />
+                    <Plus className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
                     {!isCompact && (
-                      <span className="text-[8px] font-mono font-semibold opacity-70">
+                      <span className="text-[8px] font-mono font-bold opacity-80 group-hover:text-primary">
                         {ss.screens.length}/10
                       </span>
                     )}
