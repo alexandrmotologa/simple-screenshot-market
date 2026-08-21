@@ -20,7 +20,7 @@
 
 ### 📱 Multi-Platform & Tablet Support
 - **Apple iOS & iPadOS:** iPhone 17 Pro, 16 Pro, 15 Pro, 14, and iPad Pro 13" (2048 × 2732 px).
-- **Google Play & Android Tablets:** Google Pixel 10 Pro, 9 Pro, Samsung Galaxy S25 Ultra, S24 Ultra, Samsung Galaxy Tab S9 Ultra, Galaxy Tab S7, and Galaxy Tab A.
+- **Google Play & Android Tablets:** Google Pixel 10/11 Pro XL, Google Pixel 10/11 Pro, Google Pixel 9 Pro, Samsung Galaxy S25 Ultra, S24 Ultra, Samsung Galaxy Tab S9 Ultra, Galaxy Tab S7, and Galaxy Tab A.
 - **Official Color Finishes:** Authentic HEX colors including *Natural Titanium*, *Desert Titanium*, *Obsidian*, *Porcelain*, *Titanium Gray*, *Ultramarine*, and more.
 - **Proportional Scaling:** Adding a phone or tablet set automatically adapts and scales existing project templates proportionally.
 
@@ -61,8 +61,10 @@
 
 ---
 
-### 💳 Subscriptions & Transparent Refund Policy
+### 💳 Subscriptions & Account Dashboard
+- **Dedicated Account & Billing Dashboard (`/account`):** View active subscriptions, renewal dates, detailed AI credit spending logs, and payment receipts.
 - **Merchant of Record:** Paddle.com processes all transactions securely worldwide with automatic invoice generation and VAT calculation.
+- **Paddle Buyer Hub:** Manage cards, update tax/VAT IDs, and download VAT invoice PDFs directly via `paddle.net`.
 - **14-Day Money-Back Guarantee:** Eligible for unutilized accounts within 14 calendar days of initial purchase.
 - **Digital Resource Consumption:** Once an account actively utilizes paid compute resources (consuming at least 1 AI generation or syncing projects to dedicated Firestore cloud storage), non-recoverable third-party server and API infrastructure costs are incurred on your behalf, and the service is considered fulfilled.
 - **1-Click Cancellation:** Cancel anytime with zero penalties; full access remains until the end of your billing cycle.
@@ -136,14 +138,20 @@ snapframe.store/
 │   └── mockups/               # SVG & PNG vector device frames
 ├── src/
 │   ├── app/                   # Next.js App Router (pages & API routes)
+│   │   ├── account/           # User Account, Subscriptions, AI Credit Ledger & Paddle Hub
 │   │   ├── api/
-│   │   │   └── ai/            # AI endpoints (vision-screens, copywriter, store-listing, translate, palette)
+│   │   │   ├── account/       # Billing & subscription management endpoint
+│   │   │   ├── ai/            # AI endpoints (vision-screens, copywriter, store-listing, translate, palette)
+│   │   │   └── webhooks/      # Paddle signature verification & subscription webhooks
 │   │   ├── editor/[projectId]/# Main interactive studio workspace
 │   │   ├── projects/          # Dedicated Projects dashboard, search, sort & management
+│   │   ├── pricing/           # Pricing plans & transparent comparison
+│   │   ├── refunds/           # 14-day refund policy & dispute guidelines
 │   │   ├── terms/             # Terms of Service & Commercial licensing
 │   │   ├── privacy/           # Privacy Policy & Data protection (GDPR/CCPA)
 │   │   └── page.tsx           # High-converting Landing page & Feature showcase
 │   ├── components/
+│   │   ├── auth/              # AuthModal, UserMenu & provider OAuth linking
 │   │   ├── editor/            # Canvas, toolbar, timeline, filmstrip, background selector & modals
 │   │   │   ├── panels/        # Sidebar panels (Text, Background, Platforms, Blocks, StoreListing, Localization, etc.)
 │   │   │   ├── AIAutoPilotModal.tsx

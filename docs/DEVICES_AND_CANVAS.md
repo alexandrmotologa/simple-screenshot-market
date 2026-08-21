@@ -21,8 +21,10 @@ SnapFrame provides pre-configured, pixel-perfect device models for both Apple an
 ### Android Devices (Phones & Tablets):
 | Device Model | Canvas Resolution | Aspect Ratio | Screen Type | Available Colors |
 | :--- | :--- | :--- | :--- | :--- |
-| **Google Pixel 10 Pro** | 1080 × 2424 px | 20:9 | Center Hole-Punch | Obsidian, Porcelain, Hazel, Rose Quartz |
-| **Google Pixel 9 Pro** | 1080 × 2424 px | 20:9 | Center Hole-Punch | Obsidian, Porcelain, Hazel, Rose Quartz |
+| **Google Pixel 10/11 Pro XL** | 1344 × 2992 px | 20:9 | Center Hole-Punch | Obsidian, Porcelain, Hazel, Rose Quartz |
+| **Google Pixel 10/11 Pro** | 1280 × 2856 px | 20:9 | Center Hole-Punch | Obsidian, Porcelain, Hazel, Rose Quartz |
+| **Google Pixel 9 Pro XL** | 1344 × 2992 px | 20:9 | Center Hole-Punch | Obsidian, Porcelain, Hazel, Rose Quartz |
+| **Google Pixel 9 Pro** | 1280 × 2856 px | 20:9 | Center Hole-Punch | Obsidian, Porcelain, Hazel, Rose Quartz |
 | **Samsung Galaxy S25 Ultra** | 1440 × 3120 px | 19.5:9 | Center Hole-Punch | Titanium Black, Gray, Silverblue, Whitesilver |
 | **Samsung Galaxy S24 Ultra** | 1440 × 3120 px | 19.5:9 | Center Hole-Punch | Titanium Black, Gray, Violet, Yellow |
 | **Samsung Galaxy Tab S9 Ultra** | 1848 × 2960 px | 16:10 | Mini Notch / Tablet | Graphite, Beige |

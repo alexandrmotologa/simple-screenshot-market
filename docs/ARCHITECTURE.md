@@ -66,10 +66,12 @@ SnapFrame uses three primary Zustand stores designed for reactivity, persistence
 - **Project Languages:** Array of configured languages enabled for multi-language export.
 - **Language Registry:** 20+ supported locales with native flag emojis and locale codes.
 
-### 4. `authStore.ts`
+### 4. `authStore.ts` & Billing Layer
 - **Authentication & User Profile:** Firebase Auth integration with Google, GitHub OAuth, and Anonymous Guest accounts.
 - **Account Linking & Cloud Sync:** Allows seamless migration from guest session to permanent account without losing active projects.
 - **Environment Isolation:** Tags registered users with current deployment environment (`production`, `develop`, `localhost`).
+- **Billing & Customer Portal (`/api/account/billing`):** Integrates Paddle Subscriptions with self-serve cancellation, Paddle Buyer Hub (`https://paddle.net`) invoice lookups, and real-time Firestore credit consumption audits (`users/{uid}/credit_logs`).
+- **Paddle Webhook Pipeline (`/api/webhooks/paddle`):** Cryptographically verifies Paddle webhook signatures and updates Firestore user subscription status (`active`, `canceled`, `past_due`) in real-time.
 
 ### 5. `canvasBackgrounds.ts`
 - **Workspace Canvas Patterns:** 8 theme-adaptive workspace background styles (Square Grid, Fine Dots, Bold Dots, Blueprint Grid, Technical Plus, Isometric 3D, Ambient Studio, Blank Solid).
