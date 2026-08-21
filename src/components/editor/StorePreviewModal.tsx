@@ -21,6 +21,8 @@ import { ScreenThumbnailCanvas } from "@/components/editor/ScreenThumbnailCanvas
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+import { isTabletDevice } from "@/lib/devices";
+
 interface StorePreviewModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -49,15 +51,23 @@ export function StorePreviewModal({ open, onOpenChange, appName: initialAppName 
   const scrollRef = useRef<HTMLDivElement>(null);
   const iconInputRef = useRef<HTMLInputElement>(null);
 
-  // Derive active set matching selected platform
-  const activeSet = screenSets.find((s) => s.store === platform) || screenSets[0];
+  const isTablet = deviceType === "tablet";
+
+  // Derive active set matching selected platform AND device form factor (phone vs tablet)
+  const activeSet =
+    screenSets.find(
+      (s) => s.store === platform && isTabletDevice(s.deviceId || s.mockup?.device) === isTablet
+    ) ||
+    screenSets.find((s) => s.store === platform) ||
+    screenSets[0];
   const screens = activeSet?.screens || [];
 
-  // Sync initial platform from active set
+  // Sync initial platform and deviceType from currently active set in editor
   useEffect(() => {
     const current = screenSets.find((s) => s.id === activeSetId);
     if (current) {
       setPlatform(current.store);
+      setDeviceType(isTabletDevice(current.deviceId || current.mockup?.device) ? "tablet" : "phone");
     }
   }, [activeSetId, screenSets, open]);
 
@@ -67,12 +77,6 @@ export function StorePreviewModal({ open, onOpenChange, appName: initialAppName 
     }
   }, [initialAppName]);
 
-  const scrollBy = (offset: number) => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: offset, behavior: "smooth" });
-    }
-  };
-
   const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -81,9 +85,14 @@ export function StorePreviewModal({ open, onOpenChange, appName: initialAppName 
     }
   };
 
-  const isTablet = deviceType === "tablet";
-  const cardWidth = isTablet ? 320 : 210;
-  const cardHeight = isTablet ? 426 : 455;
+  const baseCardHeight = isTablet ? 380 : 440;
+  const approxCardWidth = isTablet ? 285 : 203;
+
+  const scrollBy = (offset: number) => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: offset, behavior: "smooth" });
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -385,48 +394,66 @@ export function StorePreviewModal({ open, onOpenChange, appName: initialAppName 
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-bold tracking-tight">Screenshots</h3>
                       <span className="text-[10px] px-2 py-0.5 rounded-md bg-secondary/80 text-muted-foreground font-medium uppercase">
-                        {isTablet ? "iPad 12.9\"" : "iPhone"}
+                        {isTablet ? "iPad (13\" / 11\")" : "iPhone"}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => scrollBy(-cardWidth * 1.2)}
-                        className="w-7 h-7 rounded-full border border-border/40 flex items-center justify-center hover:bg-secondary transition-colors cursor-pointer"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => scrollBy(cardWidth * 1.2)}
-                        className="w-7 h-7 rounded-full border border-border/40 flex items-center justify-center hover:bg-secondary transition-colors cursor-pointer"
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div>
+                    {screens.length > 0 && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => scrollBy(-approxCardWidth * 1.2)}
+                          className="w-7 h-7 rounded-full border border-border/40 flex items-center justify-center hover:bg-secondary transition-colors cursor-pointer"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => scrollBy(approxCardWidth * 1.2)}
+                          className="w-7 h-7 rounded-full border border-border/40 flex items-center justify-center hover:bg-secondary transition-colors cursor-pointer"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Horizontal Scrollable Carousel */}
-                  <div
-                    ref={scrollRef}
-                    className="flex gap-3.5 overflow-x-auto pb-4 pt-1 scroll-smooth snap-x snap-mandatory scrollbar-thin"
-                  >
-                    {screens.map((screen) => (
-                      <div
-                        key={screen.id}
-                        className="snap-start shrink-0 rounded-2xl overflow-hidden border border-zinc-800/80 shadow-lg transition-transform hover:scale-[1.01] bg-card/60"
-                        style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
-                      >
-                        <ScreenThumbnailCanvas
-                          screen={screen}
-                          screenSet={activeSet}
-                          width={cardWidth}
-                          height={cardHeight}
-                          activeLang={selectedLang}
-                        />
-                      </div>
-                    ))}
-                  </div>
+                  {screens.length === 0 ? (
+                    <div className="p-8 rounded-2xl border border-dashed border-border/70 flex flex-col items-center justify-center text-center text-muted-foreground">
+                      <Tablet className="w-8 h-8 mb-2 opacity-50 text-sky-400" />
+                      <p className="text-xs font-semibold">No {isTablet ? "iPad" : "iPhone"} screens in project</p>
+                      <p className="text-[10px] mt-0.5">Add an {isTablet ? "iPad" : "iPhone"} set in the editor to preview it here.</p>
+                    </div>
+                  ) : (
+                    <div
+                      ref={scrollRef}
+                      className="flex gap-3.5 overflow-x-auto pb-4 pt-1 scroll-smooth snap-x snap-mandatory scrollbar-thin"
+                    >
+                      {screens.map((screen) => {
+                        const sW = screen.width || (isTablet ? 2048 : 1290);
+                        const sH = screen.height || (isTablet ? 2732 : 2796);
+                        const ratio = sH / sW;
+                        const cardH = baseCardHeight;
+                        const cardW = Math.round(baseCardHeight / ratio);
+
+                        return (
+                          <div
+                            key={screen.id}
+                            className="snap-start shrink-0 rounded-2xl overflow-hidden border border-zinc-800/80 shadow-lg transition-transform hover:scale-[1.01] bg-card/60"
+                            style={{ width: `${cardW}px`, height: `${cardH}px` }}
+                          >
+                            <ScreenThumbnailCanvas
+                              screen={screen}
+                              screenSet={activeSet}
+                              width={cardW}
+                              height={cardH}
+                              activeLang={selectedLang}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 {/* What's New Section */}
@@ -517,46 +544,69 @@ export function StorePreviewModal({ open, onOpenChange, appName: initialAppName 
                 {/* Screenshots Carousel */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold">{isTablet ? "Tablet" : "Phone"}</span>
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => scrollBy(-cardWidth * 1.2)}
-                        className="w-7 h-7 rounded-full border border-border/40 flex items-center justify-center hover:bg-secondary transition-colors cursor-pointer"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => scrollBy(cardWidth * 1.2)}
-                        className="w-7 h-7 rounded-full border border-border/40 flex items-center justify-center hover:bg-secondary transition-colors cursor-pointer"
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold">{isTablet ? "Tablet (10-inch)" : "Phone"}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-secondary/80 text-muted-foreground font-medium uppercase">
+                        {isTablet ? "Android Tablet" : "Google Play Phone"}
+                      </span>
                     </div>
+                    {screens.length > 0 && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => scrollBy(-approxCardWidth * 1.2)}
+                          className="w-7 h-7 rounded-full border border-border/40 flex items-center justify-center hover:bg-secondary transition-colors cursor-pointer"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => scrollBy(approxCardWidth * 1.2)}
+                          className="w-7 h-7 rounded-full border border-border/40 flex items-center justify-center hover:bg-secondary transition-colors cursor-pointer"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Horizontal Scrollable Carousel */}
-                  <div
-                    ref={scrollRef}
-                    className="flex gap-3.5 overflow-x-auto pb-4 pt-1 scroll-smooth snap-x snap-mandatory scrollbar-thin"
-                  >
-                    {screens.map((screen) => (
-                      <div
-                        key={screen.id}
-                        className="snap-start shrink-0 rounded-2xl overflow-hidden border border-zinc-800/80 shadow-lg transition-transform hover:scale-[1.01] bg-card/60"
-                        style={{ width: `${cardWidth}px`, height: `${cardHeight}px` }}
-                      >
-                        <ScreenThumbnailCanvas
-                          screen={screen}
-                          screenSet={activeSet}
-                          width={cardWidth}
-                          height={cardHeight}
-                          activeLang={selectedLang}
-                        />
-                      </div>
-                    ))}
-                  </div>
+                  {screens.length === 0 ? (
+                    <div className="p-8 rounded-2xl border border-dashed border-border/70 flex flex-col items-center justify-center text-center text-muted-foreground">
+                      <Tablet className="w-8 h-8 mb-2 opacity-50 text-emerald-400" />
+                      <p className="text-xs font-semibold">No {isTablet ? "Tablet" : "Phone"} screens in project</p>
+                      <p className="text-[10px] mt-0.5">Add an {isTablet ? "Android Tablet" : "Android Phone"} set in the editor to preview it here.</p>
+                    </div>
+                  ) : (
+                    <div
+                      ref={scrollRef}
+                      className="flex gap-3.5 overflow-x-auto pb-4 pt-1 scroll-smooth snap-x snap-mandatory scrollbar-thin"
+                    >
+                      {screens.map((screen) => {
+                        const sW = screen.width || (isTablet ? 1848 : 1344);
+                        const sH = screen.height || (isTablet ? 2960 : 2992);
+                        const ratio = sH / sW;
+                        const cardH = baseCardHeight;
+                        const cardW = Math.round(baseCardHeight / ratio);
+
+                        return (
+                          <div
+                            key={screen.id}
+                            className="snap-start shrink-0 rounded-2xl overflow-hidden border border-zinc-800/80 shadow-lg transition-transform hover:scale-[1.01] bg-card/60"
+                            style={{ width: `${cardW}px`, height: `${cardH}px` }}
+                          >
+                            <ScreenThumbnailCanvas
+                              screen={screen}
+                              screenSet={activeSet}
+                              width={cardW}
+                              height={cardH}
+                              activeLang={selectedLang}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 {/* About this app */}
