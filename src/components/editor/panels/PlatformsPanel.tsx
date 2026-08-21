@@ -248,6 +248,10 @@ export function PlatformsPanel() {
                 ? isTablet ? "App Store (iPad)" : "App Store (iPhone)"
                 : isTablet ? "Google Play (Tablet)" : "Google Play (Phone)";
 
+              const activeFrameStyle = getFrameStyle(ss);
+              const currentShadowPresetId = ss.mockup?.shadowPreset || (ss.mockup?.showShadow ? "soft-ambient" : "none");
+              const currentShadow = SHADOW_PRESETS_LIST.find((s) => s.id === currentShadowPresetId) || SHADOW_PRESETS_LIST[0];
+
               const isExpanded = expandedSets[ss.id] ?? false;
 
               return (
@@ -503,12 +507,12 @@ export function PlatformsPanel() {
                           </span>
                           <DropdownMenu>
                             <DropdownMenuTrigger className="flex items-center gap-1 px-2 py-0.5 rounded-lg border border-border/60 bg-secondary/60 hover:bg-secondary text-[11px] font-medium text-foreground transition-colors outline-none cursor-pointer">
-                              <span className="max-w-28 truncate">{getFrameStyle(ss)}</span>
+                              <span className="max-w-28 truncate">{FRAME_STYLES_LIST.find((f) => f.id === activeFrameStyle)?.label || activeFrameStyle}</span>
                               <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-52">
                               <DropdownMenuGroup>
-                                <DropdownMenuLabel className="text-xs">Frame Style</DropdownMenuLabel>
+                                <DropdownMenuLabel className="text-xs font-bold">Frame Style</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 {FRAME_STYLES_LIST.map((item) => (
                                   <DropdownMenuItem
@@ -520,7 +524,7 @@ export function PlatformsPanel() {
                                       <span className="font-medium truncate">{item.label}</span>
                                       <span className="text-[9.5px] text-muted-foreground font-normal truncate">{item.desc}</span>
                                     </div>
-                                    {getFrameStyle(ss) === item.label && <span className="text-primary text-xs font-bold ml-2">✓</span>}
+                                    {activeFrameStyle === item.id && <span className="text-primary text-xs font-bold ml-2">✓</span>}
                                   </DropdownMenuItem>
                                 ))}
                               </DropdownMenuGroup>
@@ -536,7 +540,7 @@ export function PlatformsPanel() {
                           </span>
                           <DropdownMenu>
                             <DropdownMenuTrigger className="flex items-center gap-1 px-2 py-0.5 rounded-lg border border-border/60 bg-secondary/60 hover:bg-secondary text-[11px] font-medium text-foreground transition-colors outline-none cursor-pointer">
-                              <span className="max-w-28 truncate">{getShadowStyleLabel(ss)}</span>
+                              <span className="max-w-28 truncate">{currentShadow.label}</span>
                               <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56">
@@ -547,13 +551,20 @@ export function PlatformsPanel() {
                                   <DropdownMenuItem
                                     key={item.id}
                                     className="text-xs cursor-pointer flex items-center justify-between py-1.5"
-                                    onClick={() => handleShadowChange(ss.id, item.id)}
+                                    onClick={() => {
+                                      if (item.id === "none") {
+                                        updateMockup(ss.id, { showShadow: false, shadowPreset: "none" });
+                                      } else {
+                                        updateMockup(ss.id, { showShadow: true, shadowPreset: item.id as any });
+                                      }
+                                      useEditorStore.getState().recordHistory();
+                                    }}
                                   >
                                     <div className="flex flex-col min-w-0">
                                       <span className="font-medium">{item.label}</span>
                                       <span className="text-[9.5px] text-muted-foreground">{item.desc}</span>
                                     </div>
-                                    {getShadowStyleLabel(ss) === item.label && (
+                                    {currentShadowPresetId === item.id && (
                                       <span className="text-primary text-xs font-bold ml-2">✓</span>
                                     )}
                                   </DropdownMenuItem>
