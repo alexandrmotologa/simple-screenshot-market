@@ -22,11 +22,6 @@ import { BrandHeroIcon } from "@/components/ui/BrandHeroIcon";
 export default function LandingPage() {
   const router = useRouter();
   const { user, isInitialized, setAuthModalOpen } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

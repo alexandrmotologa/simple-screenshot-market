@@ -18,26 +18,32 @@ SnapFrame is optimized for zero-config deployment on Vercel.
 In the **Environment Variables** section of the Vercel project setup (or in **Project Settings → Environment Variables**), add your configuration:
 
 ```env
-# AI Superpowers (At least 1 required for AI features)
+# AI Superpowers (Gemini & Groq provide 100% permanent free tiers)
 GEMINI_API_KEY=your_gemini_api_key_here
-# or
-OPENAI_API_KEY=your_openai_api_key_here
+GROQ_API_KEY=your_groq_api_key_here
+MISTRAL_API_KEY=your_mistral_api_key_here
+XAI_API_KEY=your_xai_grok_key_here          # Optional (Grok 3 / Grok 2 Vision)
+OPENAI_API_KEY=your_openai_api_key_here     # Optional (GPT-4o-mini)
 
-# Firebase Client Configuration (Optional)
-FIREBASE_API_KEY=AIzaSy...
-FIREBASE_AUTH_DOMAIN=your-app.firebaseapp.com
-FIREBASE_PROJECT_ID=your-app-id
-FIREBASE_STORAGE_BUCKET=your-app.firebasestorage.app
-FIREBASE_MESSAGING_SENDER_ID=1234567890
-FIREBASE_APP_ID=1:1234567890:web:...
-FIREBASE_MEASUREMENT_ID=G-...
+# Firebase Client Configuration (NEXT_PUBLIC_ for browser SDK)
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSy...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-app.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-app-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-app.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=1234567890
+NEXT_PUBLIC_FIREBASE_APP_ID=1:1234567890:web:...
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-...
 
-# Firebase Admin (Optional, for Server-side Cloud Storage)
+# Firebase Admin Service Account (Server-side token verification & cloud sync)
 FIREBASE_CLIENT_EMAIL=firebase-adminsdk-...@your-app-id.iam.gserviceaccount.com
 FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 
-# Figma Import (Optional)
-FIGMA_TOKEN=figd_...
+# Paddle Billing Configuration (v2)
+NEXT_PUBLIC_PADDLE_ENV=sandbox               # "sandbox" or "production"
+NEXT_PUBLIC_PADDLE_CLIENT_TOKEN=test_...
+NEXT_PUBLIC_PADDLE_PRICE_MONTHLY=pri_...
+NEXT_PUBLIC_PADDLE_PRICE_ANNUAL=pri_...
+PADDLE_WEBHOOK_SECRET_KEY=ntfset_...
 ```
 
 > **Note on `FIREBASE_PRIVATE_KEY`:** You can paste the multi-line private key directly into Vercel's environment variable value field.
@@ -49,16 +55,24 @@ Click **"Deploy"**. Vercel will build and launch your production deployment in u
 
 ## 2. Setting Up Free API Keys for AI
 
-### Google Gemini (Recommended)
+### Google Gemini (Recommended - Text & Vision)
 1. Go to [Google AI Studio](https://aistudio.google.com/).
 2. Click **"Get API Key"**.
 3. Create a new key and paste it as `GEMINI_API_KEY`.
-4. Provides a generous Free Tier supporting Vision analysis, copy generation, and multi-language translation.
+4. Free Tier supports 1,500 requests/day, multimodal screenshot vision, copy generation, and multi-language translation.
 
-### OpenAI
-1. Go to [platform.openai.com](https://platform.openai.com/api-keys).
-2. Generate a new secret key and add it as `OPENAI_API_KEY`.
-3. Used with `gpt-4o-mini` for ultra-low token cost and rapid response times.
+### Groq Cloud (Recommended - Ultra-fast Text & Vision)
+1. Go to [Groq Console](https://console.groq.com/).
+2. Generate a free API key and set it as `GROQ_API_KEY`.
+3. Powers high-speed copywriting and fallback Vision analysis.
+
+### Mistral AI (Localization & Vision)
+1. Go to [Mistral Console](https://console.mistral.ai/).
+2. Generate an API key and add it as `MISTRAL_API_KEY`.
+
+### xAI Grok (Optional)
+1. Go to [xAI Console](https://console.x.ai/).
+2. Add your API key as `XAI_API_KEY`.
 
 ---
 

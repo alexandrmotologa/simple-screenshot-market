@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, ChevronDown, Check, Copy, Loader2, Wand2, RefreshCw, Lock } from "lucide-react";
+import { Sparkles, ChevronDown, Check, Copy, Loader2, Lock } from "lucide-react";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { useProjectStore } from "@/lib/store/projectStore";
 import { useAuthStore } from "@/lib/store/authStore";
@@ -25,140 +25,49 @@ import { AppleStoreIcon, GooglePlayIcon, APP_STORE_LABEL, GOOGLE_PLAY_LABEL } fr
 import { toast } from "@/lib/store/toastStore";
 import { TextLayer } from "@/lib/types";
 
+interface AppStoreListingData {
+  name: string;
+  subtitle: string;
+  description: string;
+  promotionalText: string;
+  whatsNew: string;
+  keywords: string;
+}
+
+interface PlayStoreListingData {
+  title: string;
+  shortDescription: string;
+  fullDescription: string;
+  whatsNew: string;
+}
+
 export function StoreListingPanel() {
   const { projectId } = useParams<{ projectId: string }>();
   const getProject = useProjectStore((s) => s.getProject);
-  const updateProject = useProjectStore((s) => s.updateProject);
-  
   const project = getProject(projectId);
   const screenSets = useEditorStore((s) => s.screenSets);
   const hasIOS = screenSets.some((ss) => ss.store === "ios");
   const hasAndroid = screenSets.some((ss) => ss.store === "android");
   const { activeLang, projectLanguages, setActiveLang } = useLanguageStore();
   const currentLang = getLang(activeLang);
-  const { user, isPro, aiCredits, consumeAiCredit, setAuthModalOpen } = useAuthStore();
+  const { user, setAuthModalOpen } = useAuthStore();
   const isGuest = Boolean(!user || user.isAnonymous);
 
-  const [isGenerating, setIsGenerating] = useState(false);
+  const listingForLang = project?.storeListing?.[activeLang];
+  const initialAppStore: AppStoreListingData = {
+    name: listingForLang?.ios?.name || "",
+    subtitle: listingForLang?.ios?.subtitle || "",
+    description: listingForLang?.ios?.description || "",
+    promotionalText: listingForLang?.ios?.promotionalText || "",
+    whatsNew: listingForLang?.ios?.whatsNew || "",
+    keywords: (listingForLang?.ios as { keywords?: string })?.keywords || "",
+  };
 
-  const [appStoreData, setAppStoreData] = useState({
-    name: project?.storeListing?.[activeLang]?.ios?.name || "",
-    subtitle: project?.storeListing?.[activeLang]?.ios?.subtitle || "",
-    description: project?.storeListing?.[activeLang]?.ios?.description || "",
-    promotionalText: project?.storeListing?.[activeLang]?.ios?.promotionalText || "",
-    whatsNew: project?.storeListing?.[activeLang]?.ios?.whatsNew || "",
-    keywords: (project?.storeListing?.[activeLang]?.ios as any)?.keywords || "",
-  });
-
-  const [playStoreData, setPlayStoreData] = useState({
-    title: project?.storeListing?.[activeLang]?.android?.title || "",
-    shortDescription: project?.storeListing?.[activeLang]?.android?.shortDescription || "",
-    fullDescription: project?.storeListing?.[activeLang]?.android?.fullDescription || "",
-    whatsNew: project?.storeListing?.[activeLang]?.android?.whatsNew || "",
-  });
-
-  // Sync state if project or active language changes
-  useEffect(() => {
-    const listingForLang = project?.storeListing?.[activeLang];
-    setAppStoreData({
-      name: listingForLang?.ios?.name || "",
-      subtitle: listingForLang?.ios?.subtitle || "",
-      description: listingForLang?.ios?.description || "",
-      promotionalText: listingForLang?.ios?.promotionalText || "",
-      whatsNew: listingForLang?.ios?.whatsNew || "",
-      keywords: (listingForLang?.ios as any)?.keywords || "",
-    });
-    setPlayStoreData({
-      title: listingForLang?.android?.title || "",
-      shortDescription: listingForLang?.android?.shortDescription || "",
-      fullDescription: listingForLang?.android?.fullDescription || "",
-      whatsNew: listingForLang?.android?.whatsNew || "",
-    });
-  }, [project?.storeListing, activeLang]);
-
-  // Debounced auto-save to projectStore
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      updateProject(projectId, {
-        storeListing: {
-          ...(project?.storeListing || {}),
-          [activeLang]: {
-            ios: appStoreData,
-            android: playStoreData,
-          },
-        },
-      });
-    }, 400);
-    return () => clearTimeout(timeout);
-  }, [appStoreData, playStoreData, projectId, updateProject, activeLang]);
-
-  // ── AI Generate Complete Store Listing ─────────────────────────────────────
-  const handleAIGenerateListing = async () => {
-    if (isGuest) {
-      setAuthModalOpen(true);
-      toast.info("AI Store Listing generation is for registered accounts. Sign in with Google or GitHub (100% Free) to unlock.");
-      return;
-    }
-
-    const creditRes = await consumeAiCredit("ai-store-listing");
-    if (!creditRes.allowed) return;
-
-    try {
-      setIsGenerating(true);
-      
-      // Extract headlines from active screen set
-      const activeSet = screenSets[0];
-      const screenHeadlines: string[] = [];
-      if (activeSet) {
-        activeSet.screens.forEach((sc) => {
-          const textLayers = sc.layers.filter((l): l is TextLayer => l.type === "text");
-          if (textLayers[0]?.content) screenHeadlines.push(textLayers[0].content);
-        });
-      }
-
-      const res = await fetch("/api/ai/store-listing", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          appName: project?.name || "Mobile App",
-          category: "Productivity",
-          targetLang: activeLang || "en",
-          screenHeadlines,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        throw new Error(data.error || "Failed to generate listing");
-      }
-
-      if (data.appStore) {
-        setAppStoreData((prev) => ({
-          ...prev,
-          name: data.appStore.name || prev.name,
-          subtitle: data.appStore.subtitle || prev.subtitle,
-          description: data.appStore.description || prev.description,
-          promotionalText: data.appStore.promotionalText || prev.promotionalText,
-          keywords: data.appStore.keywords || prev.keywords,
-        }));
-      }
-
-      if (data.googlePlay) {
-        setPlayStoreData((prev) => ({
-          ...prev,
-          title: data.googlePlay.title || prev.title,
-          shortDescription: data.googlePlay.shortDescription || prev.shortDescription,
-          fullDescription: data.googlePlay.fullDescription || prev.fullDescription,
-        }));
-      }
-
-      toast.success("AI generated App Store & Google Play metadata!");
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err.message || "Failed to generate listing with AI");
-    } finally {
-      setIsGenerating(false);
-    }
+  const initialPlayStore: PlayStoreListingData = {
+    title: listingForLang?.android?.title || "",
+    shortDescription: listingForLang?.android?.shortDescription || "",
+    fullDescription: listingForLang?.android?.fullDescription || "",
+    whatsNew: listingForLang?.android?.whatsNew || "",
   };
 
   return (
@@ -196,153 +105,293 @@ export function StoreListingPanel() {
         </span>
       </div>
 
-      <ScrollArea className="flex-1 min-h-0">
-        <div className="p-3 space-y-3">
-          {/* Quick AI Trigger Banner */}
-          <button
-            type="button"
-            onClick={handleAIGenerateListing}
-            disabled={isGenerating}
-            className={`w-full flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-[0.98] ${
-              isGuest
-                ? "bg-secondary/60 text-muted-foreground border-amber-500/30 hover:border-amber-500/60"
-                : "bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-pink-500/15 border-indigo-500/30 hover:border-indigo-500/50 text-indigo-400 hover:text-indigo-300"
-            }`}
-            title={isGuest ? "AI Store Listing (Sign in to unlock)" : "AI Auto-Generate Store Listing"}
-          >
-            {isGuest ? (
-              <>
-                <Lock className="w-3.5 h-3.5 text-amber-400" />
-                <span className="text-amber-400">AI Store Listing</span>
-                <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-semibold">Registered only</span>
-              </>
-            ) : isGenerating ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
-                <span>Generating ASO metadata...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4 text-indigo-400" />
-                <span>AI Auto-Generate Store Listing</span>
-              </>
-            )}
-          </button>
-
-          <Accordion className="w-full space-y-3" defaultValue={["appstore", "playstore"]}>
-            {hasIOS && (
-              <AccordionItem value="appstore" className="border border-border/40 bg-secondary/10 rounded-xl overflow-hidden px-3">
-                <AccordionTrigger className="hover:no-underline py-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="bg-blue-500/15 text-blue-400 p-1.5 rounded-lg border border-blue-500/30 flex items-center justify-center">
-                      <AppleStoreIcon className="w-3.5 h-3.5" />
-                    </div>
-                    <span className="font-semibold text-xs text-foreground">{APP_STORE_LABEL}</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="pt-1 pb-3 space-y-3">
-                  <Field
-                    label="App Name"
-                    maxLength={30}
-                    value={appStoreData.name}
-                    onChange={(v) => setAppStoreData({ ...appStoreData, name: v })}
-                    placeholder="Name (Max 30 chars)"
-                  />
-                  <Field
-                    label="Subtitle"
-                    maxLength={30}
-                    value={appStoreData.subtitle}
-                    onChange={(v) => setAppStoreData({ ...appStoreData, subtitle: v })}
-                    placeholder="Subtitle (Max 30 chars)"
-                  />
-                  <Field
-                    label="Keywords Bank"
-                    maxLength={100}
-                    value={appStoreData.keywords}
-                    onChange={(v) => setAppStoreData({ ...appStoreData, keywords: v })}
-                    placeholder="photos,mockup,editor,design,studio (Max 100 chars)"
-                  />
-                  <Field
-                    label="Promotional Text"
-                    maxLength={170}
-                    value={appStoreData.promotionalText}
-                    onChange={(v) => setAppStoreData({ ...appStoreData, promotionalText: v })}
-                    placeholder="Special announcement or offer (Max 170 chars)"
-                  />
-                  <Field
-                    label="Description"
-                    maxLength={4000}
-                    multiline
-                    value={appStoreData.description}
-                    onChange={(v) => setAppStoreData({ ...appStoreData, description: v })}
-                    placeholder="Full app description formatted for App Store"
-                    minHeight="120px"
-                  />
-                  <Field
-                    label="What's New"
-                    maxLength={4000}
-                    multiline
-                    value={appStoreData.whatsNew}
-                    onChange={(v) => setAppStoreData({ ...appStoreData, whatsNew: v })}
-                    placeholder="Release notes"
-                    minHeight="80px"
-                  />
-                </AccordionContent>
-              </AccordionItem>
-            )}
-
-            {hasAndroid && (
-              <AccordionItem value="playstore" className="border border-border/40 bg-secondary/10 rounded-xl overflow-hidden px-3">
-                <AccordionTrigger className="hover:no-underline py-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="bg-emerald-500/15 text-emerald-400 p-1.5 rounded-lg border border-emerald-500/30 flex items-center justify-center">
-                      <GooglePlayIcon className="w-3.5 h-3.5" />
-                    </div>
-                    <span className="font-semibold text-xs text-foreground">{GOOGLE_PLAY_LABEL}</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="pt-1 pb-3 space-y-3">
-                  <Field
-                    label="App Title"
-                    maxLength={30}
-                    value={playStoreData.title}
-                    onChange={(v) => setPlayStoreData({ ...playStoreData, title: v })}
-                    placeholder="Title (Max 30 chars)"
-                  />
-                  <Field
-                    label="Short Description"
-                    maxLength={80}
-                    multiline
-                    value={playStoreData.shortDescription}
-                    onChange={(v) => setPlayStoreData({ ...playStoreData, shortDescription: v })}
-                    placeholder="Brief summary (Max 80 chars)"
-                    minHeight="60px"
-                  />
-                  <Field
-                    label="Full Description"
-                    maxLength={4000}
-                    multiline
-                    value={playStoreData.fullDescription}
-                    onChange={(v) => setPlayStoreData({ ...playStoreData, fullDescription: v })}
-                    placeholder="Full description"
-                    minHeight="140px"
-                  />
-                  <Field
-                    label="What's New"
-                    maxLength={500}
-                    multiline
-                    value={playStoreData.whatsNew}
-                    onChange={(v) => setPlayStoreData({ ...playStoreData, whatsNew: v })}
-                    placeholder="Release notes"
-                    minHeight="80px"
-                  />
-                </AccordionContent>
-              </AccordionItem>
-            )}
-          </Accordion>
-        </div>
-      </ScrollArea>
+      <StoreListingContent
+        key={`${projectId}-${activeLang}`}
+        projectId={projectId}
+        activeLang={activeLang}
+        hasIOS={hasIOS}
+        hasAndroid={hasAndroid}
+        isGuest={isGuest}
+        initialAppStore={initialAppStore}
+        initialPlayStore={initialPlayStore}
+        projectName={project?.name || "Mobile App"}
+        onOpenAuth={() => setAuthModalOpen(true)}
+      />
     </div>
+  );
+}
+
+interface StoreListingContentProps {
+  projectId: string;
+  activeLang: string;
+  hasIOS: boolean;
+  hasAndroid: boolean;
+  isGuest: boolean;
+  initialAppStore: AppStoreListingData;
+  initialPlayStore: PlayStoreListingData;
+  projectName: string;
+  onOpenAuth: () => void;
+}
+
+function StoreListingContent({
+  projectId,
+  activeLang,
+  hasIOS,
+  hasAndroid,
+  isGuest,
+  initialAppStore,
+  initialPlayStore,
+  projectName,
+  onOpenAuth,
+}: StoreListingContentProps) {
+  const updateProject = useProjectStore((s) => s.updateProject);
+  const getProject = useProjectStore((s) => s.getProject);
+  const screenSets = useEditorStore((s) => s.screenSets);
+  const { user, consumeAiCredit } = useAuthStore();
+
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [appStoreData, setAppStoreData] = useState<AppStoreListingData>(initialAppStore);
+  const [playStoreData, setPlayStoreData] = useState<PlayStoreListingData>(initialPlayStore);
+
+  // Debounced auto-save to projectStore
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const currentProj = getProject(projectId);
+      updateProject(projectId, {
+        storeListing: {
+          ...(currentProj?.storeListing || {}),
+          [activeLang]: {
+            ios: appStoreData,
+            android: playStoreData,
+          },
+        },
+      });
+    }, 400);
+    return () => clearTimeout(timeout);
+  }, [appStoreData, playStoreData, projectId, updateProject, getProject, activeLang]);
+
+  // ── AI Generate Complete Store Listing ─────────────────────────────────────
+  const handleAIGenerateListing = async () => {
+    if (isGuest) {
+      onOpenAuth();
+      toast.info("AI Store Listing generation is for registered accounts. Sign in with Google or GitHub (100% Free) to unlock.");
+      return;
+    }
+
+    const creditRes = await consumeAiCredit("ai-store-listing");
+    if (!creditRes.allowed) return;
+
+    try {
+      setIsGenerating(true);
+
+      const activeSet = screenSets[0];
+      const screenHeadlines: string[] = [];
+      if (activeSet) {
+        activeSet.screens.forEach((sc) => {
+          const textLayers = sc.layers.filter((l): l is TextLayer => l.type === "text");
+          if (textLayers[0]?.content) screenHeadlines.push(textLayers[0].content);
+        });
+      }
+
+      const idToken = user ? await user.getIdToken().catch(() => "") : "";
+      const res = await fetch("/api/ai/store-listing", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+        },
+        body: JSON.stringify({
+          appName: projectName,
+          category: "Productivity",
+          targetLang: activeLang || "en",
+          screenHeadlines,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "Failed to generate listing");
+      }
+
+      if (data.listing?.ios) {
+        setAppStoreData((prev) => ({
+          ...prev,
+          name: data.listing.ios.name || prev.name,
+          subtitle: data.listing.ios.subtitle || prev.subtitle,
+          description: data.listing.ios.description || prev.description,
+          promotionalText: data.listing.ios.promotionalText || prev.promotionalText,
+          keywords: data.listing.ios.keywords || prev.keywords,
+          whatsNew: data.listing.ios.whatsNew || prev.whatsNew,
+        }));
+      }
+
+      if (data.listing?.android) {
+        setPlayStoreData((prev) => ({
+          ...prev,
+          title: data.listing.android.title || prev.title,
+          shortDescription: data.listing.android.shortDescription || prev.shortDescription,
+          fullDescription: data.listing.android.fullDescription || prev.fullDescription,
+          whatsNew: data.listing.android.whatsNew || prev.whatsNew,
+        }));
+      }
+
+      toast.success("AI generated App Store & Google Play metadata!");
+    } catch (err: unknown) {
+      const error = err as Error;
+      console.error(error);
+      toast.error(error.message || "Failed to generate listing with AI");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  return (
+    <ScrollArea className="flex-1 min-h-0">
+      <div className="p-3 space-y-3">
+        {/* Quick AI Trigger Banner */}
+        <button
+          type="button"
+          onClick={handleAIGenerateListing}
+          disabled={isGenerating}
+          className={`w-full flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-[0.98] ${
+            isGuest
+              ? "bg-secondary/60 text-muted-foreground border-amber-500/30 hover:border-amber-500/60"
+              : "bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-pink-500/15 border-indigo-500/30 hover:border-indigo-500/50 text-indigo-400 hover:text-indigo-300"
+          }`}
+          title={isGuest ? "AI Store Listing (Sign in to unlock)" : "AI Auto-Generate Store Listing"}
+        >
+          {isGuest ? (
+            <>
+              <Lock className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-amber-400">AI Store Listing</span>
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-semibold">Registered only</span>
+            </>
+          ) : isGenerating ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
+              <span>Generating ASO metadata...</span>
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4 text-indigo-400" />
+              <span>AI Auto-Generate Store Listing</span>
+            </>
+          )}
+        </button>
+
+        <Accordion className="w-full space-y-3" defaultValue={["appstore", "playstore"]}>
+          {hasIOS && (
+            <AccordionItem value="appstore" className="border border-border/40 bg-secondary/10 rounded-xl overflow-hidden px-3">
+              <AccordionTrigger className="hover:no-underline py-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="bg-blue-500/15 text-blue-400 p-1.5 rounded-lg border border-blue-500/30 flex items-center justify-center">
+                    <AppleStoreIcon className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="font-semibold text-xs text-foreground">{APP_STORE_LABEL}</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-1 pb-3 space-y-3">
+                <Field
+                  label="App Name"
+                  maxLength={30}
+                  value={appStoreData.name}
+                  onChange={(v) => setAppStoreData({ ...appStoreData, name: v })}
+                  placeholder="Name (Max 30 chars)"
+                />
+                <Field
+                  label="Subtitle"
+                  maxLength={30}
+                  value={appStoreData.subtitle}
+                  onChange={(v) => setAppStoreData({ ...appStoreData, subtitle: v })}
+                  placeholder="Subtitle (Max 30 chars)"
+                />
+                <Field
+                  label="Keywords Bank"
+                  maxLength={100}
+                  value={appStoreData.keywords}
+                  onChange={(v) => setAppStoreData({ ...appStoreData, keywords: v })}
+                  placeholder="photos,mockup,editor,design,studio (Max 100 chars)"
+                />
+                <Field
+                  label="Promotional Text"
+                  maxLength={170}
+                  value={appStoreData.promotionalText}
+                  onChange={(v) => setAppStoreData({ ...appStoreData, promotionalText: v })}
+                  placeholder="Special announcement or offer (Max 170 chars)"
+                />
+                <Field
+                  label="Description"
+                  maxLength={4000}
+                  multiline
+                  value={appStoreData.description}
+                  onChange={(v) => setAppStoreData({ ...appStoreData, description: v })}
+                  placeholder="Full app description formatted for App Store"
+                  minHeight="120px"
+                />
+                <Field
+                  label="What's New"
+                  maxLength={4000}
+                  multiline
+                  value={appStoreData.whatsNew}
+                  onChange={(v) => setAppStoreData({ ...appStoreData, whatsNew: v })}
+                  placeholder="Release notes"
+                  minHeight="80px"
+                />
+              </AccordionContent>
+            </AccordionItem>
+          )}
+
+          {hasAndroid && (
+            <AccordionItem value="playstore" className="border border-border/40 bg-secondary/10 rounded-xl overflow-hidden px-3">
+              <AccordionTrigger className="hover:no-underline py-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="bg-emerald-500/15 text-emerald-400 p-1.5 rounded-lg border border-emerald-500/30 flex items-center justify-center">
+                    <GooglePlayIcon className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="font-semibold text-xs text-foreground">{GOOGLE_PLAY_LABEL}</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-1 pb-3 space-y-3">
+                <Field
+                  label="App Title"
+                  maxLength={30}
+                  value={playStoreData.title}
+                  onChange={(v) => setPlayStoreData({ ...playStoreData, title: v })}
+                  placeholder="Title (Max 30 chars)"
+                />
+                <Field
+                  label="Short Description"
+                  maxLength={80}
+                  multiline
+                  value={playStoreData.shortDescription}
+                  onChange={(v) => setPlayStoreData({ ...playStoreData, shortDescription: v })}
+                  placeholder="Brief summary (Max 80 chars)"
+                  minHeight="60px"
+                />
+                <Field
+                  label="Full Description"
+                  maxLength={4000}
+                  multiline
+                  value={playStoreData.fullDescription}
+                  onChange={(e) => setPlayStoreData({ ...playStoreData, fullDescription: e })}
+                  placeholder="Full description"
+                  minHeight="140px"
+                />
+                <Field
+                  label="What's New"
+                  maxLength={500}
+                  multiline
+                  value={playStoreData.whatsNew}
+                  onChange={(v) => setPlayStoreData({ ...playStoreData, whatsNew: v })}
+                  placeholder="Release notes"
+                  minHeight="80px"
+                />
+              </AccordionContent>
+            </AccordionItem>
+          )}
+        </Accordion>
+      </div>
+    </ScrollArea>
   );
 }
 

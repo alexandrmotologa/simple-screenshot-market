@@ -516,6 +516,21 @@ const BASE_CHARACTERS: Character[] = [
       },
     ],
   },
+  {
+    id: "saly-3d",
+    name: "Saly 3D Character",
+    category: "happy",
+    description: "Vibrant 3D style character",
+    library: "Open Peeps",
+    poses: [
+      {
+        id: "standing",
+        name: "Standing",
+        svg: SALY_3D_STYLE,
+        viewBox: "0 0 400 500",
+      },
+    ],
+  },
 ];
 
 const generatedCharacters: Character[] = [];

@@ -90,13 +90,17 @@ export default function AccountPage() {
 
   const fetchBillingInfo = async () => {
     if (!user || isGuest) {
-      setIsLoading(false);
       return;
     }
 
     try {
       setIsLoading(true);
-      const res = await fetch(`/api/account/billing?uid=${user.uid}`);
+      const idToken = await user.getIdToken().catch(() => "");
+      const res = await fetch(`/api/account/billing?uid=${user.uid}`, {
+        headers: {
+          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+        },
+      });
       if (res.ok) {
         const data = await res.json();
         setBillingData(data);
@@ -109,17 +113,49 @@ export default function AccountPage() {
   };
 
   useEffect(() => {
-    fetchBillingInfo();
-  }, [user]);
+    let isCancelled = false;
+    if (!user || isGuest) return;
+
+    async function load() {
+      try {
+        setIsLoading(true);
+        const idToken = await user.getIdToken().catch(() => "");
+        const res = await fetch(`/api/account/billing?uid=${user.uid}`, {
+          headers: {
+            ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+          },
+        });
+        if (res.ok && !isCancelled) {
+          const data = await res.json();
+          setBillingData(data);
+        }
+      } catch (err) {
+        console.warn("Failed to load billing details:", err);
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    load();
+    return () => {
+      isCancelled = true;
+    };
+  }, [user, isGuest]);
 
   const handleCancelSubscription = async () => {
     if (!user) return;
     setIsCanceling(true);
 
     try {
+      const idToken = await user.getIdToken().catch(() => "");
       const res = await fetch("/api/account/billing", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+        },
         body: JSON.stringify({
           uid: user.uid,
           action: "cancel_subscription",

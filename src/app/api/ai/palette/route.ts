@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runAIWithFallbacks } from "@/lib/ai/aiService";
+import { authorizeAIRequest } from "@/lib/serverAuth";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { dominantColors = [], appName, clientKeys } = body;
+    const { dominantColors = [], appName } = body;
+
+    const authCheck = await authorizeAIRequest(req);
+    if (!authCheck.success) {
+      return authCheck.response;
+    }
 
     const prompt = `You are a senior digital colorist and App Store visual designer.
 Based on the following app dominant colors: ${JSON.stringify(dominantColors)} (for app "${appName || "App"}"),
@@ -38,9 +44,9 @@ Return a JSON object with:
   ]
 }`;
 
-    const rawResponse = await runAIWithFallbacks(prompt, clientKeys, undefined, true);
+    const rawResponse = await runAIWithFallbacks(prompt, undefined, true);
     
-    let parsed: any;
+    let parsed: { palettes?: Array<Record<string, unknown>> };
     try {
       parsed = JSON.parse(rawResponse);
     } catch {
@@ -53,8 +59,9 @@ Return a JSON object with:
     }
 
     return NextResponse.json({ success: true, palettes: parsed.palettes || [] });
-  } catch (error: any) {
-    console.error("AI Palette error:", error);
-    return NextResponse.json({ error: error.message || "Failed to generate palettes" }, { status: 500 });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("AI Palette error:", err.message);
+    return NextResponse.json({ error: "Failed to generate palettes" }, { status: 500 });
   }
 }

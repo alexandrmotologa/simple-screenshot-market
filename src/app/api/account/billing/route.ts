@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb, isAdminConfigured } from "@/lib/firebaseAdmin";
+import { verifyAuth } from "@/lib/serverAuth";
 
 export interface CreditLogEntry {
   id: string;
@@ -13,11 +14,14 @@ export interface CreditLogEntry {
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const uid = searchParams.get("uid");
+    const authResult = await verifyAuth(req);
+    if (!authResult.success) {
+      return authResult.response;
+    }
 
+    const { uid } = authResult.data;
     if (!uid) {
-      return NextResponse.json({ error: "Missing uid parameter" }, { status: 400 });
+      return NextResponse.json({ error: "Missing or invalid authenticated user." }, { status: 401 });
     }
 
     // Default response when running in local dev / without Admin SDK
@@ -93,7 +97,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Fetch transactions / invoices if recorded
-    let transactions: any[] = [];
+    let transactions: Array<Record<string, unknown>> = [];
     try {
       const txSnap = await userRef
         .collection("transactions")
@@ -109,8 +113,6 @@ export async function GET(req: NextRequest) {
       // Subcollection might be empty
     }
 
-    // Determine Paddle customer portal link
-    // Paddle provides self-serve buyer receipt / card management at paddle.net
     const paddlePortalUrl = "https://paddle.net";
 
     return NextResponse.json({
@@ -134,10 +136,11 @@ export async function GET(req: NextRequest) {
       transactions,
       paddlePortalUrl,
     });
-  } catch (error: any) {
-    console.error("[Billing API] Error:", error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("[Billing API] Error:", err);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch billing details" },
+      { error: "Failed to fetch billing details" },
       { status: 500 }
     );
   }
@@ -145,12 +148,14 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { uid, action, reason } = body;
-
-    if (!uid) {
-      return NextResponse.json({ error: "Missing uid parameter" }, { status: 400 });
+    const authResult = await verifyAuth(req);
+    if (!authResult.success) {
+      return authResult.response;
     }
+
+    const { uid } = authResult.data;
+    const body = await req.json();
+    const { action, reason } = body;
 
     if (action === "cancel_subscription") {
       if (isAdminConfigured && adminDb) {
@@ -175,10 +180,11 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });
-  } catch (error: any) {
-    console.error("[Billing API] POST Error:", error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("[Billing API] POST Error:", err);
     return NextResponse.json(
-      { error: error.message || "Failed to process billing request" },
+      { error: "Failed to process billing request" },
       { status: 500 }
     );
   }

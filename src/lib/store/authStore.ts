@@ -15,6 +15,7 @@ import {
 import { getFirebaseAuth } from "@/lib/firebase";
 import { toast } from "@/lib/store/toastStore";
 import { verifyAndSyncUserEnvironment } from "@/lib/authEnvironment";
+import { syncProjectsOnLogin, stopCloudSync } from "@/lib/cloudProjectSync";
 
 interface AuthState {
   user: User | any | null;
@@ -120,13 +121,11 @@ export const useAuthStore = create<AuthState>((set, get) => {
               // Trigger multi-device cloud project sync
               if (!currentUser.isAnonymous) {
                 try {
-                  const { syncProjectsOnLogin } = require("@/lib/cloudProjectSync");
                   syncProjectsOnLogin(currentUser.uid);
                 } catch {}
               }
             } else {
               try {
-                const { stopCloudSync } = require("@/lib/cloudProjectSync");
                 stopCloudSync();
               } catch {}
               const currentLocalUser = get().user;
@@ -202,9 +201,13 @@ export const useAuthStore = create<AuthState>((set, get) => {
 
       // 4. Consume 1 credit via API
       try {
+        const idToken = await currentUser.getIdToken().catch(() => "");
         const res = await fetch("/api/ai/consume-credit", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+          },
           body: JSON.stringify({ uid: currentUser.uid, feature }),
         });
 
@@ -238,7 +241,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
     },
 
     initializeAuth: async () => {
-      const { auth } = await getFirebaseAuth();
+      await getFirebaseAuth();
       return;
     },
 

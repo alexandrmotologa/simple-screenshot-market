@@ -3,7 +3,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, Info, AlertTriangle, AlertCircle, X } from "lucide-react";
-import { useToastStore, ToastItem } from "@/lib/store/toastStore";
+import { useToastStore } from "@/lib/store/toastStore";
 import { cn } from "@/lib/utils";
 
 const ICONS = {

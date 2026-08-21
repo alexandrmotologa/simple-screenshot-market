@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import {
   Plus, Layers, Clock, Copy, Trash2, ArrowRight, Sparkles,
@@ -484,15 +484,11 @@ export type DashboardSortOption =
 export default function ProjectsPage() {
   const router = useRouter();
   const { user, isInitialized, isPro, setAuthModalOpen, setUpgradeModalOpen } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
   const { projects, deleteProject, duplicateProject, updateProject } = useProjectStore();
   const [showNewProject, setShowNewProject] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Protected route check: if unauthenticated, redirect to "/" and prompt login
   useEffect(() => {

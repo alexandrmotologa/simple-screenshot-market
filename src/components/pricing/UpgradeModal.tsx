@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Check, Sparkles, Zap, Shield, Crown, Film, Globe, Image as ImageIcon, ArrowRight, X } from "lucide-react";
+import { Sparkles, Zap, Shield, Crown, Film, Globe, Image as ImageIcon, ArrowRight } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { openPaddleCheckout } from "@/lib/paddle";
 import { toast } from "@/lib/store/toastStore";
@@ -41,7 +41,7 @@ const PRO_FEATURES = [
 ];
 
 export function UpgradeModal() {
-  const { isUpgradeModalOpen, setUpgradeModalOpen, user, isPro, aiCredits, plan: currentPlan, setProStatus, setAuthModalOpen } = useAuthStore();
+  const { isUpgradeModalOpen, setUpgradeModalOpen, user, isPro, setAuthModalOpen, setProStatus, aiCredits } = useAuthStore();
   const [billingCycle, setBillingCycle] = useState<"annual" | "monthly">("annual");
   const [isProcessing, setIsProcessing] = useState(false);
 

@@ -33,8 +33,11 @@ export function StorePreviewModal({ open, onOpenChange, appName: initialAppName 
   const { screenSets, activeSetId } = useEditorStore();
   const { projectLanguages, activeLang } = useLanguageStore();
 
-  const [platform, setPlatform] = useState<"ios" | "android">("ios");
-  const [deviceType, setDeviceType] = useState<"phone" | "tablet">("phone");
+  const currentSet = screenSets.find((s) => s.id === activeSetId) || screenSets[0];
+  const [platform, setPlatform] = useState<"ios" | "android">(currentSet?.store || "ios");
+  const [deviceType, setDeviceType] = useState<"phone" | "tablet">(
+    currentSet && isTabletDevice(currentSet.deviceId || currentSet.mockup?.device) ? "tablet" : "phone"
+  );
   const [storeTheme, setStoreTheme] = useState<"dark" | "light">("dark");
   const [selectedLang, setSelectedLang] = useState<string>(activeLang || "en");
   
@@ -61,21 +64,6 @@ export function StorePreviewModal({ open, onOpenChange, appName: initialAppName 
     screenSets.find((s) => s.store === platform) ||
     screenSets[0];
   const screens = activeSet?.screens || [];
-
-  // Sync initial platform and deviceType from currently active set in editor
-  useEffect(() => {
-    const current = screenSets.find((s) => s.id === activeSetId);
-    if (current) {
-      setPlatform(current.store);
-      setDeviceType(isTabletDevice(current.deviceId || current.mockup?.device) ? "tablet" : "phone");
-    }
-  }, [activeSetId, screenSets, open]);
-
-  useEffect(() => {
-    if (initialAppName) {
-      setAppName(initialAppName);
-    }
-  }, [initialAppName]);
 
   const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

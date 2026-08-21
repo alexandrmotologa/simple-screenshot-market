@@ -3,10 +3,11 @@
 import { useEditorStore } from "@/lib/store/editorStore";
 import { useAuthStore } from "@/lib/store/authStore";
 import { toast } from "@/lib/store/toastStore";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { Lock, Sparkles, Link2, Palette, Check, RefreshCw, Layers } from "lucide-react";
+import { Lock, Sparkles, Link2, Palette, Check, RefreshCw } from "lucide-react";
 import { TEXT_GRADIENT_PRESETS, TextGradientPreset } from "@/lib/textPresets";
 
 // ── Google Fonts loader ────────────────────────────────────────────────────────
@@ -486,7 +487,7 @@ function FontRow() {
 // ── AI Copywriter & Tone Assistant ──────────────────────────────────────────
 function AICopywriterWidget() {
   const { getActiveSet, getActiveScreen, getActiveLayer, updateLayer } = useEditorStore();
-  const { user, isPro, aiCredits, consumeAiCredit, setAuthModalOpen } = useAuthStore();
+  const { user, consumeAiCredit, setAuthModalOpen } = useAuthStore();
   const isGuest = Boolean(!user || user.isAnonymous);
 
   const layer = getActiveLayer();
@@ -518,14 +519,14 @@ function AICopywriterWidget() {
         <p className="text-[11px] text-muted-foreground leading-tight">
           AI caption generation and tone adjustments are available for registered accounts.
         </p>
-        <button
-          type="button"
+        <Button
+          size="sm"
+          variant="outline"
           onClick={() => setAuthModalOpen(true)}
-          className="w-full h-7 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+          className="w-full text-xs h-7 border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10"
         >
-          <Sparkles className="w-3 h-3" />
-          <span>Sign In (Free)</span>
-        </button>
+          Sign In (100% Free) to Unlock AI
+        </Button>
       </div>
     );
   }

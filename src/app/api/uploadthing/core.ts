@@ -1,40 +1,48 @@
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
+import { adminAuth, isAdminConfigured } from "@/lib/firebaseAdmin";
+import { checkRateLimit } from "@/lib/rateLimiter";
 
 const f = createUploadthing();
 
-// FileRouter for your app, can contain multiple FileRoutes
+// FileRouter for SnapFrame
 export const ourFileRouter = {
-  // Define as many FileRoutes as you like, each with a unique routeSlug
   imageUploader: f({
     image: {
-      /**
-       * For full list of options and defaults, see the File Route Config API Reference
-       * @see https://docs.uploadthing.com/api-reference/server#file-routes
-       */
       maxFileSize: "8MB",
       maxFileCount: 4,
     },
   })
-    // Set permissions and file types for this FileRoute
     .middleware(async ({ req }) => {
-      // This code runs on your server before upload
-      // In the future, you can add authentication here (e.g., const user = await auth(req);)
-      const user = { id: "test-user" }; // Fake auth for now
+      // 1. Rate limiting by IP
+      const forwarded = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+      const clientIp = forwarded.split(",")[0].trim();
+      const limit = checkRateLimit(`upload:${clientIp}`, { limit: 20, windowMs: 60000, keyPrefix: "upload" });
+      if (!limit.success) {
+        throw new UploadThingError("Rate limit exceeded for uploads. Please wait a minute.");
+      }
 
-      // If you throw, the user will not be able to upload
-      if (!user) throw new UploadThingError("Unauthorized");
+      // 2. Extract Bearer token if provided
+      const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
+      let userId = `anon_${clientIp.replace(/[^a-zA-Z0-9]/g, "_")}`;
 
-      // Whatever is returned here is accessible in onUploadComplete as `metadata`
-      return { userId: user.id };
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        const token = authHeader.split("Bearer ")[1]?.trim();
+        if (token && isAdminConfigured && adminAuth) {
+          try {
+            const decoded = await adminAuth.verifyIdToken(token);
+            userId = decoded.uid;
+          } catch (e) {
+            console.warn("[UploadThing] Invalid auth token during upload:", e);
+          }
+        }
+      }
+
+      return { userId };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      // This code RUNS ON YOUR SERVER after upload
-      console.log("Upload complete for userId:", metadata.userId);
-      console.log("file url", file.url);
-
-      // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
-      return { uploadedBy: metadata.userId };
+      console.log("[UploadThing] Upload complete for userId:", metadata.userId, "url:", file.url);
+      return { uploadedBy: metadata.userId, url: file.url };
     }),
 } satisfies FileRouter;
 

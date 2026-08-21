@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runAIWithFallbacks, trimToLimit } from "@/lib/ai/aiService";
+import { authorizeAIRequest } from "@/lib/serverAuth";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,8 +11,12 @@ export async function POST(req: NextRequest) {
       nicheKeywords = "",
       targetLang = "en",
       screenHeadlines = [],
-      clientKeys,
     } = body;
+
+    const authCheck = await authorizeAIRequest(req);
+    if (!authCheck.success) {
+      return authCheck.response;
+    }
 
     const prompt = `You are a world-class App Store Optimization (ASO) specialist and copywriter.
 Generate a complete, high-ranking, high-conversion App Store and Google Play store listing for the mobile app "${appName}".
@@ -51,9 +56,12 @@ Return a valid JSON object matching this structure:
   }
 }`;
 
-    const rawResponse = await runAIWithFallbacks(prompt, clientKeys, undefined, true);
+    const rawResponse = await runAIWithFallbacks(prompt, undefined, true);
     
-    let parsed: any;
+    let parsed: {
+      ios?: Record<string, string>;
+      android?: Record<string, string>;
+    };
     try {
       parsed = JSON.parse(rawResponse);
     } catch {
@@ -65,27 +73,27 @@ Return a valid JSON object matching this structure:
       }
     }
 
-    // Strictly enforce all store limits
-    const safeOutput = {
-      ios: {
-        name: trimToLimit(parsed.ios?.name || appName, 30),
-        subtitle: trimToLimit(parsed.ios?.subtitle || "Transform your app screenshots", 30),
-        promotionalText: trimToLimit(parsed.ios?.promotionalText || `Get the latest version of ${appName}!`, 170),
-        keywords: trimToLimit(parsed.ios?.keywords || "screenshots,mockup,appstore,editor", 100),
-        description: trimToLimit(parsed.ios?.description || `${appName} helps you create stunning screenshots.`, 4000),
-        whatsNew: trimToLimit(parsed.ios?.whatsNew || "Bug fixes and performance improvements.", 500),
-      },
-      android: {
-        title: trimToLimit(parsed.android?.title || appName, 30),
-        shortDescription: trimToLimit(parsed.android?.shortDescription || "Stunning App Store & Play Store screenshots", 80),
-        fullDescription: trimToLimit(parsed.android?.fullDescription || `${appName} helps you create stunning screenshots.`, 4000),
-        whatsNew: trimToLimit(parsed.android?.whatsNew || "Bug fixes and performance improvements.", 500),
-      },
-    };
+    // Apply strict character limits
+    if (parsed.ios) {
+      parsed.ios.name = trimToLimit(parsed.ios.name || appName, 30);
+      parsed.ios.subtitle = trimToLimit(parsed.ios.subtitle || "", 30);
+      parsed.ios.promotionalText = trimToLimit(parsed.ios.promotionalText || "", 170);
+      parsed.ios.keywords = trimToLimit(parsed.ios.keywords || "", 100);
+      parsed.ios.description = trimToLimit(parsed.ios.description || "", 4000);
+      parsed.ios.whatsNew = trimToLimit(parsed.ios.whatsNew || "", 500);
+    }
 
-    return NextResponse.json({ success: true, listing: safeOutput });
-  } catch (error: any) {
-    console.error("AI Store Listing error:", error);
-    return NextResponse.json({ error: error.message || "Failed to generate store listing" }, { status: 500 });
+    if (parsed.android) {
+      parsed.android.title = trimToLimit(parsed.android.title || appName, 30);
+      parsed.android.shortDescription = trimToLimit(parsed.android.shortDescription || "", 80);
+      parsed.android.fullDescription = trimToLimit(parsed.android.fullDescription || "", 4000);
+      parsed.android.whatsNew = trimToLimit(parsed.android.whatsNew || "", 500);
+    }
+
+    return NextResponse.json({ success: true, listing: parsed });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("AI Store Listing error:", err.message);
+    return NextResponse.json({ error: "Failed to generate store listing" }, { status: 500 });
   }
 }

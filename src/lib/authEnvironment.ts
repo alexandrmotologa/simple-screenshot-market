@@ -1,6 +1,6 @@
 import { User } from "firebase/auth";
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from "firebase/firestore";
-import { getFirebaseDb, getFirebaseAuth } from "@/lib/firebase";
+import { getFirebaseDb } from "@/lib/firebase";
 
 export type AppEnvironment = "production" | "develop" | "localhost";
 
@@ -77,9 +77,13 @@ export async function verifyAndSyncUserEnvironment(
 
   // 1. Try server-side API verification first (secure & bypasses client Firestore rules)
   try {
+    const idToken = await user.getIdToken().catch(() => "");
     const res = await fetch("/api/auth/verify-environment", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+      },
       body: JSON.stringify({
         uid: user.uid,
         email: user.email || null,

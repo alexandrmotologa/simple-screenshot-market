@@ -461,7 +461,6 @@ export interface Project {
 export interface TemplateScreen {
   name: string;
   background: Background;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   layers: any[];
 }
 

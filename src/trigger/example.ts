@@ -4,7 +4,7 @@ export const helloWorldTask = task({
   id: "hello-world",
   // Set an optional maxDuration to prevent tasks from running indefinitely
   maxDuration: 300,
-  run: async (payload: any, { ctx }) => {
+  run: async (payload: any) => {
     console.log("Hello from Trigger.dev!");
     console.log("Payload:", payload);
     

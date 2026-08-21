@@ -19,22 +19,18 @@ export function ScreenStrip() {
     deleteScreen,
   } = useEditorStore();
 
-  const [isCompact, setIsCompact] = useState(true);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  // Load saved preference from localStorage (defaulting to collapsed/compact: true)
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("snapframe_strip_compact");
-      if (saved !== null) {
-        setIsCompact(saved === "true");
-      } else {
-        setIsCompact(true);
+  const [isCompact, setIsCompact] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("snapframe_strip_compact");
+        if (saved !== null) return saved === "true";
+      } catch {
+        // Ignored
       }
-    } catch {
-      // Ignored
     }
-  }, []);
+    return true;
+  });
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const toggleCompact = () => {
     setIsCompact((prev) => {

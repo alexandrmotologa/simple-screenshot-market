@@ -6,17 +6,18 @@ SnapFrame includes an enterprise-grade AI suite designed to eliminate the tediou
 
 ## 1. Multi-Provider Architecture & Failover
 
-All AI interactions run through [`src/lib/ai/aiService.ts`](file:///b:/workgit/simple-screenshot-market/src/lib/ai/aiService.ts) on Next.js Server-Side routes.
+All AI interactions run through [`src/lib/ai/aiService.ts`](file:///b:/workgit/simple-screenshot-market/src/lib/ai/aiService.ts) on Next.js Server-Side routes protected by Firebase ID Token Authentication (`Authorization: Bearer <idToken>`) and Rate Limiting.
 
 ```
-API Request → aiService.ts (Priority Cascade)
-  ├─ 1. Google Gemini (GEMINI_API_KEY) ── [Primary: Vision + Speed]
-  ├─ 2. OpenAI GPT-4o-mini (OPENAI_API_KEY) ── [Fallback 1: ASO Copy]
-  ├─ 3. Groq Llama 3.3 70B (GROQ_API_KEY) ── [Fallback 2: Ultra-low latency]
-  └─ 4. Mistral Small (MISTRAL_API_KEY) ── [Fallback 3: Localization]
+API Request (Bearer Token) → serverAuth.ts → aiService.ts (Priority Cascade)
+  ├─ 1. Google Gemini 3.6 Flash (GEMINI_API_KEY) ── [Primary: Vision + Speed]
+  ├─ 2. OpenAI GPT-4o-mini (OPENAI_API_KEY) ── [Fallback 1: ASO & Multimodal]
+  ├─ 3. Groq GPT-OSS 120B / Llama 3.2 Vision (GROQ_API_KEY) ── [Fallback 2: Ultra-low latency]
+  ├─ 4. Mistral Small / Pixtral 12B Vision (MISTRAL_API_KEY) ── [Fallback 3: Localization & Vision]
+  └─ 5. xAI Grok 3 / Grok 2 Vision (XAI_API_KEY) ── [Fallback 4: Advanced Reasoning & Vision]
 ```
 
-If a provider encounters a **Rate Limit (429)**, timeout, or quota exhaustion, the failover runner seamlessly attempts the next configured key without throwing an error to the user.
+If a provider encounters a **Rate Limit (429)**, timeout, or quota exhaustion, the failover runner seamlessly attempts the next configured key without throwing an error to the user. All providers in the chain support both text generation and multimodal screenshot vision analysis.
 
 ---
 

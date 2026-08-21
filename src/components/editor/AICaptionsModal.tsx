@@ -13,21 +13,19 @@ import { cn } from "@/lib/utils";
 async function translateTexts(
   texts: string[],
   targetLang: string,
-  mistralKey?: string,
-  googleKey?: string
+  idToken?: string
 ): Promise<string[]> {
   try {
     const res = await fetch("/api/ai/translate", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+      },
       body: JSON.stringify({
         texts,
         targetLang,
         maxLength: 35,
-        clientKeys: {
-          gemini: googleKey || undefined,
-          mistral: mistralKey || undefined,
-        },
       }),
     });
     const data = await res.json();
@@ -52,12 +50,6 @@ export function AICaptionsModal({ onClose }: AICaptionsModalProps) {
   const { user, isPro, aiCredits, consumeAiCredit, setAuthModalOpen } = useAuthStore();
   const isGuest = Boolean(!user || user.isAnonymous);
 
-  const [mistralKey, setMistralKey] = useState(
-    typeof window !== "undefined" ? (localStorage.getItem("snapframe_mistral_key") ?? "") : ""
-  );
-  const [googleKey, setGoogleKey] = useState(
-    typeof window !== "undefined" ? (localStorage.getItem("snapframe_google_key") ?? "") : ""
-  );
   const [selectedLangs, setSelectedLangs] = useState<Set<string>>(
     new Set(projectLanguages.filter((c) => c !== "en"))
   );
@@ -81,11 +73,6 @@ export function AICaptionsModal({ onClose }: AICaptionsModalProps) {
     (l): l is TextLayer => l.type === "text"
   );
 
-  const saveKeys = () => {
-    if (mistralKey) localStorage.setItem("snapframe_mistral_key", mistralKey);
-    if (googleKey) localStorage.setItem("snapframe_google_key", googleKey);
-  };
-
   const handleGenerate = async () => {
     if (isGuest) {
       onClose();
@@ -99,10 +86,10 @@ export function AICaptionsModal({ onClose }: AICaptionsModalProps) {
 
     setStatus("loading");
     setErrorMsg("");
-    saveKeys();
 
     const texts = textLayers.map((l) => l.content);
     const langs = Array.from(selectedLangs);
+    const idToken = user ? await user.getIdToken().catch(() => "") : "";
 
     try {
       for (const lang of langs) {
@@ -111,8 +98,7 @@ export function AICaptionsModal({ onClose }: AICaptionsModalProps) {
         const translated = await translateTexts(
           texts,
           langInfo?.name ?? lang,
-          mistralKey || undefined,
-          googleKey || undefined
+          idToken
         );
         translated.forEach((text, i) => {
           if (textLayers[i] && text) {
@@ -168,51 +154,23 @@ export function AICaptionsModal({ onClose }: AICaptionsModalProps) {
     if (!scrapedData || !set || !screen || textLayers.length === 0) return;
     setStatus("loading");
     setErrorMsg("");
-    saveKeys();
 
-    // Build a prompt that asks AI to write captions based on app metadata
-    const systemContext = `App: "${scrapedData.name}"\nCategory: ${scrapedData.category}\nDescription: ${scrapedData.description}\nDeveloper: ${scrapedData.developer ?? ""}`;
     const texts = textLayers.map((l) => l.content);
     const langs = Array.from(selectedLangs).length > 0 ? Array.from(selectedLangs) : ["en"];
-
-    const generateCaptionsPrompt = (lang: string) =>
-      `You are a professional app store copywriter. Based on the app info below, rewrite the following UI screenshot texts to be compelling, concise, and relevant.\n${systemContext}\n\nTarget language: ${lang}\nExisting texts: ${JSON.stringify(texts)}\n\nReturn ONLY a JSON array of rewritten strings, same count, same order. No markdown, no explanations.`;
+    const idToken = user ? await user.getIdToken().catch(() => "") : "";
 
     try {
       for (const lang of langs) {
         const langInfo = getLang(lang);
         setProgress(`Generating captions for ${langInfo?.nativeName ?? lang}...`);
-        const prompt = generateCaptionsPrompt(langInfo?.name ?? lang);
+        
+        const translated = await translateTexts(
+          texts,
+          langInfo?.name ?? lang,
+          idToken
+        );
 
-        let generated: string[] = texts;
-        if (mistralKey) {
-          try {
-            const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: `Bearer ${mistralKey}` },
-              body: JSON.stringify({ model: "mistral-small-latest", messages: [{ role: "user", content: prompt }], temperature: 0.7, max_tokens: 1024 }),
-            });
-            const d = await res.json();
-            const content = d.choices?.[0]?.message?.content ?? "[]";
-            const match = content.match(/\[[\s\S]*\]/);
-            generated = JSON.parse(match?.[0] ?? "[]");
-          } catch { /* fallthrough to google */ }
-        }
-        if (generated === texts && googleKey) {
-          try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${googleKey}`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.7, maxOutputTokens: 1024 } }),
-            });
-            const d = await res.json();
-            const content = d.candidates?.[0]?.content?.parts?.[0]?.text ?? "[]";
-            const match = content.match(/\[[\s\S]*\]/);
-            generated = JSON.parse(match?.[0] ?? "[]");
-          } catch { /* no-op */ }
-        }
-
-        generated.forEach((text, i) => {
+        translated.forEach((text, i) => {
           if (textLayers[i] && text) {
             updateLayerLocalization(set.id, screen.id, textLayers[i].id, lang, text);
           }
@@ -311,45 +269,6 @@ export function AICaptionsModal({ onClose }: AICaptionsModalProps) {
               {/* TAB: TRANSLATE */}
               {activeTab === "translate" && (
                 <>
-              {/* API Keys */}
-              <div className="space-y-3">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  API Keys (stored locally)
-                </p>
-                <div className="space-y-2">
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Mistral API Key <span className="text-indigo-400">(recommended, fast)</span>
-                    </label>
-                    <input
-                      type="password"
-                      placeholder="sk-..."
-                      value={mistralKey}
-                      onChange={(e) => setMistralKey(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-secondary/60 border border-border/40 text-xs outline-none focus:border-violet-500/50 transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Google AI Studio Key <span className="text-green-400">(free, fallback)</span>
-                    </label>
-                    <input
-                      type="password"
-                      placeholder="AIza..."
-                      value={googleKey}
-                      onChange={(e) => setGoogleKey(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-secondary/60 border border-border/40 text-xs outline-none focus:border-green-500/50 transition-colors"
-                    />
-                  </div>
-                </div>
-                {!mistralKey && !googleKey && (
-                  <p className="text-[11px] text-amber-400 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    Without an API key, translations won&apos;t be generated automatically.
-                  </p>
-                )}
-              </div>
-
               {/* Language selection */}
               {nonEnglish.length > 0 ? (
                 <div className="space-y-2">
@@ -440,20 +359,6 @@ export function AICaptionsModal({ onClose }: AICaptionsModalProps) {
           {/* ══════════════════════════════════════════════════════════════════ */}
           {activeTab === "scrape" && (
             <>
-              {/* API Keys (compact) */}
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  AI API Key (for caption generation)
-                </p>
-                <input
-                  type="password"
-                  placeholder="Mistral sk-... or Google AIza..."
-                  value={mistralKey || googleKey}
-                  onChange={(e) => setMistralKey(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-secondary/60 border border-border/40 text-xs outline-none focus:border-violet-500/50 transition-colors"
-                />
-              </div>
-
               {/* URL Input */}
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">

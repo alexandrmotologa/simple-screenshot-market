@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, use, useState, useCallback } from "react";
+import { useEffect, use, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { useProjectStore } from "@/lib/store/projectStore";
 import { useLanguageStore } from "@/lib/store/languageStore";
@@ -8,7 +8,6 @@ import { useEditorStore } from "@/lib/store/editorStore";
 import { useAuthStore } from "@/lib/store/authStore";
 import { EditorLayout } from "@/components/editor/EditorLayout";
 import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
-import { backgroundToCSS } from "@/lib/utils";
 import { TextLayer } from "@/lib/types";
 
 interface EditorPageProps {
@@ -78,20 +77,18 @@ function generateThumbnail(screenSets: ReturnType<typeof useEditorStore.getState
   return canvas.toDataURL("image/webp", 0.7);
 }
 
+const emptySubscribe = () => () => {};
+
 export default function EditorPage({ params }: EditorPageProps) {
   const { projectId } = use(params);
   const router = useRouter();
   const { user, isInitialized, setAuthModalOpen } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const getProject = useProjectStore((s) => s.getProject);
   const updateProject = useProjectStore((s) => s.updateProject);
   const saveProjectThumbnail = useProjectStore((s) => s.saveProjectThumbnail);
   const { loadProject, screenSets, hiddenScreenSets, themeId, projectId: editorProjectId } = useEditorStore();
   const { projectLanguages, setProjectLanguages } = useLanguageStore();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Redirect unauthenticated users immediately
   useEffect(() => {

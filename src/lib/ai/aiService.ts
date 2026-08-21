@@ -57,13 +57,14 @@ export function trimToLimit(text: string, maxLen: number): string {
   return sub;
 }
 
-// ─── API KEY RESOLUTION (env first, then optional client fallback) ───────────
-export function getAIKeys(clientKeys?: { gemini?: string; openai?: string; mistral?: string; groq?: string }) {
+// ─── API KEY RESOLUTION (strictly from server environment variables) ─────────
+export function getAIKeys() {
   return {
-    gemini: process.env.GEMINI_API_KEY || clientKeys?.gemini || "",
-    openai: process.env.OPENAI_API_KEY || clientKeys?.openai || "",
-    mistral: process.env.MISTRAL_API_KEY || clientKeys?.mistral || "",
-    groq: process.env.GROQ_API_KEY || clientKeys?.groq || "",
+    gemini: process.env.GEMINI_API_KEY || "",
+    openai: process.env.OPENAI_API_KEY || "",
+    groq: process.env.GROQ_API_KEY || "",
+    mistral: process.env.MISTRAL_API_KEY || "",
+    xai: process.env.XAI_API_KEY || process.env.GROK_API_KEY || "",
   };
 }
 
@@ -88,7 +89,7 @@ export async function callGemini(
   }
 
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -156,8 +157,29 @@ export async function callOpenAI(
   return data.choices?.[0]?.message?.content ?? "";
 }
 
-// ─── CALL GROQ (Llama 3.3 70B) ───────────────────────────────────────────────
-export async function callGroq(prompt: string, apiKey: string, responseJson: boolean = true): Promise<string> {
+// ─── CALL GROQ (GPT-OSS 120B / Llama 3.2 11B Vision) ───────────────────────
+export async function callGroq(
+  prompt: string,
+  apiKey: string,
+  imagesBase64?: Array<{ mimeType: string; data: string }>,
+  responseJson: boolean = true
+): Promise<string> {
+  const hasImages = imagesBase64 && imagesBase64.length > 0;
+  const model = hasImages ? "llama-3.2-11b-vision-preview" : "openai/gpt-oss-120b";
+
+  let content: any = prompt;
+  if (hasImages) {
+    content = [{ type: "text", text: prompt }];
+    imagesBase64.forEach((img) => {
+      content.push({
+        type: "image_url",
+        image_url: {
+          url: `data:${img.mimeType || "image/png"};base64,${img.data}`,
+        },
+      });
+    });
+  }
+
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -165,8 +187,8 @@ export async function callGroq(prompt: string, apiKey: string, responseJson: boo
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "llama-3.3-70b-versatile",
-      messages: [{ role: "user", content: prompt }],
+      model,
+      messages: [{ role: "user", content }],
       temperature: 0.3,
       response_format: responseJson ? { type: "json_object" } : undefined,
     }),
@@ -181,8 +203,29 @@ export async function callGroq(prompt: string, apiKey: string, responseJson: boo
   return data.choices?.[0]?.message?.content ?? "";
 }
 
-// ─── CALL MISTRAL ────────────────────────────────────────────────────────────
-export async function callMistral(prompt: string, apiKey: string, responseJson: boolean = true): Promise<string> {
+// ─── CALL MISTRAL (Mistral Small / Pixtral 12B Vision) ─────────────────────────
+export async function callMistral(
+  prompt: string,
+  apiKey: string,
+  imagesBase64?: Array<{ mimeType: string; data: string }>,
+  responseJson: boolean = true
+): Promise<string> {
+  const hasImages = imagesBase64 && imagesBase64.length > 0;
+  const model = hasImages ? "pixtral-12b-2409" : "mistral-small-latest";
+
+  let content: any = prompt;
+  if (hasImages) {
+    content = [{ type: "text", text: prompt }];
+    imagesBase64.forEach((img) => {
+      content.push({
+        type: "image_url",
+        image_url: {
+          url: `data:${img.mimeType || "image/png"};base64,${img.data}`,
+        },
+      });
+    });
+  }
+
   const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -190,8 +233,8 @@ export async function callMistral(prompt: string, apiKey: string, responseJson: 
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "mistral-small-latest",
-      messages: [{ role: "user", content: prompt }],
+      model,
+      messages: [{ role: "user", content }],
       temperature: 0.3,
       response_format: responseJson ? { type: "json_object" } : undefined,
     }),
@@ -206,14 +249,59 @@ export async function callMistral(prompt: string, apiKey: string, responseJson: 
   return data.choices?.[0]?.message?.content ?? "";
 }
 
-// ─── UNIVERSAL RESILIENT AI RUNNER ──────────────────────────────────────────
-export async function runAIWithFallbacks(
+// ─── CALL XAI (Grok 3 / Grok 2 Vision) ───────────────────────────────────────
+export async function callXAI(
   prompt: string,
-  clientKeys?: { gemini?: string; openai?: string; mistral?: string; groq?: string },
+  apiKey: string,
   imagesBase64?: Array<{ mimeType: string; data: string }>,
   responseJson: boolean = true
 ): Promise<string> {
-  const keys = getAIKeys(clientKeys);
+  const hasImages = imagesBase64 && imagesBase64.length > 0;
+  const model = hasImages ? "grok-2-vision-1212" : "grok-3";
+
+  let content: any = prompt;
+  if (hasImages) {
+    content = [{ type: "text", text: prompt }];
+    imagesBase64.forEach((img) => {
+      content.push({
+        type: "image_url",
+        image_url: {
+          url: `data:${img.mimeType || "image/png"};base64,${img.data}`,
+        },
+      });
+    });
+  }
+
+  const res = await fetch("https://api.x.ai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: "user", content }],
+      temperature: 0.3,
+      response_format: responseJson ? { type: "json_object" } : undefined,
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`xAI (Grok) API Error (${res.status}): ${errText}`);
+  }
+
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content ?? "";
+}
+
+// ─── UNIVERSAL RESILIENT AI RUNNER ──────────────────────────────────────────
+export async function runAIWithFallbacks(
+  prompt: string,
+  imagesBase64?: Array<{ mimeType: string; data: string }>,
+  responseJson: boolean = true
+): Promise<string> {
+  const keys = getAIKeys();
   const errors: string[] = [];
 
   // 1. Try Gemini (handles text and vision)
@@ -236,23 +324,33 @@ export async function runAIWithFallbacks(
     }
   }
 
-  // 3. Try Groq (ultra fast text)
-  if (keys.groq && (!imagesBase64 || imagesBase64.length === 0)) {
+  // 3. Try Groq (handles ultra fast text AND multimodal vision)
+  if (keys.groq) {
     try {
-      return await callGroq(prompt, keys.groq, responseJson);
+      return await callGroq(prompt, keys.groq, imagesBase64, responseJson);
     } catch (e: any) {
       console.warn("Groq attempt failed:", e.message);
       errors.push(`Groq: ${e.message}`);
     }
   }
 
-  // 4. Try Mistral
-  if (keys.mistral && (!imagesBase64 || imagesBase64.length === 0)) {
+  // 4. Try Mistral (handles text AND Pixtral multimodal vision)
+  if (keys.mistral) {
     try {
-      return await callMistral(prompt, keys.mistral, responseJson);
+      return await callMistral(prompt, keys.mistral, imagesBase64, responseJson);
     } catch (e: any) {
       console.warn("Mistral attempt failed:", e.message);
       errors.push(`Mistral: ${e.message}`);
+    }
+  }
+
+  // 5. Try xAI Grok (handles text AND Grok 2 Vision)
+  if (keys.xai) {
+    try {
+      return await callXAI(prompt, keys.xai, imagesBase64, responseJson);
+    } catch (e: any) {
+      console.warn("xAI Grok attempt failed:", e.message);
+      errors.push(`xAI: ${e.message}`);
     }
   }
 

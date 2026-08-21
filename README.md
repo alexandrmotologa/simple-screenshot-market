@@ -6,8 +6,8 @@
 
 ## ✨ Key Features
 
-### 🤖 AI Superpowers Suite (Multi-Provider Engine)
-- **✨ 1-Click Project Auto-Pilot:** Powered by AI Vision (`gemini-1.5-flash` / `gpt-4o-mini`). Analyzes your app screenshots and automatically populates high-converting headlines, benefit subtitles, and panoramic matching color gradients across all screens in 1 click.
+### 🤖 AI Superpowers Suite (5-Provider Failover Engine)
+- **✨ 1-Click Project Auto-Pilot:** Powered by Multimodal AI Vision (`gemini-3.6-flash`, `gpt-4o-mini`, `groq-llama-3.2-vision`, `mistral-pixtral`, `grok-2-vision`). Analyzes your uploaded app screenshots and automatically populates high-converting headlines, benefit subtitles, and panoramic matching color gradients across all screens in 1 click.
 - **📈 AI Store Listing & ASO Generator:** Generates full, compliant App Store and Google Play metadata in any target language with strict store character limit enforcement:
   - *iOS:* App Name (≤ 30c), Subtitle (≤ 30c), Promotional Text (≤ 170c), Keywords Bank (≤ 100c), Description & What's New.
   - *Android:* App Title (≤ 30c), Short Description (≤ 80c), Full Description & What's New.
@@ -15,6 +15,7 @@
 - **🎨 AI Magic Theme Matcher:** 1-click curated and generated App Store color palettes (*OLED Midnight*, *Clean Cupertino*, *Vibrant Sunset*, *Cyber Neon*, *Pastel Aurora*, *Emerald Matrix*).
 - **🧼 Smart Clean Status Bar:** Automatically overlays a crisp vector status bar (9:41 AM, 100% battery, 5G, 4 signal bars) with light/dark theme toggle, ensuring 100% compliance with Apple Store guidelines.
 - **🌍 Native Cultural Localization:** Contextual, idiom-aware marketing translations across 20+ languages with strict length constraints.
+- **🔒 Enterprise Security & Rate Limiting:** All AI endpoints enforce Firebase ID token verification, in-memory sliding window rate limiting, anti-SSRF protections, and secure server-managed keys.
 
 ---
 
@@ -78,7 +79,8 @@
 - **State Management:** [Zustand](https://zustand-demo.pmnd.rs/) with undo/redo history stack & local persistence
 - **Canvas Rendering:** Native HTML5 Canvas 2D with high-DPI supersampling
 - **Export & Compression:** [JSZip](https://stuk.github.io/jszip/) & FileSaver
-- **AI Backend:** Universal failover engine supporting Google Gemini, OpenAI, Groq, and Mistral
+- **AI Backend:** Universal 5-provider failover engine (Google Gemini, OpenAI, Groq, Mistral, xAI Grok)
+- **Security:** Firebase Admin ID token authentication, sliding window rate limiting, anti-SSRF protections, and SVG sandbox CSP
 
 ---
 
@@ -101,17 +103,16 @@ Copy `.env.example` to `.env.local`:
 cp .env.example .env.local
 ```
 
-Fill in your desired API keys (only 1 AI key is needed by default):
+Configure your API keys in `.env.local`:
 ```env
-# Google Gemini (Recommended for Vision + Fast Text)
+# AI Providers (Gemini & Groq offer 100% free permanent tiers)
 GEMINI_API_KEY=your_gemini_api_key_here
+GROQ_API_KEY=your_groq_api_key_here
+MISTRAL_API_KEY=your_mistral_api_key_here
 
-# Or OpenAI
-OPENAI_API_KEY=your_openai_api_key_here
-
-# Firebase Configuration (Optional, for Cloud Saves & Admin)
-FIREBASE_API_KEY=...
-FIREBASE_PROJECT_ID=...
+# Firebase Configuration (For Authentication & Cloud Project Saves)
+NEXT_PUBLIC_FIREBASE_API_KEY=...
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
 ```
 
 ### 4. Run the development server

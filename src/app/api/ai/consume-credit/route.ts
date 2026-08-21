@@ -1,25 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb, isAdminConfigured, FieldValue } from "@/lib/firebaseAdmin";
+import { verifyAuth } from "@/lib/serverAuth";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimiter";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { uid, feature } = body;
-
-    if (!uid) {
+    // 1. Rate limiting by IP
+    const ip = getClientIp(req);
+    const rateLimit = checkRateLimit(`credit:${ip}`, { limit: 60, windowMs: 60000, keyPrefix: "credit" });
+    if (!rateLimit.success) {
       return NextResponse.json(
-        { allowed: false, message: "Missing uid parameter" },
-        { status: 400 }
+        { allowed: false, error: "Too many requests. Please try again in a moment." },
+        { status: 429 }
       );
     }
 
-    // If Firebase Admin is not configured, simulate local dev
+    // 2. Verify authorization
+    const authResult = await verifyAuth(req);
+    if (!authResult.success) {
+      return authResult.response;
+    }
+
+    const { uid } = authResult.data;
+    const body = await req.json().catch(() => ({}));
+    const { feature } = body;
+
+    // If Firebase Admin is not configured
     if (!isAdminConfigured || !adminDb) {
+      if (process.env.NODE_ENV === "production") {
+        return NextResponse.json(
+          { allowed: false, error: "Service unavailable: Database is not configured." },
+          { status: 503 }
+        );
+      }
       return NextResponse.json({
         allowed: true,
         isPro: false,
         remaining: 3,
-        warning: "Admin SDK not configured, simulated credit deduction",
+        warning: "Admin SDK not configured, simulated credit deduction for local dev",
       });
     }
 
@@ -124,11 +142,12 @@ export async function POST(req: NextRequest) {
       remaining,
       used: (data.usedAiCredits || 0) + 1,
     });
-  } catch (error: any) {
-    console.error("[ConsumeCredit API] Error:", error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("[ConsumeCredit API] Error:", err);
     return NextResponse.json(
-      { allowed: true, error: error.message || "Failed to consume credit" },
-      { status: 200 }
+      { allowed: false, error: "Failed to process credit verification." },
+      { status: 500 }
     );
   }
 }

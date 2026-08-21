@@ -322,7 +322,7 @@ async function renderPanoramaGlowLayout(
   W: number,
   H: number,
   iconImg: HTMLImageElement | null,
-  screenImg: HTMLImageElement | null
+  _screenImg: HTMLImageElement | null
 ) {
   // Center App Icon with Ambient Glow
   const iconSize = H * 0.24;

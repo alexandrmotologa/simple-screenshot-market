@@ -2,14 +2,14 @@
 
 import { useState, useMemo } from "react";
 import { useEditorStore } from "@/lib/store/editorStore";
-import { THEMES, THEME_CATEGORIES, themeById, getAutoTextColor } from "@/lib/themes";
+import { THEMES, THEME_CATEGORIES, getAutoTextColor } from "@/lib/themes";
 import { ThemeId, ThemeCategory, GradientDirection } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Check, Search, Sparkles, Pipette, ArrowLeftRight, Wand2, Palette } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ColorInput } from "@/components/ui/color-input";
 import { toast } from "@/lib/store/toastStore";
 

@@ -1,7 +1,6 @@
-import { Template, ScreenshotLayer, TextLayer, ShapeLayer, GradientDirection } from "@/lib/types";
+import { Template, ScreenshotLayer, TextLayer, ShapeLayer } from "@/lib/types";
 
 const W = 1290;
-const H = 2796;
 
 function textLayer(
   content: string,

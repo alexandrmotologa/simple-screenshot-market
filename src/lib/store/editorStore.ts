@@ -993,7 +993,6 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       );
       let srcIndex = 0;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const newScreens = template.screens.map((tScreen: any, idx: number) => ({
         id: nanoid(),
         name: tScreen.name ?? `Screen ${idx + 1}`,
@@ -1001,7 +1000,6 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         height: ss.preset.height,
         caption: "",
         background: tScreen.background ?? { type: "solid", color: "#1a1a2e" },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         layers: (tScreen.layers ?? []).map((l: any): Layer => {
           const id = nanoid();
           if (l.type === "screenshot") {

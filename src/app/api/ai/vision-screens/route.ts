@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runAIWithFallbacks, GeneratedScreenStory } from "@/lib/ai/aiService";
+import { authorizeAIRequest } from "@/lib/serverAuth";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { screens, appName, niche, language = "en", clientKeys } = body;
+    const { screens, appName, niche, language = "en" } = body;
+
+    const authCheck = await authorizeAIRequest(req);
+    if (!authCheck.success) {
+      return authCheck.response;
+    }
 
     if (!screens || !Array.isArray(screens) || screens.length === 0) {
       return NextResponse.json({ error: "Screens array is required" }, { status: 400 });
@@ -12,7 +18,7 @@ export async function POST(req: NextRequest) {
 
     // Convert images if provided as base64
     const imagesBase64: Array<{ mimeType: string; data: string }> = [];
-    screens.forEach((s: any) => {
+    screens.forEach((s: { base64?: string; mimeType?: string }) => {
       if (s.base64 && typeof s.base64 === "string") {
         const cleanBase64 = s.base64.replace(/^data:image\/[a-z]+;base64,/, "");
         imagesBase64.push({
@@ -47,7 +53,7 @@ Return a JSON object with this exact structure:
   ]
 }`;
 
-    const rawResponse = await runAIWithFallbacks(prompt, clientKeys, imagesBase64.length > 0 ? imagesBase64 : undefined, true);
+    const rawResponse = await runAIWithFallbacks(prompt, imagesBase64.length > 0 ? imagesBase64 : undefined, true);
     
     let parsed: { screens: GeneratedScreenStory[] };
     try {
@@ -61,9 +67,13 @@ Return a JSON object with this exact structure:
       }
     }
 
-    return NextResponse.json({ success: true, screens: parsed.screens });
-  } catch (error: any) {
-    console.error("AI Vision screens error:", error);
-    return NextResponse.json({ error: error.message || "Failed to analyze screenshots" }, { status: 500 });
+    return NextResponse.json({
+      success: true,
+      screens: parsed.screens || [],
+    });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("AI Vision screens error:", err.message);
+    return NextResponse.json({ error: "Failed to analyze screenshots" }, { status: 500 });
   }
 }

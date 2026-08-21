@@ -151,24 +151,27 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [globalCounts, setGlobalCounts] = useState<Record<string, number>>({});
 
-  useEffect(() => {
-    if (open) {
-      setSelectedTemplate(null);
-      setProjectName("My App Screenshots");
-      setPlatforms({ ios: true, android: true });
-      setCreating(false);
-      setSearchQuery("");
+  const handleClose = () => {
+    setSelectedTemplate(null);
+    setProjectName("My App Screenshots");
+    setPlatforms({ ios: true, android: true });
+    setCreating(false);
+    setSearchQuery("");
+    onClose();
+  };
 
-      // Fetch global popularity counts from API
-      fetch("/api/templates/popularity")
-        .then((res) => res.json())
-        .then((data) => {
-          if (data?.success && data.counts) {
-            setGlobalCounts(data.counts);
-          }
-        })
-        .catch(() => {});
-    }
+  useEffect(() => {
+    if (!open) return;
+
+    // Fetch global popularity counts from API
+    fetch("/api/templates/popularity")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success && data.counts) {
+          setGlobalCounts(data.counts);
+        }
+      })
+      .catch(() => {});
   }, [open]);
 
   // Categories list
@@ -223,7 +226,7 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
       <DialogContent showCloseButton={false} className="max-w-5xl h-[88vh] flex flex-col p-0 gap-0 overflow-hidden bg-background/95 backdrop-blur-xl">
 
         {/* Header */}
@@ -235,7 +238,7 @@ export function NewProjectModal({ open, onClose, onCreated }: NewProjectModalPro
                 Choose a pre-designed theme for your screenshots
               </p>
             </div>
-            <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full -mr-2 -mt-2">
+            <Button variant="ghost" size="icon" onClick={handleClose} className="rounded-full -mr-2 -mt-2">
               <X className="w-5 h-5" />
             </Button>
           </div>

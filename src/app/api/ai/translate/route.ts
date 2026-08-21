@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runAIWithFallbacks, trimToLimit } from "@/lib/ai/aiService";
+import { authorizeAIRequest } from "@/lib/serverAuth";
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,15 +10,19 @@ export async function POST(req: NextRequest) {
       targetLang, // e.g. "ro", "es", "de", "fr", "ja"
       maxLength = 40,
       context = "App Store screenshot marketing captions",
-      clientKeys,
     } = body;
+
+    const authCheck = await authorizeAIRequest(req);
+    if (!authCheck.success) {
+      return authCheck.response;
+    }
 
     if (!texts || (Array.isArray(texts) && texts.length === 0)) {
       return NextResponse.json({ error: "Texts are required" }, { status: 400 });
     }
 
     const isArray = Array.isArray(texts);
-    const textList = isArray ? texts : Object.values(texts);
+    const textList: string[] = isArray ? texts : Object.values(texts);
 
     const prompt = `You are a native copywriter and localization expert for mobile apps.
 Translate and culturally adapt the following marketing texts into native, natural, high-converting ${targetLang}.
@@ -38,9 +43,9 @@ Return a JSON object with:
   ]
 }`;
 
-    const rawResponse = await runAIWithFallbacks(prompt, clientKeys, undefined, true);
+    const rawResponse = await runAIWithFallbacks(prompt, undefined, true);
     
-    let parsed: any;
+    let parsed: { translations?: string[] };
     try {
       parsed = JSON.parse(rawResponse);
     } catch {
@@ -59,19 +64,20 @@ Return a JSON object with:
       finalTranslations = textList.map((t, idx) => finalTranslations[idx] || t);
     }
 
-    let result: any = finalTranslations;
-    if (!isArray && typeof texts === "object") {
+    // Return in same shape as input
+    if (isArray) {
+      return NextResponse.json({ success: true, translations: finalTranslations });
+    } else {
       const keys = Object.keys(texts);
-      const mapped: Record<string, string> = {};
-      keys.forEach((k, i) => {
-        mapped[k] = finalTranslations[i] || texts[k];
+      const resultMap: Record<string, string> = {};
+      keys.forEach((key, idx) => {
+        resultMap[key] = finalTranslations[idx] || (texts as Record<string, string>)[key];
       });
-      result = mapped;
+      return NextResponse.json({ success: true, translations: resultMap });
     }
-
-    return NextResponse.json({ success: true, translations: result });
-  } catch (error: any) {
-    console.error("AI Translation error:", error);
-    return NextResponse.json({ error: error.message || "Failed to translate texts" }, { status: 500 });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("AI Translate error:", err.message);
+    return NextResponse.json({ error: "Failed to translate texts" }, { status: 500 });
   }
 }

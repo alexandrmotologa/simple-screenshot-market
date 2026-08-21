@@ -23,6 +23,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { toast } from "@/lib/store/toastStore";
+import { nanoid } from "@/lib/utils";
 import { Layer } from "@/lib/types";
 
 interface BlockPreset {
@@ -458,7 +459,7 @@ const AWARD_PRESETS: BlockPreset[] = [
     preview: (
       <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-950/90 border border-amber-400/50 text-amber-300 shadow-xs">
         <span className="text-xs">🌿</span>
-        <span className="text-[11px] font-bold text-amber-300">App Store Editors' Choice</span>
+        <span className="text-[11px] font-bold text-amber-300">App Store Editors&apos; Choice</span>
         <span className="text-xs">🌿</span>
       </div>
     ),
@@ -1025,7 +1026,7 @@ const PRESS_PRESETS: BlockPreset[] = [
     keywords: ["techcrunch", "press", "media", "quote", "review"],
     preview: (
       <div className="w-full p-2 rounded-xl bg-slate-900/90 border border-emerald-500/30 text-white">
-        <div className="text-[9.5px] font-medium italic text-slate-200 truncate">"The fastest screenshot editor on mobile."</div>
+        <div className="text-[9.5px] font-medium italic text-slate-200 truncate">&quot;The fastest screenshot editor on mobile.&quot;</div>
         <div className="text-[9px] font-bold text-emerald-400 mt-0.5">— TechCrunch</div>
       </div>
     ),
@@ -1058,7 +1059,7 @@ const PRESS_PRESETS: BlockPreset[] = [
     preview: (
       <div className="w-full p-2 rounded-xl bg-slate-900/90 border border-amber-500/30 text-white">
         <div className="text-amber-400 text-xs font-bold mb-0.5">★★★★★</div>
-        <div className="text-[9.5px] font-medium text-slate-200 truncate">"Boosted our App Store conversion by +40%!"</div>
+        <div className="text-[9.5px] font-medium text-slate-200 truncate">&quot;Boosted our App Store conversion by +40%!&quot;</div>
         <div className="text-[8.5px] text-muted-foreground mt-0.5">@alex_dev</div>
       </div>
     ),
@@ -1484,7 +1485,7 @@ export function BlocksPanel() {
     }
 
     const rawLayers = preset.getLayers(screen.width, screen.height);
-    const groupId = `group-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const groupId = `group-${nanoid(8)}`;
     const layersToAdd = rawLayers.length > 1
       ? rawLayers.map((l) => ({ ...l, groupId }))
       : rawLayers;
@@ -1578,7 +1579,7 @@ export function BlocksPanel() {
               <Search className="w-8 h-8 opacity-30 mb-2" />
               <p className="text-xs font-semibold">No blocks found</p>
               <p className="text-[11px] text-muted-foreground/70 mt-0.5">
-                Try searching for "{searchQuery}" or clear the filters.
+                Try searching for &quot;{searchQuery}&quot; or clear the filters.
               </p>
               <button
                 onClick={() => {

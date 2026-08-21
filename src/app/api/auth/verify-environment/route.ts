@@ -1,9 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb, isAdminConfigured } from "@/lib/firebaseAdmin";
 import { getEnvironmentLabel } from "@/lib/authEnvironment";
+import { verifyAuth } from "@/lib/serverAuth";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimiter";
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    const rateLimit = checkRateLimit(`auth:${ip}`, { limit: 30, windowMs: 60000, keyPrefix: "auth" });
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        { allowed: false, message: "Too many authentication requests. Please slow down." },
+        { status: 429 }
+      );
+    }
+
+    const authResult = await verifyAuth(req);
+    if (!authResult.success) {
+      return authResult.response;
+    }
+
+    const authUid = authResult.data.uid;
     const body = await req.json();
     const { uid, email, displayName, photoURL, environment } = body;
 
@@ -14,8 +31,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // If Firebase Admin is not configured (e.g. local without service account), pass through to client verification
+    if (authUid && authUid !== uid) {
+      return NextResponse.json(
+        { allowed: false, message: "Forbidden: UID does not match authenticated credentials." },
+        { status: 403 }
+      );
+    }
+
+    // If Firebase Admin is not configured (e.g. local dev without service account)
     if (!isAdminConfigured || !adminDb) {
+      if (process.env.NODE_ENV === "production") {
+        return NextResponse.json(
+          { allowed: false, message: "Server authentication service unavailable." },
+          { status: 503 }
+        );
+      }
       return NextResponse.json({
         allowed: true,
         registeredEnvironment: environment,
@@ -117,11 +147,12 @@ export async function POST(req: NextRequest) {
       aiCredits: 3,
       usedAiCredits: 0,
     });
-  } catch (error: any) {
-    console.error("[VerifyEnvironment API] Error:", error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("[VerifyEnvironment API] Error:", err);
     return NextResponse.json(
-      { allowed: true, error: error.message || "Internal server error" },
-      { status: 200 }
+      { allowed: false, message: "Internal server error during verification." },
+      { status: 500 }
     );
   }
 }

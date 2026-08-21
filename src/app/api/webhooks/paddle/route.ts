@@ -48,10 +48,9 @@ export async function POST(req: NextRequest) {
     const secretKeys = [
       process.env.PADDLE_WEBHOOK_SECRET_KEY,
       process.env.PADDLE_SANDBOX_WEBHOOK_SECRET_KEY,
-      "ntfset_01m0gcz0e145xwhh1x7ede99j2",
     ].filter(Boolean) as string[];
 
-    // If secrets are configured, at least one must validate the signature
+    // In production or when keys are provided, require a valid signature
     if (secretKeys.length > 0) {
       const isValid = secretKeys.some((key) =>
         verifyPaddleSignature(rawBody, signatureHeader, key)
@@ -61,6 +60,9 @@ export async function POST(req: NextRequest) {
         console.warn("[Paddle Webhook] Invalid signature rejected across configured secret keys");
         return NextResponse.json({ error: "Invalid webhook signature" }, { status: 401 });
       }
+    } else if (process.env.NODE_ENV === "production") {
+      console.error("[Paddle Webhook] No Paddle webhook secret keys configured in production");
+      return NextResponse.json({ error: "Webhook verification not configured" }, { status: 500 });
     }
 
     const payload = JSON.parse(rawBody);

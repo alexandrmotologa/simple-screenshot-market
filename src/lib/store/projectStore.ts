@@ -1,8 +1,11 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Project, Screen, Layer, ScreenSet } from "@/lib/types";
+import { Project, Screen, Layer, ScreenSet, Background } from "@/lib/types";
 import { nanoid } from "@/lib/utils";
 import { ALL_TEMPLATES, BLANK_TEMPLATE } from "@/lib/templates";
+import { useAuthStore } from "@/lib/store/authStore";
+import { toast } from "@/lib/store/toastStore";
+import { saveProjectToCloud, deleteProjectFromCloud } from "@/lib/cloudProjectSync";
 
 interface ProjectStore {
   projects: Project[];
@@ -38,12 +41,14 @@ export const useProjectStore = create<ProjectStore>()(
           : BLANK_TEMPLATE.screens;
 
         const generateScreens = (): Screen[] => {
-          return baseScreens.map((ts: any, index: number) => ({
+          return baseScreens.map((ts: { background?: unknown; layers?: Layer[] }, index: number) => ({
             id: nanoid(),
             name: `Screen ${index + 1}`,
             width: 1290,
             height: 2796,
-            background: { ...ts.background },
+            background: (ts.background && typeof ts.background === "object" && "type" in ts.background)
+              ? (ts.background as Background)
+              : { type: "solid" as const, color: "#0f172a" },
             layers: (ts.layers ?? []).map((l: Layer) => ({
               ...l,
               id: nanoid(),
@@ -57,21 +62,22 @@ export const useProjectStore = create<ProjectStore>()(
           screenSets.push({
             id: nanoid(),
             store: "ios",
+            name: "iOS - iPhone 16 Pro Max",
             preset: {
               name: 'iPhone 6.7"',
               width: 1290,
               height: 2796,
               store: "ios",
-              description: "App Store",
+              description: "App Store standard",
             },
             mockup: {
-              device: "iphone-17-pro-max",
-              color: "black",
+              device: "iphone-16-pro-max",
+              color: "natural-titanium",
               showFrame: true,
               showReflection: true,
-              showShadow: false,
-              frameType: "3d",
+              showShadow: true,
             },
+            deviceId: "iphone-16-pro-max",
             screens: generateScreens(),
           });
         }
@@ -80,37 +86,61 @@ export const useProjectStore = create<ProjectStore>()(
           screenSets.push({
             id: nanoid(),
             store: "android",
+            name: "Android - Modern Phone",
             preset: {
               name: 'Android 6.7"',
               width: 1290,
               height: 2796,
               store: "android",
-              description: "Google Play — standard portrait",
+              description: "Google Play standard",
             },
             mockup: {
               device: "pixel-10-pro-xl",
-              color: "Obsidian",
+              color: "obsidian",
               showFrame: true,
               showReflection: true,
-              showShadow: false,
-              frameType: "3d",
+              showShadow: true,
             },
+            deviceId: "pixel-10-pro-xl",
+            screens: generateScreens(),
+          });
+        }
+
+        if (screenSets.length === 0) {
+          screenSets.push({
+            id: nanoid(),
+            store: "ios",
+            name: "Default Set",
+            preset: {
+              name: 'iPhone 6.7"',
+              width: 1290,
+              height: 2796,
+              store: "ios",
+              description: "App Store standard",
+            },
+            mockup: {
+              device: "iphone-16-pro-max",
+              color: "natural-titanium",
+              showFrame: true,
+              showReflection: true,
+              showShadow: true,
+            },
+            deviceId: "iphone-16-pro-max",
             screens: generateScreens(),
           });
         }
 
         // Free tier project limit check (Max 3 projects for Free/Guest)
         try {
-          const { useAuthStore } = require("@/lib/store/authStore");
           const { isPro, setUpgradeModalOpen } = useAuthStore.getState();
           if (!isPro && get().projects.length >= 3) {
-            const { toast } = require("@/lib/store/toastStore");
             setUpgradeModalOpen(true);
             toast.info("Free plan includes up to 3 local projects. Upgrade to SnapFrame Pro for unlimited projects & multi-device cloud sync!");
             throw new Error("Free project limit reached (3 max).");
           }
-        } catch (e: any) {
-          if (e.message?.includes("Free project limit")) throw e;
+        } catch (e: unknown) {
+          const err = e as Error;
+          if (err.message?.includes("Free project limit")) throw err;
         }
 
         const project: Project = {
@@ -126,10 +156,8 @@ export const useProjectStore = create<ProjectStore>()(
 
         // Cloud sync if Pro subscriber
         try {
-          const { useAuthStore } = require("@/lib/store/authStore");
           const { isPro, user } = useAuthStore.getState();
           if (isPro && user?.uid) {
-            const { saveProjectToCloud } = require("@/lib/cloudProjectSync");
             saveProjectToCloud(user.uid, project);
           }
         } catch {}
@@ -153,10 +181,8 @@ export const useProjectStore = create<ProjectStore>()(
         // Cloud sync if Pro subscriber
         try {
           if (modifiedProject) {
-            const { useAuthStore } = require("@/lib/store/authStore");
             const { isPro, user } = useAuthStore.getState();
             if (isPro && user?.uid) {
-              const { saveProjectToCloud } = require("@/lib/cloudProjectSync");
               saveProjectToCloud(user.uid, modifiedProject);
             }
           }
@@ -170,10 +196,8 @@ export const useProjectStore = create<ProjectStore>()(
 
         // Cloud sync if Pro subscriber
         try {
-          const { useAuthStore } = require("@/lib/store/authStore");
           const { isPro, user } = useAuthStore.getState();
           if (isPro && user?.uid) {
-            const { deleteProjectFromCloud } = require("@/lib/cloudProjectSync");
             deleteProjectFromCloud(user.uid, id);
           }
         } catch {}
@@ -182,16 +206,15 @@ export const useProjectStore = create<ProjectStore>()(
       duplicateProject: (id) => {
         // Free tier project limit check
         try {
-          const { useAuthStore } = require("@/lib/store/authStore");
           const { isPro, setUpgradeModalOpen } = useAuthStore.getState();
           if (!isPro && get().projects.length >= 3) {
-            const { toast } = require("@/lib/store/toastStore");
             setUpgradeModalOpen(true);
             toast.info("Free plan includes up to 3 local projects. Upgrade to SnapFrame Pro for unlimited projects & multi-device cloud sync!");
             throw new Error("Free project limit reached (3 max).");
           }
-        } catch (e: any) {
-          if (e.message?.includes("Free project limit")) throw e;
+        } catch (e: unknown) {
+          const err = e as Error;
+          if (err.message?.includes("Free project limit")) throw err;
         }
 
         const project = get().projects.find((p) => p.id === id);
@@ -220,10 +243,8 @@ export const useProjectStore = create<ProjectStore>()(
 
         // Cloud sync if Pro subscriber
         try {
-          const { useAuthStore } = require("@/lib/store/authStore");
           const { isPro, user } = useAuthStore.getState();
           if (isPro && user?.uid) {
-            const { saveProjectToCloud } = require("@/lib/cloudProjectSync");
             saveProjectToCloud(user.uid, duplicate);
           }
         } catch {}
@@ -249,10 +270,8 @@ export const useProjectStore = create<ProjectStore>()(
         // Cloud sync if Pro subscriber
         try {
           if (modifiedProject) {
-            const { useAuthStore } = require("@/lib/store/authStore");
             const { isPro, user } = useAuthStore.getState();
             if (isPro && user?.uid) {
-              const { saveProjectToCloud } = require("@/lib/cloudProjectSync");
               saveProjectToCloud(user.uid, modifiedProject);
             }
           }

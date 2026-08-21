@@ -57,8 +57,7 @@ export function ScreenThumbnailCanvas({
   }, [screen, screenSet, width, height, activeLang]);
 
   useEffect(() => {
-    let animId: number;
-    animId = requestAnimationFrame(() => {
+    const animId = requestAnimationFrame(() => {
       drawThumbnail();
     });
     return () => cancelAnimationFrame(animId);

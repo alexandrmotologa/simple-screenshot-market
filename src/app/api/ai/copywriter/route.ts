@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runAIWithFallbacks, trimToLimit } from "@/lib/ai/aiService";
+import { authorizeAIRequest } from "@/lib/serverAuth";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,8 +12,12 @@ export async function POST(req: NextRequest) {
       maxLength = 30, // character limit
       language = "en",
       niche,
-      clientKeys,
     } = body;
+
+    const authCheck = await authorizeAIRequest(req);
+    if (!authCheck.success) {
+      return authCheck.response;
+    }
 
     if (!text && action !== "ideas") {
       return NextResponse.json({ error: "Text is required" }, { status: 400 });
@@ -49,9 +54,9 @@ Return JSON:
 }`;
     }
 
-    const rawResponse = await runAIWithFallbacks(prompt, clientKeys, undefined, true);
+    const rawResponse = await runAIWithFallbacks(prompt, undefined, true);
     
-    let parsed: any;
+    let parsed: { result?: string; variations?: string[]; options?: string[] };
     try {
       parsed = JSON.parse(rawResponse);
     } catch {
@@ -74,8 +79,9 @@ Return JSON:
     }
 
     return NextResponse.json({ success: true, ...parsed });
-  } catch (error: any) {
-    console.error("AI Copywriter error:", error);
-    return NextResponse.json({ error: error.message || "Failed to generate copy" }, { status: 500 });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("AI Copywriter error:", err.message);
+    return NextResponse.json({ error: "Failed to generate copy" }, { status: 500 });
   }
 }

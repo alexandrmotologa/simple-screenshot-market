@@ -24,23 +24,25 @@ graph TD
     CanvasEngine --> ZipExport[4K Multi-Platform ZIP Exporter]
   end
 
-  subgraph Server-Side AI Layer
-    Editor --> AIAutoPilot[/api/ai/vision-screens]
-    Editor --> AICopywriter[/api/ai/copywriter]
-    Editor --> AIASO[/api/ai/store-listing]
-    Editor --> AITranslate[/api/ai/translate]
-    Editor --> AIPalette[/api/ai/palette]
+  subgraph Server-Side AI Layer & Security
+    Editor --> AuthCheck[serverAuth.ts: Firebase ID Token & Rate Limiter]
+    AuthCheck --> AIAutoPilot[/api/ai/vision-screens]
+    AuthCheck --> AICopywriter[/api/ai/copywriter]
+    AuthCheck --> AIASO[/api/ai/store-listing]
+    AuthCheck --> AITranslate[/api/ai/translate]
+    AuthCheck --> AIPalette[/api/ai/palette]
 
-    AIAutoPilot --> AIService[aiService.ts with Fallback Runner]
+    AIAutoPilot --> AIService[aiService.ts Universal Fallback Runner]
     AICopywriter --> AIService
     AIASO --> AIService
     AITranslate --> AIService
     AIPalette --> AIService
 
-    AIService --> Gemini[Google Gemini 1.5 Flash]
-    AIService --> OpenAI[OpenAI GPT-4o-mini]
-    AIService --> Groq[Groq Llama 3.3 70B]
-    AIService --> Mistral[Mistral Small]
+    AIService --> Gemini[Google Gemini 3.6 Flash - Text & Vision]
+    AIService --> OpenAI[OpenAI GPT-4o-mini - Text & Vision]
+    AIService --> Groq[Groq GPT-OSS 120B / Llama 3.2 Vision]
+    AIService --> Mistral[Mistral Small / Pixtral Vision]
+    AIService --> XAI[xAI Grok 3 / Grok 2 Vision]
   end
 ```
 
@@ -119,3 +121,14 @@ When users add an **iPad Pro (2048 × 2732 px)** or **Android Tablet (1600 × 25
 1. The engine calculates the aspect ratio and dimensional scaling factor relative to the source phone set.
 2. Clones all layers, text properties, font sizes, positioning offsets, and backgrounds.
 3. Automatically resizes and centers mockup frames to suit tablet proportions while maintaining exact typography hierarchy.
+
+---
+
+## 5. Security & Infrastructure Hardening
+
+- **Server-Side Token Verification (`serverAuth.ts`):** All critical routes (`/api/account/billing`, `/api/ai/*`, `/api/uploadthing`) verify Firebase ID Tokens via `firebaseAdmin.ts` (`adminAuth.verifyIdToken`) preventing unauthorized impersonation.
+- **Sliding-Window Rate Limiting (`rateLimiter.ts`):** In-memory sliding window rate limiting prevents scraping, DoS, and automated credential consumption across IP and user identifiers.
+- **Anti-SSRF Protection (`/api/scrape-app`):** Strict DNS resolution filtering blocks requests to private IPv4 (RFC 1918), loopback, link-local, carrier-grade NAT, cloud metadata IP (169.254.169.254), and private IPv6 ranges.
+- **SVG Sandbox Proxy (`/api/proxy-svg`):** Origin whitelisting, Content Security Policy (`sandbox; default-src 'none'`), and `X-Content-Type-Options: nosniff` prevent XSS via maliciously crafted vector SVGs.
+- **HTTP Security Headers (`next.config.ts`):** Enforces HSTS, `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Permissions-Policy`.
+- **Next.js App Router Boundaries:** Robust error handling with dedicated root boundaries (`not-found.tsx`, `error.tsx`, `global-error.tsx`, and `loading.tsx`).

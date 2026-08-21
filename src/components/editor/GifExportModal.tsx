@@ -72,7 +72,7 @@ export function GifExportModal({ projectId, onClose }: GifExportModalProps) {
   useEffect(() => {
     if (!isPlayingPreview || screens.length === 0) return;
 
-    let startTime = performance.now();
+    const startTime = performance.now();
     const frameDurationMs = (1 / fps) * 1000;
     const transitionMs = transition === "cut" ? 0 : 450;
 

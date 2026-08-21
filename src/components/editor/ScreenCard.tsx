@@ -2347,8 +2347,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
   }, [screen, isActiveScreen, activeLayerId, activeLang, hideScreenshots, screenSet.mockup]);
 
   useEffect(() => {
-    let animId: number;
-    animId = requestAnimationFrame(() => {
+    const animId = requestAnimationFrame(() => {
       draw();
     });
     return () => cancelAnimationFrame(animId);

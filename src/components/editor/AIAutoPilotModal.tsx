@@ -60,11 +60,13 @@ export function AIAutoPilotModal({ open, onOpenChange }: AIAutoPilotModalProps) 
         };
       });
 
-      setProgressStep("Consulting AI Vision & Copywriter Engine...");
-
+      const idToken = user ? await user.getIdToken().catch(() => "") : "";
       const res = await fetch("/api/ai/vision-screens", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+        },
         body: JSON.stringify({
           screens: screenPayload,
           appName: activeSet.name || "Mobile App",

@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
-import { LogOut, User as UserIcon, Sparkles, ChevronDown, ShieldAlert, CheckCircle2, Crown, CreditCard } from "lucide-react";
+import { LogOut, User as UserIcon, Sparkles, ChevronDown, ShieldAlert, Crown, CreditCard } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -20,12 +19,8 @@ interface UserMenuProps {
 
 export function UserMenu({ className }: UserMenuProps) {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
   const { user, isLoading, isInitialized, isPro, aiCredits, setAuthModalOpen, setUpgradeModalOpen, signOutUser } = useAuthStore();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   if (!mounted) {
     return (

@@ -1040,7 +1040,11 @@ export async function renderScreenToCanvas(
           const r3 = i % 2 === 0 ? outerR : innerR;
           const px = cx2 + Math.cos(angle) * r3;
           const py = cy2 + Math.sin(angle) * r3;
-          i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+          if (i === 0) {
+            ctx.moveTo(px, py);
+          } else {
+            ctx.lineTo(px, py);
+          }
         }
         ctx.closePath();
         ctx.fill(); applyStroke();
@@ -1052,7 +1056,11 @@ export async function renderScreenToCanvas(
           const angle = (Math.PI / 3) * i - Math.PI / 6;
           const px = cx2 + Math.cos(angle) * r4;
           const py = cy2 + Math.sin(angle) * r4;
-          i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+          if (i === 0) {
+            ctx.moveTo(px, py);
+          } else {
+            ctx.lineTo(px, py);
+          }
         }
         ctx.closePath();
         ctx.fill(); applyStroke();
