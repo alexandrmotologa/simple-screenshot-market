@@ -98,7 +98,7 @@ export function StorePreviewModal({ open, onOpenChange, appName: initialAppName 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl max-h-[94vh] flex flex-col p-0 overflow-hidden border border-border/70 rounded-2xl bg-card shadow-2xl">
         {/* Modal Top Control Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-border/50 bg-secondary/60 shrink-0">
+        <div className="flex flex-wrap items-center justify-between gap-3 pl-5 pr-14 py-3 border-b border-border/50 bg-secondary/60 shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center text-primary">
               <Smartphone className="w-4 h-4" />
