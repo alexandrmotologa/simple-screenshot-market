@@ -8,7 +8,7 @@ import {
   CheckCircle2, Palette, Download, Wand2
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/lib/store/authStore";
 import Link from "next/link";
@@ -18,6 +18,7 @@ import { UserMenu } from "@/components/auth/UserMenu";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
 import { BrandHeroIcon } from "@/components/ui/BrandHeroIcon";
+import { GithubIcon } from "@/components/ui/GithubIcon";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -48,15 +49,19 @@ export default function LandingPage() {
                 <ArrowRight className="w-3.5 h-3.5" />
               </Button>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hidden sm:flex"
-              onClick={() => window.open("https://github.com/alexandrmotologa/snapframe.store", "_blank")}
+            <a
+              href="https://github.com/alexandrmotologa/snapframe.store"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonVariants({
+                variant: "ghost",
+                size: "sm",
+                className: "text-muted-foreground hidden sm:inline-flex items-center gap-1.5",
+              })}
             >
-              <Globe className="w-4 h-4 mr-1.5" />
-              GitHub
-            </Button>
+              <GithubIcon className="w-3.5 h-3.5 text-muted-foreground/80" />
+              <span>GitHub</span>
+            </a>
             <ThemeToggle />
             <UserMenu />
           </div>

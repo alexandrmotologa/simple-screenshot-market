@@ -114,7 +114,6 @@ export function AssetsPanel() {
     setAssets((prev) => prev.filter((a) => a.id !== id));
   };
 
-  const hasZone = !!getScreenshotZone();
   const screenshotLayersCount = screenSets.reduce((acc, ss) =>
     acc + ss.screens.reduce((a, scr) => a + scr.layers.filter((l) => l.type === "screenshot").length, 0)
   , 0);
@@ -184,33 +183,40 @@ export function AssetsPanel() {
           {assets.length > 0 ? (
             <div className="space-y-3">
               {/* 1-Click Auto Fill Banner */}
-              <div className="p-3 rounded-xl bg-gradient-to-br from-primary/15 via-primary/5 to-secondary border border-primary/30 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-                    <Sparkles className="w-3.5 h-3.5 text-primary" />
-                    <span>Auto-Fill All Screens</span>
+              {(() => {
+                const activeSet = getActiveSet();
+                const targetScreensCount = Math.min(assets.length, activeSet?.screens.length || 0);
+                const screenLabel = targetScreensCount === 1 ? "1 Screen" : `${targetScreensCount} Screens`;
+
+                return (
+                  <div className="p-3.5 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-secondary/60 border border-primary/25 space-y-2.5 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                        <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>Auto-Fill All Screens</span>
+                      </div>
+                      <span className="text-[10px] font-mono text-muted-foreground bg-background/60 px-1.5 py-0.5 rounded-md border border-border/40">
+                        {assets.length} {assets.length === 1 ? "image" : "images"}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      Distributes uploaded screenshots sequentially: #1 ➔ Screen 1, #2 ➔ Screen 2, and so on.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!activeSet || assets.length === 0) return;
+                        autoFillScreenshots(activeSet.id, assets.map((a) => a.dataUrl));
+                        toast.success(`Auto-filled ${targetScreensCount} ${targetScreensCount === 1 ? "screen" : "screens"} with your screenshots!`);
+                      }}
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold tracking-tight transition-all shadow-sm active:scale-[0.98] cursor-pointer"
+                    >
+                      <Wand2 className="w-4 h-4 shrink-0 text-primary-foreground" />
+                      <span className="truncate">Auto-Populate ({screenLabel})</span>
+                    </button>
                   </div>
-                  <span className="text-[10px] font-mono text-muted-foreground">
-                    {assets.length} image{assets.length > 1 ? "s" : ""}
-                  </span>
-                </div>
-                <p className="text-[10.5px] text-muted-foreground leading-relaxed">
-                  Distributes uploaded screenshots sequentially: #1 ➔ Screen 1, #2 ➔ Screen 2, and so on.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const set = getActiveSet();
-                    if (!set || assets.length === 0) return;
-                    autoFillScreenshots(set.id, assets.map((a) => a.dataUrl));
-                    toast.success(`Auto-filled ${Math.min(assets.length, set.screens.length)} screens with your screenshots!`);
-                  }}
-                  className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-all shadow-sm active:scale-[0.98] cursor-pointer"
-                >
-                  <Wand2 className="w-3.5 h-3.5" />
-                  <span>✨ Auto-Populate Project ({Math.min(assets.length, getActiveSet()?.screens.length || 0)} Screens)</span>
-                </button>
-              </div>
+                );
+              })()}
 
               <div className="flex items-center justify-between">
                 <p className="text-xs font-medium text-muted-foreground">

@@ -9,7 +9,7 @@ import {
   ShieldAlert, Lock, Folder,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { NewProjectModal } from "@/components/dashboard/NewProjectModal";
 import { RenameProjectModal } from "@/components/dashboard/RenameProjectModal";
@@ -26,6 +26,7 @@ import { AuthModal } from "@/components/auth/AuthModal";
 import { UpgradeModal } from "@/components/pricing/UpgradeModal";
 import { SnapFrameLogo } from "@/components/ui/SnapFrameLogo";
 import { BrandHeroIcon } from "@/components/ui/BrandHeroIcon";
+import { GithubIcon } from "@/components/ui/GithubIcon";
 import { toast } from "@/lib/store/toastStore";
 
 // ── Mini Canvas Thumbnail with Real Screen Render & Multi-Screen Stack ────────
@@ -652,15 +653,19 @@ export default function ProjectsPage() {
             <Link href="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium px-2 py-1">
               Home
             </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hidden sm:flex"
-              onClick={() => window.open("https://github.com/alexandrmotologa/snapframe.store", "_blank")}
+            <a
+              href="https://github.com/alexandrmotologa/snapframe.store"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonVariants({
+                variant: "ghost",
+                size: "sm",
+                className: "text-muted-foreground hidden sm:inline-flex items-center gap-1.5",
+              })}
             >
-              <Globe className="w-4 h-4 mr-1.5" />
-              GitHub
-            </Button>
+              <GithubIcon className="w-3.5 h-3.5 text-muted-foreground/80" />
+              <span>GitHub</span>
+            </a>
             <ThemeToggle />
             <UserMenu />
           </div>
