@@ -485,3 +485,12 @@ export interface Template {
   layout: TemplateLayout;
   screens: TemplateScreen[];
 }
+
+export interface UploadedAsset {
+  id: string;
+  name: string;
+  dataUrl: string;
+  width?: number;
+  height?: number;
+}
+

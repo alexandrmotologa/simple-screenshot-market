@@ -24,6 +24,12 @@ interface EditorStore {
   /** IDs of layers in multi-select (Shift+click) */
   selectedLayerIds: string[];
 
+  // Uploaded project media assets
+  projectAssets: import("@/lib/types").UploadedAsset[];
+  addProjectAsset: (asset: { name?: string; dataUrl: string; width?: number; height?: number }) => void;
+  removeProjectAsset: (id: string) => void;
+  clearProjectAssets: () => void;
+
   // UI state
   zoom: number;
   showGrid: boolean;
@@ -140,6 +146,32 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   activeScreenId: null,
   activeLayerId: null,
   selectedLayerIds: [],
+  projectAssets: [],
+
+  addProjectAsset: (asset) => {
+    const existing = get().projectAssets;
+    if (existing.some((a) => a.dataUrl === asset.dataUrl)) {
+      return;
+    }
+    const id = `asset-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const newAsset: import("@/lib/types").UploadedAsset = {
+      id,
+      name: asset.name || "Screenshot",
+      dataUrl: asset.dataUrl,
+      width: asset.width,
+      height: asset.height,
+    };
+    set({ projectAssets: [newAsset, ...existing] });
+  },
+
+  removeProjectAsset: (id) => {
+    set({ projectAssets: get().projectAssets.filter((a) => a.id !== id) });
+  },
+
+  clearProjectAssets: () => {
+    set({ projectAssets: [] });
+  },
+
   zoom: 0.65,
   showGrid: false,
   showGuides: true,

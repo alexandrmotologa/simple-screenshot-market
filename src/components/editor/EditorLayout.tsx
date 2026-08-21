@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import {
   ArrowLeft, Undo2, Redo2, Download,
   Share2, ZoomIn, ZoomOut, Upload, Sparkles, Film,
-  Copy, Keyboard, Check, ChevronDown, Eye, Lock, Palette,
+  Copy, Keyboard, Check, ChevronDown, Eye, Lock, Palette, Trash2,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { KeyboardShortcutsModal } from "@/components/editor/KeyboardShortcutsModal";
@@ -164,8 +164,9 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
       const src = ev.target?.result as string;
       if (!src) return;
       updateLayer(activeSet.id, activeScreen.id, activeLayerId, { src } as Partial<ScreenshotLayer>);
+      useEditorStore.getState().addProjectAsset({ name: file.name, dataUrl: src });
       useEditorStore.getState().recordHistory();
-      toast.success("Screenshot replaced successfully!");
+      toast.success("Screenshot replaced & added to Media Assets!");
     };
     reader.readAsDataURL(file);
     e.target.value = "";
@@ -351,9 +352,9 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
             </IconBtn>
           </div>
 
-          {/* Replace screenshot — appears when screenshot layer is selected */}
+          {/* Replace / Clear screenshot — appears when screenshot layer is selected */}
           {isScreenshotSelected && (
-            <>
+            <div className="flex items-center gap-1">
               <input ref={replaceFileRef} type="file" accept="image/*" className="hidden" onChange={handleReplaceFile} />
               <button
                 type="button"
@@ -365,7 +366,22 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
                 <span className="show-under-1200">Screenshot</span>
                 <span className="show-from-1200">Replace screenshot</span>
               </button>
-            </>
+              {(activeLayer as ScreenshotLayer)?.src && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateLayer(activeSet.id, activeScreen.id, activeLayerId!, { src: undefined } as Partial<ScreenshotLayer>);
+                    useEditorStore.getState().recordHistory();
+                    toast.info("Screenshot cleared from mockup.");
+                  }}
+                  className="h-7 flex items-center gap-1 px-2 text-xs font-medium rounded-lg hover:bg-destructive/15 text-destructive/80 hover:text-destructive transition-all cursor-pointer"
+                  title="Clear screenshot from mockup"
+                >
+                  <Trash2 className="w-3 h-3 shrink-0" />
+                  <span className="show-from-1200">Clear</span>
+                </button>
+              )}
+            </div>
           )}
         </div>
 
@@ -495,7 +511,14 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
             }
             setShowAIAutoPilot(true);
           }}
-          onOpenStorePreview={() => setShowStorePreview(true)}
+          onOpenStorePreview={() => {
+            if (isGuest) {
+              setAuthModalOpen(true);
+              toast.info("Live Store Listing Simulator requires a free account. Sign in with Google or GitHub (100% Free) to unlock.");
+              return;
+            }
+            setShowStorePreview(true);
+          }}
           onOpenAssetsStudio={() => {
             if (isGuest) {
               setAuthModalOpen(true);

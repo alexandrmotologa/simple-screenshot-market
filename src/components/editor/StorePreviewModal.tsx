@@ -1,25 +1,24 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useEditorStore } from "@/lib/store/editorStore";
-import { useProjectStore } from "@/lib/store/projectStore";
 import { useLanguageStore, getLang } from "@/lib/store/languageStore";
 import { AppleStoreIcon, GooglePlayIcon } from "@/components/icons/StoreIcons";
 import {
   Smartphone, Tablet, Share2, Star, Sparkles,
   ChevronLeft, ChevronRight, Moon, Sun, ArrowLeft, MoreVertical,
-  Edit3, Check, Globe, Upload, Image as ImageIcon,
-  ShieldCheck, Award, ThumbsUp, RefreshCw
+  Edit3, Globe, Upload, Lock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScreenThumbnailCanvas } from "@/components/editor/ScreenThumbnailCanvas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuthStore } from "@/lib/store/authStore";
 
 import { isTabletDevice } from "@/lib/devices";
 
@@ -30,6 +29,9 @@ interface StorePreviewModalProps {
 }
 
 export function StorePreviewModal({ open, onOpenChange, appName: initialAppName = "My Awesome App" }: StorePreviewModalProps) {
+  const { user, setAuthModalOpen } = useAuthStore();
+  const isGuest = Boolean(!user || user.isAnonymous);
+
   const { screenSets, activeSetId } = useEditorStore();
   const { projectLanguages, activeLang } = useLanguageStore();
 
@@ -81,6 +83,58 @@ export function StorePreviewModal({ open, onOpenChange, appName: initialAppName 
       scrollRef.current.scrollBy({ left: offset, behavior: "smooth" });
     }
   };
+
+  if (isGuest) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-md flex flex-col p-0 overflow-hidden border border-border/70 rounded-2xl bg-card shadow-2xl">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-border/50 bg-secondary/60">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-amber-500/15 flex items-center justify-center text-amber-400">
+                <Smartphone className="w-4 h-4" />
+              </div>
+              <div>
+                <DialogTitle className="text-sm font-bold text-foreground leading-tight">
+                  Live Store Listing Simulator
+                </DialogTitle>
+                <p className="text-[10px] text-muted-foreground">Registered Free Feature</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-4 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400 shadow-md">
+              <Lock className="w-6 h-6" />
+            </div>
+            <div className="space-y-1.5">
+              <h3 className="text-sm font-bold text-foreground">Sign In to Use Store Simulator</h3>
+              <p className="text-xs text-muted-foreground max-w-xs mx-auto leading-relaxed">
+                Test and preview your screenshots and metadata in interactive Apple App Store and Google Play interfaces in real-time. Create a free account or sign in with Google or GitHub (100% Free) to unlock.
+              </p>
+            </div>
+            <div className="flex gap-2.5 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="flex-1 cursor-pointer"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  onOpenChange(false);
+                  setAuthModalOpen(true);
+                }}
+                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+              >
+                Sign In / Register Free
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

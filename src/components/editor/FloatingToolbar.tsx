@@ -587,8 +587,16 @@ export function FloatingToolbar() {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => update({ src: ev.target?.result as string } as Partial<ScreenshotLayer>);
+    reader.onload = (ev) => {
+      const src = ev.target?.result as string;
+      if (!src) return;
+      update({ src } as Partial<ScreenshotLayer>);
+      useEditorStore.getState().addProjectAsset({ name: file.name, dataUrl: src });
+      useEditorStore.getState().recordHistory();
+      toast.success("Screenshot loaded into mockup & added to Media Assets!");
+    };
     reader.readAsDataURL(file);
+    e.target.value = "";
   };
 
   return (
@@ -712,13 +720,29 @@ export function FloatingToolbar() {
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleScreenshotUpload} />
             <button
               type="button"
-              title="Upload screenshot"
+              title={sl.src ? "Change screenshot" : "Upload screenshot"}
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/15 hover:bg-primary/25 text-primary text-xs font-medium transition-colors shrink-0"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/15 hover:bg-primary/25 text-primary text-xs font-medium transition-colors shrink-0 cursor-pointer"
             >
               <Upload className="w-3.5 h-3.5" />
               {sl.src ? "Change" : "Upload"}
             </button>
+
+            {sl.src && (
+              <button
+                type="button"
+                title="Clear screenshot from mockup"
+                onClick={() => {
+                  update({ src: undefined } as Partial<ScreenshotLayer>);
+                  useEditorStore.getState().recordHistory();
+                  toast.info("Screenshot cleared from mockup.");
+                }}
+                className="flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-destructive/15 text-destructive/80 hover:text-destructive text-xs font-medium transition-colors shrink-0 cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Clear</span>
+              </button>
+            )}
 
             <Btn
               active={sl.objectFit === "contain"}

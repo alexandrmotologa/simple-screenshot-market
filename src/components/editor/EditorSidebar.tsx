@@ -5,10 +5,11 @@ import {
   Layers, Type, Square, Flag,
   Cpu, Upload, Grid3X3, X, Palette, Smile, Globe, User,
   Smartphone, LayoutList, LayoutTemplate,
-  Sparkles, Eye, Film, Layers2,
+  Sparkles, Eye, Film, Layers2, Lock,
   ChevronDown, ChevronUp
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useAuthStore } from "@/lib/store/authStore";
 import { TemplatesPanel } from "@/components/editor/panels/TemplatesPanel";
 import { LayersPanel } from "@/components/editor/panels/LayersPanel";
 import { TextPanel } from "@/components/editor/panels/TextPanel";
@@ -135,6 +136,8 @@ export function EditorSidebar({
   onOpenAssetsStudio,
   onOpenGif,
 }: EditorSidebarProps) {
+  const { user } = useAuthStore();
+  const isGuest = Boolean(!user || user.isAnonymous);
   const [activePanel, setActivePanel] = useState<PanelId>(null);
   const railRef = useRef<HTMLDivElement>(null);
   const [canScrollDown, setCanScrollDown] = useState(false);
@@ -250,9 +253,14 @@ export function EditorSidebar({
                   className="relative w-9 h-9 rounded-xl flex items-center justify-center transition-all text-muted-foreground hover:text-foreground hover:bg-secondary/90 hover:scale-105 active:scale-95 outline-none cursor-pointer"
                 >
                   <Eye className="w-4 h-4 text-primary" />
+                  {isGuest && (
+                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-[8px] text-amber-400">
+                      <Lock className="w-2 h-2" />
+                    </span>
+                  )}
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={8} className="text-xs font-medium">
-                  📱 Live Store Simulator Preview
+                  📱 Live Store Simulator Preview {isGuest ? "(Sign in to unlock)" : ""}
                 </TooltipContent>
               </Tooltip>
             )}

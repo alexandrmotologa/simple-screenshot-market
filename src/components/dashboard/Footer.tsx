@@ -72,12 +72,13 @@ export function Footer() {
               <ul className="space-y-2.5 text-sm text-muted-foreground">
                 <li>
                   <Link href="/pricing" className="hover:text-foreground transition-colors font-medium text-foreground flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-primary" />
-                    Pricing Plans ($9/mo)
+                    <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
+                    <span>Pricing Plans</span>
                   </Link>
                 </li>
                 <li>
                   <Link href="/pricing" className="hover:text-foreground transition-colors inline-flex items-center gap-1.5">
+                    <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                     <span>Pro Annual</span>
                     <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/15 text-emerald-500 border border-emerald-500/20">
                       Save 36%
@@ -86,13 +87,14 @@ export function Footer() {
                 </li>
                 <li>
                   <Link href="/refunds" className="hover:text-foreground transition-colors flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                    14-Day Money-Back
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    <span>14-Day Money-Back</span>
                   </Link>
                 </li>
                 <li>
-                  <Link href="/projects" className="hover:text-foreground transition-colors">
-                    Free Starter (3 AI Credits)
+                  <Link href="/projects" className="hover:text-foreground transition-colors flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                    <span>Free Starter (3 AI Credits)</span>
                   </Link>
                 </li>
               </ul>

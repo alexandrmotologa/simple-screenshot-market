@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { toast } from "@/lib/store/toastStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -8,25 +8,38 @@ import {
   Upload, X, ImagePlus, Smartphone, Layers,
   ChevronRight, CheckCircle2, ArrowRight, Sparkles, Wand2
 } from "lucide-react";
-import { ScreenshotLayer } from "@/lib/types";
+import { ScreenshotLayer, UploadedAsset } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-interface UploadedAsset {
-  id: string;
-  name: string;
-  dataUrl: string;
-  width: number;
-  height: number;
-}
-
 export function AssetsPanel() {
-  const [assets, setAssets] = useState<UploadedAsset[]>([]);
   const [dragging, setDragging] = useState(false);
   const [applyingAll, setApplyingAll] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const {
     getActiveSet, getActiveScreen, addLayer, updateLayer, autoFillScreenshots, screenSets,
+    projectAssets, addProjectAsset, removeProjectAsset,
   } = useEditorStore();
+
+  const assets = projectAssets;
+
+  // ── Auto-sync any existing layer screenshots into projectAssets ────────────
+  useEffect(() => {
+    screenSets.forEach((ss) => {
+      ss.screens.forEach((scr) => {
+        scr.layers.forEach((l) => {
+          if ((l.type === "screenshot" || l.type === "image") && (l as ScreenshotLayer).src) {
+            const src = (l as ScreenshotLayer).src;
+            if (src && !projectAssets.some((a) => a.dataUrl === src)) {
+              addProjectAsset({
+                name: (l as ScreenshotLayer).label || `${scr.name} Screenshot`,
+                dataUrl: src,
+              });
+            }
+          }
+        });
+      });
+    });
+  }, [screenSets, projectAssets, addProjectAsset]);
 
   // ── Load file → asset ───────────────────────────────────────────────────────
   const loadFile = (file: File) => {
@@ -35,8 +48,7 @@ export function AssetsPanel() {
       const dataUrl = e.target?.result as string;
       const img = new Image();
       img.onload = () => {
-        const id = `asset-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-        setAssets((prev) => [{ id, name: file.name, dataUrl, width: img.naturalWidth, height: img.naturalHeight }, ...prev]);
+        addProjectAsset({ name: file.name, dataUrl, width: img.naturalWidth, height: img.naturalHeight });
       };
       img.src = dataUrl;
     };
@@ -111,7 +123,7 @@ export function AssetsPanel() {
   // ── Remove asset ─────────────────────────────────────────────────────────────
   const removeAsset = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setAssets((prev) => prev.filter((a) => a.id !== id));
+    removeProjectAsset(id);
   };
 
   const screenshotLayersCount = screenSets.reduce((acc, ss) =>

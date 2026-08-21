@@ -1,5 +1,5 @@
 import { useCallback, useRef, useEffect, useState } from "react";
-import { Trash2, Copy, ArrowUp, ArrowDown, Lock, RefreshCw, GripHorizontal, AlignCenter, AlignJustify, Edit3 } from "lucide-react";
+import { Trash2, Copy, ArrowUp, ArrowDown, Lock, RefreshCw, GripHorizontal, AlignCenter, AlignJustify, Edit3, Upload } from "lucide-react";
 import { useEditorStore } from "@/lib/store/editorStore";
 import { useLanguageStore } from "@/lib/store/languageStore";
 import { toast } from "@/lib/store/toastStore";
@@ -2785,6 +2785,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
               reader.onload = (ev) => {
                 const src = ev.target?.result as string;
                 if (!src) return;
+                useEditorStore.getState().addProjectAsset({ name: file.name, dataUrl: src });
                 const { x, y } = getCanvasCoords(e as unknown as React.MouseEvent<HTMLCanvasElement>);
                 const hit = hitTest(x, y);
                 if (hit) {
@@ -2792,9 +2793,11 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
                   if (layer?.type === "screenshot") {
                     updateLayer(screenSet.id, screen.id, hit, { src } as Partial<Layer>);
                     useEditorStore.getState().recordHistory();
+                    toast.success("Screenshot placed & added to Media Assets!");
                   } else if (layer?.type === "image") {
                     updateLayer(screenSet.id, screen.id, hit, { src } as Partial<Layer>);
                     useEditorStore.getState().recordHistory();
+                    toast.success("Image placed & added to Media Assets!");
                   }
                 } else {
                   // If dropped on empty canvas, add as new image layer
@@ -2811,6 +2814,7 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
                   } as Omit<import("@/lib/types").ImageLayer, "id">;
                   useEditorStore.getState().addLayer(screenSet.id, screen.id, layer);
                   useEditorStore.getState().recordHistory();
+                  toast.success("Image added to canvas & Media Assets!");
                 }
               };
               reader.readAsDataURL(file);
@@ -2938,6 +2942,44 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
                     setCtxMenu(null);
                   }
                 }] : []),
+                ...(ctxLayer.type === "screenshot" ? [
+                  {
+                    icon: Upload,
+                    label: (ctxLayer as ScreenshotLayer).src ? "Replace Screenshot" : "Upload Screenshot",
+                    action: () => {
+                      setCtxMenu(null);
+                      const input = document.createElement("input");
+                      input.type = "file";
+                      input.accept = "image/*";
+                      input.onchange = (e) => {
+                        const f = (e.target as HTMLInputElement).files?.[0];
+                        if (!f) return;
+                        const r = new FileReader();
+                        r.onload = (ev) => {
+                          const src = ev.target?.result as string;
+                          if (!src) return;
+                          updateLayer(screenSet.id, screen.id, ctxMenu.layerId, { src } as Partial<ScreenshotLayer>);
+                          useEditorStore.getState().addProjectAsset({ name: f.name, dataUrl: src });
+                          useEditorStore.getState().recordHistory();
+                          toast.success("Screenshot loaded & added to Media Assets!");
+                        };
+                        r.readAsDataURL(f);
+                      };
+                      input.click();
+                    }
+                  },
+                  ...((ctxLayer as ScreenshotLayer).src ? [{
+                    icon: Trash2,
+                    label: "Clear Screenshot (Empty Frame)",
+                    danger: true,
+                    action: () => {
+                      updateLayer(screenSet.id, screen.id, ctxMenu.layerId, { src: undefined } as Partial<ScreenshotLayer>);
+                      useEditorStore.getState().recordHistory();
+                      setCtxMenu(null);
+                      toast.info("Screenshot cleared from mockup.");
+                    }
+                  }] : []),
+                ] : []),
                 {
                   icon: Copy, label: "Duplicate", action: () => {
                     duplicateLayer(screenSet.id, screen.id, ctxMenu.layerId);
@@ -2982,14 +3024,17 @@ export function ScreenCard({ screen, screenSet, index, hideScreenshots }: Screen
                     toast.info(ctxLayer.locked ? "Layer unlocked" : "Layer locked");
                   }
                 },
-              ].map(({ icon: Icon, label, action }) => (
+              ].map(({ icon: Icon, label, action, danger }: any) => (
                 <button
                   key={label}
                   type="button"
                   onClick={action}
-                  className="w-full flex items-center gap-2.5 px-3 py-1.5 text-xs hover:bg-secondary text-foreground transition-colors text-left"
+                  className={cn(
+                    "w-full flex items-center gap-2.5 px-3 py-1.5 text-xs hover:bg-secondary transition-colors text-left",
+                    danger ? "text-destructive/90 hover:text-destructive hover:bg-destructive/10" : "text-foreground"
+                  )}
                 >
-                  <Icon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                  <Icon className={cn("w-3.5 h-3.5 shrink-0", danger ? "text-destructive" : "text-muted-foreground")} />
                   {label}
                 </button>
               ))}

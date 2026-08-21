@@ -8,7 +8,7 @@ import { ALL_DEVICES, isTabletDevice, IOS_DEVICES, ANDROID_DEVICES } from "@/lib
 import { AppleStoreIcon, GooglePlayIcon, APP_STORE_LABEL, GOOGLE_PLAY_LABEL } from "@/components/icons/StoreIcons";
 import {
   CheckCircle2, AlertTriangle, XCircle, ShieldCheck,
-  Smartphone, Tablet, Info, ChevronDown, Eye, Trash2, Plus, Sparkles
+  Smartphone, Tablet, Info, ChevronDown, Eye, Trash2, Plus, Sparkles, Lock
 } from "lucide-react";
 import { Screen, ScreenshotLayer, ImageLayer, ScreenSet } from "@/lib/types";
 import {
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { FRAME_STYLES_LIST, FullBorderStyle } from "@/components/editor/ScreenSetRow";
 import { StorePreviewModal } from "@/components/editor/StorePreviewModal";
+import { useAuthStore } from "@/lib/store/authStore";
 import { toast } from "@/lib/store/toastStore";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +47,8 @@ export function PlatformsPanel() {
     generateDualThemeSet,
   } = useEditorStore();
 
+  const { user, setAuthModalOpen } = useAuthStore();
+  const isGuest = Boolean(!user || user.isAnonymous);
   const [showSimulator, setShowSimulator] = useState(false);
 
   // Helper to count screens with actual screenshot media uploaded
@@ -174,11 +177,32 @@ export function PlatformsPanel() {
 
             <button
               type="button"
-              onClick={() => setShowSimulator(true)}
-              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 text-xs font-bold transition-all shadow-xs active:scale-[0.98] cursor-pointer"
+              onClick={() => {
+                if (isGuest) {
+                  setAuthModalOpen(true);
+                  toast.info("Live Store Listing Simulator requires a free account. Sign in with Google or GitHub (100% Free) to unlock.");
+                  return;
+                }
+                setShowSimulator(true);
+              }}
+              className={cn(
+                "w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-[0.98] cursor-pointer",
+                isGuest
+                  ? "bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                  : "bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30"
+              )}
             >
-              <Eye className="w-3.5 h-3.5" />
-              <span>Preview in Live Store Simulator</span>
+              {isGuest ? (
+                <>
+                  <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span>Preview in Store Simulator (Sign in)</span>
+                </>
+              ) : (
+                <>
+                  <Eye className="w-3.5 h-3.5 shrink-0" />
+                  <span>Preview in Live Store Simulator</span>
+                </>
+              )}
             </button>
           </div>
 
