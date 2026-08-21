@@ -81,5 +81,6 @@ If a provider encounters a **Rate Limit (429)**, timeout, or quota exhaustion, t
 
 ### 6️⃣ Cultural Marketing Localization (`/api/ai/translate`)
 - **Endpoint:** `POST /api/ai/translate`
+- **Catalog:** Full support for 60+ App Store & Google Play global languages and regional locales.
 - **Core Rule:** Translates contextually for natural marketing appeal rather than literal word-by-word translation.
 - **Length Constraint:** Condenses longer languages (e.g., German, French) to prevent text overflow beyond mobile device headers.
