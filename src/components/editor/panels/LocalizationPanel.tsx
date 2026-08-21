@@ -118,8 +118,11 @@ export function LocalizationPanel() {
                         className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-secondary transition-colors text-left"
                       >
                         <span className="text-base shrink-0">{lang.flag}</span>
-                        <span className="flex-1 font-medium">{lang.nativeName}</span>
-                        <span className="text-muted-foreground uppercase text-[10px]">{lang.code}</span>
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <span className="font-medium text-foreground truncate">{lang.name}</span>
+                          <span className="text-[10px] text-muted-foreground truncate">{lang.nativeName}</span>
+                        </div>
+                        <span className="text-muted-foreground font-mono uppercase text-[10px] px-1.5 py-0.5 rounded bg-secondary/80 border border-border/40 shrink-0">{lang.code}</span>
                       </button>
                     ))
                   )}
