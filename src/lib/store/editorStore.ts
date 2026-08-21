@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { Layer, Screen, ScreenSet, Background, MockupSettings, ThemeId } from "@/lib/types";
 import { themeById } from "@/lib/themes";
 import { nanoid } from "@/lib/utils";
-import { ALL_DEVICES } from "@/lib/devices";
+import { ALL_DEVICES, isTabletDevice } from "@/lib/devices";
 import { CanvasBackgroundId, getSavedCanvasBackground, saveCanvasBackground } from "@/lib/canvasBackgrounds";
 
 interface HistoryEntry {
@@ -148,17 +148,33 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   historyIndex: -1,
 
   loadProject: (projectId, themeId, screenSets, hiddenScreenSets = []) => {
-    // ── Auto-migrate old Android screens to standard 1290×2796 (same as iOS) ─
+    // ── Auto-migrate screenSets to ensure valid deviceId and standard resolution ─
     const STD_W = 1290;
     const STD_H = 2796;
     const migratedSets = screenSets.map((ss) => {
-      if (ss.store !== "android") return ss;
-      // Already correct — skip
-      if (ss.screens.every((s) => s.width === STD_W && s.height === STD_H)) return ss;
-      return {
+      const isIOS = ss.store === "ios";
+      const isTab = isTabletDevice(ss.deviceId || ss.mockup?.device);
+      const defaultDev = isTab
+        ? (isIOS ? "ipad-pro-13" : "galaxy-tab-s9-ultra")
+        : (isIOS ? "iphone-17-pro-max" : "pixel-10-pro-xl");
+      const effectiveDeviceId = ss.deviceId || ss.mockup?.device || defaultDev;
+
+      const baseSet = {
         ...ss,
-        preset: { ...ss.preset, width: STD_W, height: STD_H },
-        screens: ss.screens.map((s) => {
+        deviceId: effectiveDeviceId,
+        mockup: {
+          ...ss.mockup,
+          device: effectiveDeviceId,
+        },
+      };
+
+      if (ss.store !== "android") return baseSet;
+      // Already correct — skip
+      if (ss.screens.every((s) => s.width === STD_W && s.height === STD_H)) return baseSet;
+      return {
+        ...baseSet,
+        preset: { ...baseSet.preset, width: STD_W, height: STD_H },
+        screens: baseSet.screens.map((s) => {
           if (s.width === STD_W && s.height === STD_H) return s;
           // Scale layer positions proportionally
           const scaleX = STD_W / s.width;

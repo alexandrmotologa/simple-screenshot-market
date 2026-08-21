@@ -58,6 +58,20 @@ export async function POST(req: NextRequest) {
         usedAiCredits: FieldValue.increment(1),
       });
 
+      // Append to credit logs subcollection
+      try {
+        await userRef.collection("credit_logs").add({
+          feature: feature || "AI Vision Auto-Pilot",
+          timestamp: Date.now(),
+          cost: 0,
+          isPro: true,
+          remaining: 9999,
+          status: "completed",
+        });
+      } catch (logErr) {
+        console.warn("[ConsumeCredit] Failed to record credit log:", logErr);
+      }
+
       return NextResponse.json({
         allowed: true,
         isPro: true,
@@ -89,6 +103,20 @@ export async function POST(req: NextRequest) {
     });
 
     const remaining = currentCredits - 1;
+
+    // Append to credit logs subcollection
+    try {
+      await userRef.collection("credit_logs").add({
+        feature: feature || "AI Vision Auto-Pilot",
+        timestamp: Date.now(),
+        cost: 1,
+        isPro: false,
+        remaining,
+        status: "completed",
+      });
+    } catch (logErr) {
+      console.warn("[ConsumeCredit] Failed to record credit log:", logErr);
+    }
 
     return NextResponse.json({
       allowed: true,

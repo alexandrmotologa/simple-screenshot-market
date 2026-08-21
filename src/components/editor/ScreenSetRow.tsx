@@ -370,7 +370,7 @@ export function ScreenSetRow({ screenSet, isDragging = false }: ScreenSetRowProp
         </DropdownMenu>
 
         {/* Toggles Group */}
-        <div className="flex items-center gap-3.5 ml-2">
+        <div className="flex items-center gap-2 min-[1200px]:gap-3.5 ml-1 min-[1200px]:ml-2">
           {screenSet.store === "ios" && (
             <>
               {/* Notch toggle */}
@@ -382,7 +382,7 @@ export function ScreenSetRow({ screenSet, isDragging = false }: ScreenSetRowProp
                       <path d="M8 2v1a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V2" />
                     </svg>
                   </div>
-                  <span className="text-xs font-medium text-muted-foreground mr-0.5">Notch</span>
+                  <span className="show-from-1200 text-xs font-medium text-muted-foreground mr-0.5">Notch</span>
                   <Switch checked={isNotchOn} onCheckedChange={toggleNotch} />
                 </label>
               )}
@@ -396,7 +396,7 @@ export function ScreenSetRow({ screenSet, isDragging = false }: ScreenSetRowProp
                       <rect x="9" y="5" width="6" height="2.5" rx="1.25" fill="currentColor" stroke="none" />
                     </svg>
                   </div>
-                  <span className="text-xs font-medium text-muted-foreground mr-0.5">Island</span>
+                  <span className="show-from-1200 text-xs font-medium text-muted-foreground mr-0.5">Island</span>
                   <Switch checked={isIslandOn} onCheckedChange={toggleIsland} />
                 </label>
               )}
@@ -411,7 +411,7 @@ export function ScreenSetRow({ screenSet, isDragging = false }: ScreenSetRowProp
                   <circle cx="12" cy="6" r="1.5" fill="currentColor" stroke="none" />
                 </svg>
               </div>
-              <span className="text-xs font-medium text-muted-foreground mr-0.5">Camera</span>
+              <span className="show-from-1200 text-xs font-medium text-muted-foreground mr-0.5">Camera</span>
               <Switch checked={isNotchOn} onCheckedChange={toggleNotch} />
             </label>
           )}
@@ -425,7 +425,7 @@ export function ScreenSetRow({ screenSet, isDragging = false }: ScreenSetRowProp
                 <path d="M4 14l12-12" opacity="0.5" />
               </svg>
             </div>
-            <span className="text-xs font-medium text-muted-foreground mr-0.5">Reflection</span>
+            <span className="show-from-1200 text-xs font-medium text-muted-foreground mr-0.5">Reflection</span>
             <Switch checked={isReflectionOn} onCheckedChange={toggleReflection} />
           </label>
 
@@ -434,7 +434,7 @@ export function ScreenSetRow({ screenSet, isDragging = false }: ScreenSetRowProp
             <div className="w-4 h-4 flex items-center justify-center text-muted-foreground shrink-0">
               {isShowingScreenshots ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             </div>
-            <span className="text-xs font-medium text-muted-foreground mr-0.5">Screenshots</span>
+            <span className="show-from-1200 text-xs font-medium text-muted-foreground mr-0.5">Screenshots</span>
             <Switch checked={isShowingScreenshots} onCheckedChange={toggleScreenshots} />
           </label>
         </div>
@@ -446,10 +446,11 @@ export function ScreenSetRow({ screenSet, isDragging = false }: ScreenSetRowProp
               type="button"
               title="Apply all style and background settings to other platforms"
               onClick={() => setShowSyncConfirm(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-secondary/70 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors ml-1"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-secondary/70 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors ml-1 cursor-pointer"
             >
-              <CopyCheck className="w-3.5 h-3.5" />
-              Sync Styles to all Platforms
+              <CopyCheck className="w-3.5 h-3.5 shrink-0" />
+              <span className="show-under-1200">Sync</span>
+              <span className="show-from-1200">Sync Styles to all Platforms</span>
             </button>
 
             {/* Sync Styles Confirmation Modal */}

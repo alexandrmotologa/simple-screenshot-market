@@ -358,10 +358,12 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
               <button
                 type="button"
                 onClick={() => replaceFileRef.current?.click()}
-                className="h-7 flex items-center gap-1.5 px-3 text-xs font-semibold rounded-lg bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 ring-1 ring-indigo-500/30 transition-all shadow-xs"
+                className="h-7 flex items-center gap-1.5 px-2.5 text-xs font-semibold rounded-lg bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 ring-1 ring-indigo-500/30 transition-all shadow-xs cursor-pointer"
+                title="Replace selected screenshot"
               >
-                <Upload className="w-3 h-3" />
-                Replace screenshot
+                <Upload className="w-3 h-3 shrink-0" />
+                <span className="show-under-1200">Screenshot</span>
+                <span className="show-from-1200">Replace screenshot</span>
               </button>
             </>
           )}
@@ -439,15 +441,16 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
             )}
             title={activeScreenId ? "Copy active screen to clipboard (PNG)" : "Select a screen on canvas to copy"}
           >
-            <Copy className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Copy Screen</span>
+            <Copy className="w-3.5 h-3.5 shrink-0" />
+            <span className="show-under-1200">Screen</span>
+            <span className="show-from-1200">Copy Screen</span>
           </button>
 
           {/* Keyboard shortcuts */}
           <button
             type="button"
             onClick={() => setShowShortcuts(true)}
-            className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer"
             title="Keyboard Shortcuts (?)"
           >
             <Keyboard className="w-3.5 h-3.5" />
@@ -456,125 +459,21 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
           {/* Theme Toggle */}
           <ThemeToggle />
 
-          {/* User Profile / Auth */}
+          <Separator orientation="vertical" className="h-4" />
+
+          {/* User Profile / Auth (Positioned directly before Export) */}
           <UserMenu />
-
-          {/* Store Simulator Preview */}
-          <button
-            type="button"
-            onClick={() => setShowStorePreview(true)}
-            className="h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs font-semibold border border-border/60 bg-secondary/60 hover:bg-secondary text-foreground transition-all cursor-pointer shadow-xs"
-            title="Live App Store & Google Play Simulator"
-          >
-            <Eye className="w-3.5 h-3.5 text-primary" />
-            <span className="hidden sm:inline">Store Preview</span>
-          </button>
-
-          {/* AI Auto-Pilot */}
-          <button
-            type="button"
-            onClick={() => {
-              if (isGuest) {
-                setAuthModalOpen(true);
-                toast.info("AI Auto-Pilot is for registered accounts. Sign in with Google or GitHub (100% Free) to unlock.");
-                return;
-              }
-              setShowAIAutoPilot(true);
-            }}
-            className={`h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95 ${
-              isGuest
-                ? "bg-secondary/60 text-muted-foreground border border-amber-500/30 hover:border-amber-500/60"
-                : "bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 text-indigo-400 hover:text-indigo-300 border border-indigo-500/40 hover:border-indigo-500/60"
-            }`}
-            title={isGuest ? "AI Auto-Pilot (Sign in with Google or GitHub to unlock)" : "AI Auto-Pilot: 1-Click Vision Screen Generation"}
-          >
-            {isGuest ? (
-              <>
-                <Lock className="w-3 h-3 text-amber-400" />
-                <span className="hidden md:inline text-amber-400 font-semibold">AI Auto-Pilot</span>
-                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Free Reg</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
-                <span className="hidden md:inline">AI Auto-Pilot</span>
-              </>
-            )}
-          </button>
-
-          {/* Store Assets & Icon Studio */}
-          <button
-            type="button"
-            onClick={() => {
-              if (isGuest) {
-                setAuthModalOpen(true);
-                toast.info("Store Assets Studio requires a free account. Sign in with Google or GitHub (100% Free) to unlock.");
-                return;
-              }
-              setShowAssetsStudio(true);
-            }}
-            className={`h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95 ${
-              isGuest
-                ? "bg-secondary/60 text-muted-foreground border border-purple-500/30 hover:border-purple-500/60"
-                : "border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400"
-            }`}
-            title={isGuest ? "Store Assets Studio (Sign in with Google or GitHub to unlock)" : "App Icon Creator & Google Play 1024x500 Feature Graphic Studio"}
-          >
-            {isGuest ? (
-              <>
-                <Lock className="w-3 h-3 text-purple-400" />
-                <span className="hidden lg:inline text-purple-400 font-semibold">Assets Studio</span>
-                <span className="text-[9px] px-1 py-0.2 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30">Free Reg</span>
-              </>
-            ) : (
-              <>
-                <Palette className="w-3.5 h-3.5 text-purple-500" />
-                <span className="hidden lg:inline">Assets Studio</span>
-              </>
-            )}
-          </button>
-
-          {/* Video / Animated GIF Studio */}
-          <button
-            type="button"
-            onClick={() => {
-              if (isGuest) {
-                setAuthModalOpen(true);
-                toast.info("Video & Animated GIF Studio requires a free account. Sign in with Google or GitHub (100% Free) to unlock.");
-                return;
-              }
-              setShowGif(true);
-            }}
-            className={`h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95 ${
-              isGuest
-                ? "bg-secondary/60 text-muted-foreground border border-pink-500/30 hover:border-pink-500/60"
-                : "border border-pink-500/30 bg-pink-500/10 hover:bg-pink-500/20 text-pink-500 dark:text-pink-400"
-            }`}
-            title={isGuest ? "Video / GIF Studio (Sign in with Google or GitHub to unlock)" : "Export Video (MP4/WebM) & Animated GIF carousel for TikTok & Social Ads"}
-          >
-            {isGuest ? (
-              <>
-                <Lock className="w-3 h-3 text-pink-400" />
-                <span className="hidden lg:inline text-pink-400 font-semibold">Video / GIF</span>
-                <span className="text-[9px] px-1 py-0.2 rounded bg-pink-500/20 text-pink-400 border border-pink-500/30">Free Reg</span>
-              </>
-            ) : (
-              <>
-                <Film className="w-3.5 h-3.5 text-pink-500" />
-                <span className="hidden lg:inline">Video / GIF</span>
-              </>
-            )}
-          </button>
 
           {/* Export Button */}
           <button
             id="export-btn"
             type="button"
             onClick={() => setShowExport(true)}
-            className="h-7 flex items-center gap-1.5 px-3 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm shadow-primary/30 cursor-pointer"
+            className="h-7 flex items-center gap-1.5 px-2.5 min-[1000px]:px-3.5 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-sm shadow-primary/30 active:scale-95 cursor-pointer"
+            title="Export Screenshots (PNG, 4K Lossless, ZIP)"
           >
-            <Download className="w-3 h-3" />
-            Export
+            <Download className="w-3.5 h-3.5 shrink-0" />
+            <span className="show-from-1000">Export</span>
           </button>
         </div>
       </header>
@@ -586,8 +485,34 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
 
       {/* ── Body ── */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left sidebar + slide-out panels */}
-        <EditorSidebar />
+        {/* Left sidebar + slide-out panels & studio launchers */}
+        <EditorSidebar
+          onOpenAIAutoPilot={() => {
+            if (isGuest) {
+              setAuthModalOpen(true);
+              toast.info("AI Auto-Pilot is for registered accounts. Sign in with Google or GitHub (100% Free) to unlock.");
+              return;
+            }
+            setShowAIAutoPilot(true);
+          }}
+          onOpenStorePreview={() => setShowStorePreview(true)}
+          onOpenAssetsStudio={() => {
+            if (isGuest) {
+              setAuthModalOpen(true);
+              toast.info("Store Assets Studio requires a free account. Sign in with Google or GitHub (100% Free) to unlock.");
+              return;
+            }
+            setShowAssetsStudio(true);
+          }}
+          onOpenGif={() => {
+            if (isGuest) {
+              setAuthModalOpen(true);
+              toast.info("Video & Animated GIF Studio requires a free account. Sign in with Google or GitHub (100% Free) to unlock.");
+              return;
+            }
+            setShowGif(true);
+          }}
+        />
 
         {/* Main canvas area */}
         <div className="flex-1 flex flex-col overflow-hidden relative">

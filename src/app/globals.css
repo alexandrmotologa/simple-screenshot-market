@@ -163,3 +163,62 @@
 .canvas-container.dragging {
   cursor: grabbing;
 }
+
+/* Sidebar visible slim scrollbar */
+.custom-sidebar-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.55 0.22 265 / 40%) transparent;
+}
+.custom-sidebar-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-sidebar-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: oklch(0.55 0.22 265 / 35%);
+  border-radius: 999px;
+}
+.custom-sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.55 0.22 265 / 75%);
+}
+
+/* Header button text responsive visibility at 1200px breakpoint */
+.show-under-1200 {
+  display: inline;
+}
+.show-from-1200 {
+  display: none;
+}
+
+@media (min-width: 1200px) {
+  .show-under-1200 {
+    display: none !important;
+  }
+  .show-from-1200 {
+    display: inline !important;
+  }
+}
+
+/* Header button text responsive visibility at 1000px breakpoint */
+.show-under-1000 {
+  display: inline;
+}
+.show-from-1000 {
+  display: none;
+}
+.show-from-1000-flex {
+  display: none;
+}
+
+@media (min-width: 1000px) {
+  .show-under-1000 {
+    display: none !important;
+  }
+  .show-from-1000 {
+    display: inline !important;
+  }
+  .show-from-1000-flex {
+    display: flex !important;
+  }
+}

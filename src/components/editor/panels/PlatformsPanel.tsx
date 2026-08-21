@@ -187,9 +187,10 @@ export function PlatformsPanel() {
             {screenSets.map((ss, setIdx) => {
               const validation = getSetValidation(ss);
               const isIOS = ss.store === "ios";
-              const isTablet = isTabletDevice(ss.deviceId);
-              const deviceObj = ALL_DEVICES.find((d) => d.id === ss.deviceId);
+              const isTablet = isTabletDevice(ss.deviceId || ss.mockup?.device);
               const availableDevices = isIOS ? IOS_DEVICES : ANDROID_DEVICES;
+              const currentDeviceId = ss.deviceId || ss.mockup?.device || (isTablet ? (isIOS ? "ipad-pro-13" : "galaxy-tab-s9-ultra") : (isIOS ? "iphone-17-pro-max" : "pixel-10-pro-xl"));
+              const deviceObj = ALL_DEVICES.find((d) => d.id === currentDeviceId) || availableDevices[0];
 
               const setPlatformName = isIOS
                 ? isTablet ? "App Store (iPad)" : "App Store (iPhone)"
@@ -351,7 +352,7 @@ export function PlatformsPanel() {
                               {availableDevices.filter((d) => !isTabletDevice(d)).map((d) => (
                                 <DropdownMenuItem
                                   key={d.id}
-                                  className={cn("text-xs cursor-pointer", ss.deviceId === d.id && "text-primary font-bold bg-primary/5")}
+                                  className={cn("text-xs cursor-pointer", currentDeviceId === d.id && "text-primary font-bold bg-primary/5")}
                                   onClick={() => {
                                     updateDevice(ss.id, d.id);
                                     if (ss.mockup?.color && !d.colors.includes(ss.mockup.color)) {
@@ -364,7 +365,7 @@ export function PlatformsPanel() {
                                     <p className="font-medium truncate">{d.name}</p>
                                     <p className="text-[10px] text-muted-foreground font-mono">{d.width} × {d.height}</p>
                                   </div>
-                                  {ss.deviceId === d.id && <span className="text-primary ml-1">✓</span>}
+                                  {currentDeviceId === d.id && <span className="text-primary ml-1">✓</span>}
                                 </DropdownMenuItem>
                               ))}
                             </DropdownMenuGroup>
@@ -378,7 +379,7 @@ export function PlatformsPanel() {
                               {availableDevices.filter((d) => isTabletDevice(d)).map((d) => (
                                 <DropdownMenuItem
                                   key={d.id}
-                                  className={cn("text-xs cursor-pointer", ss.deviceId === d.id && "text-primary font-bold bg-primary/5")}
+                                  className={cn("text-xs cursor-pointer", currentDeviceId === d.id && "text-primary font-bold bg-primary/5")}
                                   onClick={() => {
                                     updateDevice(ss.id, d.id);
                                     if (ss.mockup?.color && !d.colors.includes(ss.mockup.color)) {
@@ -391,7 +392,7 @@ export function PlatformsPanel() {
                                     <p className="font-medium truncate">{d.name}</p>
                                     <p className="text-[10px] text-muted-foreground font-mono">{d.width} × {d.height}</p>
                                   </div>
-                                  {ss.deviceId === d.id && <span className="text-primary ml-1">✓</span>}
+                                  {currentDeviceId === d.id && <span className="text-primary ml-1">✓</span>}
                                 </DropdownMenuItem>
                               ))}
                             </DropdownMenuGroup>

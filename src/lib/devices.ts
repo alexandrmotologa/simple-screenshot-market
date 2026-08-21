@@ -269,7 +269,7 @@ export const IOS_DEVICES: DeviceModel[] = [
 export const ANDROID_DEVICES: DeviceModel[] = [
   {
     id: "pixel-10-pro-xl",
-    name: "Google Pixel 10 Pro XL",
+    name: "Google Pixel 10/11 Pro XL",
     store: "android",
     width: 1344,
     height: 2992,
@@ -284,7 +284,7 @@ export const ANDROID_DEVICES: DeviceModel[] = [
   },
   {
     id: "pixel-10-pro",
-    name: "Google Pixel 10 Pro",
+    name: "Google Pixel 10/11 Pro",
     store: "android",
     width: 1280,
     height: 2856,

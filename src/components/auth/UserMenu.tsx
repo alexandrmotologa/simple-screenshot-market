@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
-import { LogOut, User as UserIcon, Sparkles, ChevronDown, ShieldAlert, CheckCircle2, Crown } from "lucide-react";
+import { LogOut, User as UserIcon, Sparkles, ChevronDown, ShieldAlert, CheckCircle2, Crown, CreditCard } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,22 +68,22 @@ export function UserMenu({ className }: UserMenuProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl bg-secondary/60 hover:bg-secondary border border-border/60 transition-all outline-none cursor-pointer group shadow-xs">
+      <DropdownMenuTrigger className="h-8 flex items-center gap-1.5 min-[1000px]:gap-2 p-1 min-[1000px]:pl-1.5 min-[1000px]:pr-2.5 pr-1.5 rounded-xl bg-secondary/60 hover:bg-secondary border border-border/60 transition-all outline-none cursor-pointer group shadow-xs">
         {photoURL ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={photoURL}
             alt={displayName}
-            className="w-6 h-6 rounded-lg object-cover ring-1 ring-border"
+            className="w-6 h-6 rounded-lg object-cover ring-1 ring-border shrink-0"
           />
         ) : (
-          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[11px] font-bold">
+          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[11px] font-bold shrink-0">
             {displayName.charAt(0).toUpperCase()}
           </div>
         )}
-        <div className="flex flex-col text-left max-w-28 truncate">
-          <div className="flex items-center gap-1">
-            <span className="text-xs font-semibold text-foreground truncate leading-tight">
+        <div className="show-from-1000-flex flex-col justify-center text-left max-w-28 truncate">
+          <div className="flex items-center gap-1 leading-tight">
+            <span className="text-xs font-semibold text-foreground truncate">
               {displayName}
             </span>
             {isPro && (
@@ -93,20 +93,20 @@ export function UserMenu({ className }: UserMenuProps) {
             )}
           </div>
           {isAnonymous ? (
-            <span className="text-[9px] text-amber-400 font-medium leading-none">
+            <span className="text-[9px] text-amber-400 font-medium leading-tight">
               Guest
             </span>
           ) : !isPro ? (
-            <span className="text-[9px] text-indigo-400 font-semibold leading-none">
+            <span className="text-[9px] text-indigo-400 font-semibold leading-tight">
               {aiCredits} AI credits
             </span>
           ) : (
-            <span className="text-[9px] text-emerald-400 font-medium leading-none">
+            <span className="text-[9px] text-emerald-400 font-medium leading-tight">
               Unlimited
             </span>
           )}
         </div>
-        <ChevronDown className="w-3 h-3 text-muted-foreground group-hover:text-foreground transition-colors ml-0.5" />
+        <ChevronDown className="w-3 h-3 text-muted-foreground group-hover:text-foreground transition-colors ml-0.5 shrink-0" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-60 p-1.5 shadow-2xl border border-border/80 rounded-2xl bg-card">
@@ -173,6 +173,14 @@ export function UserMenu({ className }: UserMenuProps) {
         )}
 
         <DropdownMenuSeparator className="my-1" />
+
+        <DropdownMenuItem
+          onClick={() => router.push("/account")}
+          className="text-xs font-medium text-foreground hover:bg-secondary rounded-xl cursor-pointer p-2 flex items-center gap-2"
+        >
+          <CreditCard className="w-3.5 h-3.5 text-indigo-400" />
+          <span>Account &amp; Billing</span>
+        </DropdownMenuItem>
 
         <DropdownMenuItem
           onClick={() => router.push("/projects")}
