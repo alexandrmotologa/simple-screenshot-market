@@ -103,6 +103,25 @@ async function scrapeWebsite(url: string): Promise<ScrapedAppData> {
   };
 }
 
+function isPrivateHost(hostname: string): boolean {
+  const h = hostname.toLowerCase().trim();
+  if (
+    h === "localhost" ||
+    h === "127.0.0.1" ||
+    h === "::1" ||
+    h === "0.0.0.0" ||
+    h.endsWith(".localhost") ||
+    h.endsWith(".local") ||
+    h.startsWith("10.") ||
+    h.startsWith("192.168.") ||
+    h.startsWith("169.254.")
+  ) {
+    return true;
+  }
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(h)) return true;
+  return false;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json() as { url: string };
@@ -110,6 +129,12 @@ export async function POST(req: NextRequest) {
     if (!url || !url.startsWith("http")) {
       return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
     }
+
+    const parsed = new URL(url);
+    if (isPrivateHost(parsed.hostname)) {
+      return NextResponse.json({ error: "Access to private or local network hosts is forbidden." }, { status: 403 });
+    }
+
     let data: ScrapedAppData;
     if (url.includes("apps.apple.com") || url.includes("itunes.apple.com")) {
       data = await scrapeAppStore(url);
