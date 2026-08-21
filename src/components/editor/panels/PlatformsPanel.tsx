@@ -8,7 +8,7 @@ import { ALL_DEVICES, isTabletDevice, IOS_DEVICES, ANDROID_DEVICES } from "@/lib
 import { AppleStoreIcon, GooglePlayIcon, APP_STORE_LABEL, GOOGLE_PLAY_LABEL } from "@/components/icons/StoreIcons";
 import {
   CheckCircle2, AlertTriangle, XCircle, ShieldCheck,
-  Smartphone, Tablet, Info, ChevronDown, Eye, Trash2, Plus, Sparkles, Lock
+  Smartphone, Tablet, Info, ChevronDown, ChevronUp, Eye, Trash2, Plus, Sparkles, Lock
 } from "lucide-react";
 import { Screen, ScreenshotLayer, ImageLayer, ScreenSet } from "@/lib/types";
 import {
@@ -50,6 +50,14 @@ export function PlatformsPanel() {
   const { user, setAuthModalOpen } = useAuthStore();
   const isGuest = Boolean(!user || user.isAnonymous);
   const [showSimulator, setShowSimulator] = useState(false);
+  const [expandedSets, setExpandedSets] = useState<Record<string, boolean>>({});
+
+  const toggleExpand = (id: string) => {
+    setExpandedSets((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
   // Helper to count screens with actual screenshot media uploaded
   const countScreensWithMedia = (screens: Screen[]) => {
@@ -207,8 +215,28 @@ export function PlatformsPanel() {
           </div>
 
           {/* ── DYNAMIC LIST OF ACTIVE SCREEN SETS ── */}
-          <div className="space-y-3">
-            {screenSets.map((ss, setIdx) => {
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between px-0.5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <span>Active Target Devices ({screenSets.length})</span>
+              </span>
+              {screenSets.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const allExpanded = screenSets.every((s) => expandedSets[s.id]);
+                    const next: Record<string, boolean> = {};
+                    screenSets.forEach((s) => { next[s.id] = !allExpanded; });
+                    setExpandedSets(next);
+                  }}
+                  className="text-[10.5px] font-semibold text-primary hover:text-primary/80 transition-colors cursor-pointer"
+                >
+                  {screenSets.every((s) => expandedSets[s.id]) ? "Collapse all" : "Expand all"}
+                </button>
+              )}
+            </div>
+
+            {screenSets.map((ss) => {
               const validation = getSetValidation(ss);
               const isIOS = ss.store === "ios";
               const isTablet = isTabletDevice(ss.deviceId || ss.mockup?.device);
@@ -220,15 +248,30 @@ export function PlatformsPanel() {
                 ? isTablet ? "App Store (iPad)" : "App Store (iPhone)"
                 : isTablet ? "Google Play (Tablet)" : "Google Play (Phone)";
 
+              const isExpanded = expandedSets[ss.id] ?? false;
+
               return (
                 <div
                   key={ss.id}
-                  className="rounded-xl border border-border/60 bg-card/60 dark:bg-secondary/30 overflow-hidden transition-all shadow-xs"
+                  className={cn(
+                    "rounded-2xl border transition-all duration-200 shadow-xs overflow-hidden",
+                    isExpanded
+                      ? "border-primary/40 bg-card ring-1 ring-primary/20"
+                      : "border-border/60 bg-card/60 dark:bg-secondary/30 hover:border-border/90 hover:bg-card/80"
+                  )}
                 >
-                  {/* Platform Card Header */}
-                  <div className="p-3 flex items-center justify-between bg-secondary/70 dark:bg-secondary/50 border-b border-border/40">
+                  {/* Platform Card Header (Click to Expand / Collapse) */}
+                  <div
+                    onClick={() => toggleExpand(ss.id)}
+                    className={cn(
+                      "p-3 flex items-center justify-between transition-colors cursor-pointer select-none",
+                      isExpanded
+                        ? "bg-secondary/70 dark:bg-secondary/50 border-b border-border/40"
+                        : "hover:bg-secondary/50"
+                    )}
+                  >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center text-foreground shadow-xs border border-border/50 shrink-0">
+                      <div className="w-8 h-8 rounded-xl bg-background flex items-center justify-center text-foreground shadow-xs border border-border/60 shrink-0">
                         {isIOS ? (
                           <AppleStoreIcon className="w-4 h-4" />
                         ) : (
@@ -246,333 +289,363 @@ export function PlatformsPanel() {
                             </span>
                           )}
                         </div>
-                        <span className="text-[10px] text-muted-foreground truncate">
-                          {deviceObj?.name || ss.preset?.name}
+                        <span className="text-[10.5px] text-muted-foreground truncate">
+                          {deviceObj?.name || ss.preset?.name} · {ss.screens.length} screens
                         </span>
                       </div>
                     </div>
 
-                    {/* Set actions: Delete / Select */}
-                    <div className="flex items-center gap-1 shrink-0">
+                    {/* Set actions: Readiness Pill, Delete, Expand Chevron */}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {/* Compact status badge */}
+                      <span
+                        className={cn(
+                          "flex items-center gap-1 text-[9.5px] font-bold px-2 py-0.5 rounded-full border transition-all",
+                          validation.isReady
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25"
+                            : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25"
+                        )}
+                      >
+                        {validation.isReady ? (
+                          <>
+                            <CheckCircle2 className="w-2.5 h-2.5 text-emerald-500 shrink-0" />
+                            <span>Ready</span>
+                          </>
+                        ) : (
+                          <>
+                            <AlertTriangle className="w-2.5 h-2.5 text-amber-500 shrink-0" />
+                            <span>{validation.mediaStatus.includes("loaded") ? `${validation.mediaStatus.split(" ")[0]}/${validation.mediaStatus.split(" ")[2]}` : "Review"}</span>
+                          </>
+                        )}
+                      </span>
+
                       {screenSets.length > 1 && (
                         <button
                           type="button"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             removeScreenSet(ss.id);
                             toast.info(`Removed ${setPlatformName}`);
                           }}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                          className="w-6 h-6 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                           title={`Delete ${setPlatformName} set`}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       )}
+
+                      <div className="w-6 h-6 rounded-md flex items-center justify-center text-muted-foreground">
+                        <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", isExpanded && "rotate-180 text-primary")} />
+                      </div>
                     </div>
                   </div>
 
-                  {/* Validation Checklist */}
-                  <div className="p-3 space-y-2.5 bg-card/90 dark:bg-card/40">
-                    {/* Status Indicator Pill */}
-                    <div
-                      className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[10.5px] font-semibold border ${
-                        validation.isReady
-                          ? "bg-emerald-500/10 dark:bg-emerald-500/15 border-emerald-500/30 text-emerald-700 dark:text-emerald-400"
-                          : "bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-400"
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5">
-                        {validation.isReady ? (
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                        ) : (
-                          <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                        )}
-                        <span>
-                          {validation.isReady
-                            ? isIOS ? "Ready for App Store Connect" : "Ready for Play Console"
-                            : "Requires Attention"}
-                        </span>
-                      </div>
-                      <span className="text-[9.5px] font-mono px-1.5 py-0.5 rounded bg-background/80 dark:bg-background/50 border border-current/20">
-                        {isIOS ? (isTablet ? "iPadOS" : "iOS") : "Android"}
-                      </span>
-                    </div>
-
-                    {/* Live Requirements Checklist */}
-                    <div className="space-y-1.5 pt-0.5">
-                      {/* Screen Count */}
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-muted-foreground flex items-center gap-1.5">
-                          {validation.countValid ? (
-                            <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                          ) : (
-                            <XCircle className="w-3 h-3 text-rose-600 dark:text-rose-400 shrink-0" />
-                          )}
-                          Screen Count (2–{isIOS ? 10 : 8})
-                        </span>
-                        <span
-                          className={`font-medium ${
-                            validation.countValid
-                              ? "text-foreground"
-                              : "text-rose-600 dark:text-rose-400 font-semibold"
-                          }`}
-                        >
-                          {validation.countStatus}
-                        </span>
-                      </div>
-
-                      {/* Resolution */}
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-muted-foreground flex items-center gap-1.5">
-                          {validation.resValid ? (
-                            <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  {/* Collapsible Details Body */}
+                  {isExpanded && (
+                    <div className="p-3 space-y-2.5 bg-card/90 dark:bg-card/40 animate-in fade-in slide-in-from-top-1 duration-200">
+                      {/* Status Indicator Pill */}
+                      <div
+                        className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[10.5px] font-semibold border ${
+                          validation.isReady
+                            ? "bg-emerald-500/10 dark:bg-emerald-500/15 border-emerald-500/30 text-emerald-700 dark:text-emerald-400"
+                            : "bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-400"
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          {validation.isReady ? (
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                           ) : (
                             <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                           )}
-                          Resolution & Ratio
-                        </span>
-                        <span className="text-foreground font-medium text-[10.5px]">
-                          {validation.resLabel}
-                        </span>
-                      </div>
-
-                      {/* Screenshot Media Uploaded */}
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-muted-foreground flex items-center gap-1.5">
-                          {validation.allUploaded ? (
-                            <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                          ) : (
-                            <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                          )}
-                          Screenshots Uploaded
-                        </span>
-                        <span
-                          className={`font-medium ${
-                            validation.allUploaded
-                              ? "text-foreground"
-                              : "text-amber-600 dark:text-amber-400 font-semibold"
-                          }`}
-                        >
-                          {validation.mediaStatus}
-                        </span>
-                      </div>
-
-                      {/* Device Selector */}
-                      <div className="flex items-center justify-between pt-2 border-t border-border/40 text-[11px]">
-                        <span className="text-muted-foreground flex items-center gap-1.5">
-                          {isTablet ? <Tablet className="w-3 h-3 text-muted-foreground shrink-0" /> : <Smartphone className="w-3 h-3 text-muted-foreground shrink-0" />}
-                          Device Model
-                        </span>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger className="flex items-center gap-1 px-2 py-0.5 rounded-lg border border-border/60 bg-secondary/60 hover:bg-secondary text-[11px] font-medium text-foreground transition-colors outline-none cursor-pointer max-w-44">
-                            <span className="truncate">{deviceObj?.name || "Select device"}</span>
-                            <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-64 max-h-72 overflow-y-auto">
-                            <DropdownMenuGroup>
-                              <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                                {isIOS ? "iPhone Models" : "Android Phones"}
-                              </DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              {availableDevices.filter((d) => !isTabletDevice(d)).map((d) => (
-                                <DropdownMenuItem
-                                  key={d.id}
-                                  className={cn("text-xs cursor-pointer", currentDeviceId === d.id && "text-primary font-bold bg-primary/5")}
-                                  onClick={() => {
-                                    updateDevice(ss.id, d.id);
-                                    if (ss.mockup?.color && !d.colors.includes(ss.mockup.color)) {
-                                      updateMockup(ss.id, { color: d.colors[0] });
-                                    }
-                                    useEditorStore.getState().recordHistory();
-                                  }}
-                                >
-                                  <div className="flex-1 min-w-0">
-                                    <p className="font-medium truncate">{d.name}</p>
-                                    <p className="text-[10px] text-muted-foreground font-mono">{d.width} × {d.height}</p>
-                                  </div>
-                                  {currentDeviceId === d.id && <span className="text-primary ml-1">✓</span>}
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuGroup>
-
-                            <DropdownMenuSeparator className="my-1.5" />
-                            <DropdownMenuGroup>
-                              <DropdownMenuLabel className="text-[10px] text-indigo-400 uppercase font-bold tracking-wider">
-                                {isIOS ? "iPad Tablets" : "Android Tablets"}
-                              </DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              {availableDevices.filter((d) => isTabletDevice(d)).map((d) => (
-                                <DropdownMenuItem
-                                  key={d.id}
-                                  className={cn("text-xs cursor-pointer", currentDeviceId === d.id && "text-primary font-bold bg-primary/5")}
-                                  onClick={() => {
-                                    updateDevice(ss.id, d.id);
-                                    if (ss.mockup?.color && !d.colors.includes(ss.mockup.color)) {
-                                      updateMockup(ss.id, { color: d.colors[0] });
-                                    }
-                                    useEditorStore.getState().recordHistory();
-                                  }}
-                                >
-                                  <div className="flex-1 min-w-0">
-                                    <p className="font-medium truncate">{d.name}</p>
-                                    <p className="text-[10px] text-muted-foreground font-mono">{d.width} × {d.height}</p>
-                                  </div>
-                                  {currentDeviceId === d.id && <span className="text-primary ml-1">✓</span>}
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuGroup>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-
-                      {/* Frame Style Control */}
-                      <div className="flex items-center justify-between pt-1.5 text-[11px]">
-                        <span className="text-muted-foreground flex items-center gap-1.5">
-                          <Smartphone className="w-3 h-3 text-muted-foreground shrink-0" />
-                          Frame Style
-                        </span>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger className="flex items-center gap-1 px-2 py-0.5 rounded-lg border border-border/60 bg-secondary/60 hover:bg-secondary text-[11px] font-medium text-foreground transition-colors outline-none cursor-pointer">
-                            <span className="max-w-28 truncate">{getFrameStyle(ss)}</span>
-                            <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-52">
-                            <DropdownMenuGroup>
-                              <DropdownMenuLabel className="text-xs">Frame Style</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              {FRAME_STYLES_LIST.map((item) => (
-                                <DropdownMenuItem
-                                  key={item.id}
-                                  className="text-xs cursor-pointer flex items-center justify-between py-1.5"
-                                  onClick={() => handleFrameStyleChange(ss.id, item.id)}
-                                >
-                                  <div className="flex flex-col min-w-0">
-                                    <span className="font-medium truncate">{item.label}</span>
-                                    <span className="text-[9.5px] text-muted-foreground font-normal truncate">{item.desc}</span>
-                                  </div>
-                                  {getFrameStyle(ss) === item.id && <span className="text-primary font-bold ml-1">✓</span>}
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuGroup>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-
-                      {/* Device Shadow Style */}
-                      <div className="flex items-center justify-between pt-1.5 text-[11px]">
-                        <span className="text-muted-foreground flex items-center gap-1.5">
-                          <span>🌗</span>
-                          Device Shadow
-                        </span>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger className="flex items-center gap-1 px-2 py-0.5 rounded-lg border border-border/60 bg-secondary/60 hover:bg-secondary text-[11px] font-medium text-foreground transition-colors outline-none cursor-pointer">
-                            <span className="max-w-28 truncate">
-                              {SHADOW_PRESETS_LIST.find((s) => s.id === (ss.mockup?.shadowPreset || (ss.mockup?.showShadow ? "soft-ambient" : "none")))?.label || "Soft Ambient"}
-                            </span>
-                            <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-52">
-                            <DropdownMenuGroup>
-                              <DropdownMenuLabel className="text-xs">Shadow &amp; Glow Style</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              {SHADOW_PRESETS_LIST.map((item) => (
-                                <DropdownMenuItem
-                                  key={item.id}
-                                  className="text-xs cursor-pointer flex items-center justify-between py-1.5"
-                                  onClick={() => {
-                                    if (item.id === "none") {
-                                      updateMockup(ss.id, { showShadow: false, shadowPreset: "none" });
-                                    } else {
-                                      updateMockup(ss.id, { showShadow: true, shadowPreset: item.id as any });
-                                    }
-                                    useEditorStore.getState().recordHistory();
-                                  }}
-                                >
-                                  <div className="flex flex-col min-w-0">
-                                    <span className="font-medium truncate">{item.label}</span>
-                                    <span className="text-[9.5px] text-muted-foreground font-normal truncate">{item.desc}</span>
-                                  </div>
-                                  {(ss.mockup?.shadowPreset === item.id || (!ss.mockup?.shadowPreset && item.id === (ss.mockup?.showShadow ? "soft-ambient" : "none"))) && (
-                                    <span className="text-primary font-bold ml-1">✓</span>
-                                  )}
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuGroup>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-
-                      {/* Clean Status Bar Toggle */}
-                      <div className="flex items-center justify-between pt-1.5 text-[11px]">
-                        <span className="text-muted-foreground flex items-center gap-1.5" title="9:41 AM, 100% Battery & full signal overlay">
-                          <span>🧼</span>
-                          Clean Status Bar
-                        </span>
-                        <div className="flex items-center gap-2">
-                          {ss.mockup?.cleanStatusBar && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const currentTheme = ss.mockup?.statusBarTheme || "dark";
-                                updateMockup(ss.id, { statusBarTheme: currentTheme === "dark" ? "light" : "dark" });
-                                useEditorStore.getState().recordHistory();
-                              }}
-                              className="text-[9.5px] px-1.5 py-0.5 rounded bg-secondary/80 hover:bg-secondary font-mono border border-border/50 text-foreground cursor-pointer"
-                              title="Toggle status bar icon color (light/dark)"
-                            >
-                              {ss.mockup?.statusBarTheme === "light" ? "☀️ Light" : "🌙 Dark"}
-                            </button>
-                          )}
-                          <Switch
-                            checked={ss.mockup?.cleanStatusBar ?? false}
-                            onCheckedChange={(checked) => {
-                              updateMockup(ss.id, { cleanStatusBar: checked });
-                              useEditorStore.getState().recordHistory();
-                              toast.info(checked ? "Clean Status Bar enabled (9:41 AM · 100%)" : "Clean Status Bar disabled");
-                            }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Store Guidelines Note */}
-                      <div className="flex items-start gap-1.5 text-[10px] text-muted-foreground pt-1 bg-sky-500/5 dark:bg-sky-500/10 p-2 rounded-lg border border-sky-500/20">
-                        <Info className="w-3 h-3 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
-                        <span>
-                          {isIOS
-                            ? isTablet
-                              ? "App Store requires dedicated iPad (12.9\" / 13\") screenshots for universal iOS apps."
-                              : "App Store requires 72 DPI RGB images without transparency."
-                            : isTablet
-                            ? "Google Play requires 7\" & 10\" tablet screenshots for Featured tab eligibility."
-                            : "Google Play recommends 16:9 or 9:16 aspect ratio with min. 1080px."}
-                        </span>
-                      </div>
-
-                      {/* Dual Theme Set Generator Button */}
-                      <div className="pt-2 border-t border-border/40 flex items-center justify-between gap-2">
-                        <div className="min-w-0">
-                          <span className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
-                            <Sparkles className="w-3 h-3 text-primary" />
-                            <span>Dual Theme Generator</span>
+                          <span>
+                            {validation.isReady
+                              ? isIOS ? "Ready for App Store Connect" : "Ready for Play Console"
+                              : "Requires Attention"}
                           </span>
-                          <p className="text-[9.5px] text-muted-foreground truncate">
-                            Auto-clone as {(ss.name || "").toLowerCase().includes("dark") ? "Light Mode" : "Dark Mode"} set
-                          </p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const isDark = (ss.name || "").toLowerCase().includes("dark");
-                            const targetMode = isDark ? "light" : "dark";
-                            generateDualThemeSet(ss.id, targetMode);
-                            toast.success(`✨ Created ${targetMode === "dark" ? "Dark" : "Light"} Mode dual screen set!`);
-                          }}
-                          className="px-2.5 py-1 rounded-lg bg-secondary/80 hover:bg-secondary text-foreground text-[11px] font-semibold border border-border/60 hover:border-primary/40 flex items-center gap-1 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
-                        >
-                          <span>{(ss.name || "").toLowerCase().includes("dark") ? "☀️ Create Light Set" : "🌙 Create Dark Set"}</span>
-                        </button>
+                        <span className="text-[9.5px] font-mono px-1.5 py-0.5 rounded bg-background/80 dark:bg-background/50 border border-current/20">
+                          {isIOS ? (isTablet ? "iPadOS" : "iOS") : "Android"}
+                        </span>
                       </div>
+
+                      {/* Live Requirements Checklist */}
+                      <div className="space-y-1.5 pt-0.5">
+                        {/* Screen Count */}
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-muted-foreground flex items-center gap-1.5">
+                            {validation.countValid ? (
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            ) : (
+                              <XCircle className="w-3 h-3 text-rose-600 dark:text-rose-400 shrink-0" />
+                            )}
+                            Screen Count (2–{isIOS ? 10 : 8})
+                          </span>
+                          <span
+                            className={`font-medium ${
+                              validation.countValid
+                                ? "text-foreground"
+                                : "text-rose-600 dark:text-rose-400 font-semibold"
+                            }`}
+                          >
+                            {validation.countStatus}
+                          </span>
+                        </div>
+
+                        {/* Resolution */}
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-muted-foreground flex items-center gap-1.5">
+                            {validation.resValid ? (
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            ) : (
+                              <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                            )}
+                            Resolution & Ratio
+                          </span>
+                          <span className="text-foreground font-medium text-[10.5px]">
+                            {validation.resLabel}
+                          </span>
+                        </div>
+
+                        {/* Screenshot Media Uploaded */}
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-muted-foreground flex items-center gap-1.5">
+                            {validation.allUploaded ? (
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            ) : (
+                              <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                            )}
+                            Screenshots Uploaded
+                          </span>
+                          <span
+                            className={`font-medium ${
+                              validation.allUploaded
+                                ? "text-foreground"
+                                : "text-amber-600 dark:text-amber-400 font-semibold"
+                            }`}
+                          >
+                            {validation.mediaStatus}
+                          </span>
+                        </div>
+
+                        {/* Device Selector */}
+                        <div className="flex items-center justify-between pt-2 border-t border-border/40 text-[11px]">
+                          <span className="text-muted-foreground flex items-center gap-1.5">
+                            {isTablet ? <Tablet className="w-3 h-3 text-muted-foreground shrink-0" /> : <Smartphone className="w-3 h-3 text-muted-foreground shrink-0" />}
+                            Device Model
+                          </span>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger className="flex items-center gap-1 px-2 py-0.5 rounded-lg border border-border/60 bg-secondary/60 hover:bg-secondary text-[11px] font-medium text-foreground transition-colors outline-none cursor-pointer max-w-44">
+                              <span className="truncate">{deviceObj?.name || "Select device"}</span>
+                              <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-64 max-h-72 overflow-y-auto">
+                              <DropdownMenuGroup>
+                                <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                                  {isIOS ? "iPhone Models" : "Android Phones"}
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {availableDevices.filter((d) => !isTabletDevice(d)).map((d) => (
+                                  <DropdownMenuItem
+                                    key={d.id}
+                                    className={cn("text-xs cursor-pointer", currentDeviceId === d.id && "text-primary font-bold bg-primary/5")}
+                                    onClick={() => {
+                                      updateDevice(ss.id, d.id);
+                                      if (ss.mockup?.color && !d.colors.includes(ss.mockup.color)) {
+                                        updateMockup(ss.id, { color: d.colors[0] });
+                                      }
+                                      useEditorStore.getState().recordHistory();
+                                    }}
+                                  >
+                                    <div className="flex-1 min-w-0">
+                                      <p className="font-medium truncate">{d.name}</p>
+                                      <p className="text-[10px] text-muted-foreground font-mono">{d.width} × {d.height}</p>
+                                    </div>
+                                    {currentDeviceId === d.id && <span className="text-primary ml-1">✓</span>}
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuGroup>
+
+                              <DropdownMenuSeparator className="my-1.5" />
+                              <DropdownMenuGroup>
+                                <DropdownMenuLabel className="text-[10px] text-indigo-400 uppercase font-bold tracking-wider">
+                                  {isIOS ? "iPad Tablets" : "Android Tablets"}
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {availableDevices.filter((d) => isTabletDevice(d)).map((d) => (
+                                  <DropdownMenuItem
+                                    key={d.id}
+                                    className={cn("text-xs cursor-pointer", currentDeviceId === d.id && "text-primary font-bold bg-primary/5")}
+                                    onClick={() => {
+                                      updateDevice(ss.id, d.id);
+                                      if (ss.mockup?.color && !d.colors.includes(ss.mockup.color)) {
+                                        updateMockup(ss.id, { color: d.colors[0] });
+                                      }
+                                      useEditorStore.getState().recordHistory();
+                                    }}
+                                  >
+                                    <div className="flex-1 min-w-0">
+                                      <p className="font-medium truncate">{d.name}</p>
+                                      <p className="text-[10px] text-muted-foreground font-mono">{d.width} × {d.height}</p>
+                                    </div>
+                                    {currentDeviceId === d.id && <span className="text-primary ml-1">✓</span>}
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuGroup>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+
+                        {/* Frame Style Control */}
+                        <div className="flex items-center justify-between pt-1.5 text-[11px]">
+                          <span className="text-muted-foreground flex items-center gap-1.5">
+                            <Smartphone className="w-3 h-3 text-muted-foreground shrink-0" />
+                            Frame Style
+                          </span>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger className="flex items-center gap-1 px-2 py-0.5 rounded-lg border border-border/60 bg-secondary/60 hover:bg-secondary text-[11px] font-medium text-foreground transition-colors outline-none cursor-pointer">
+                              <span className="max-w-28 truncate">{getFrameStyle(ss)}</span>
+                              <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-52">
+                              <DropdownMenuGroup>
+                                <DropdownMenuLabel className="text-xs">Frame Style</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {FRAME_STYLES_LIST.map((item) => (
+                                  <DropdownMenuItem
+                                    key={item.id}
+                                    className="text-xs cursor-pointer flex items-center justify-between py-1.5"
+                                    onClick={() => handleFrameStyleChange(ss.id, item.id)}
+                                  >
+                                    <div className="flex flex-col min-w-0">
+                                      <span className="font-medium truncate">{item.label}</span>
+                                      <span className="text-[9.5px] text-muted-foreground font-normal truncate">{item.desc}</span>
+                                    </div>
+                                    {getFrameStyle(ss) === item.label && <span className="text-primary text-xs font-bold ml-2">✓</span>}
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuGroup>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+
+                        {/* Device Shadow Dropdown */}
+                        <div className="flex items-center justify-between pt-1.5 text-[11px]">
+                          <span className="text-muted-foreground flex items-center gap-1.5">
+                            <span className="w-3 h-3 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 shrink-0 inline-block" />
+                            Device Shadow
+                          </span>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger className="flex items-center gap-1 px-2 py-0.5 rounded-lg border border-border/60 bg-secondary/60 hover:bg-secondary text-[11px] font-medium text-foreground transition-colors outline-none cursor-pointer">
+                              <span className="max-w-28 truncate">{getShadowStyleLabel(ss)}</span>
+                              <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56">
+                              <DropdownMenuGroup>
+                                <DropdownMenuLabel className="text-xs font-bold">Shadow Effect</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {SHADOW_PRESETS_LIST.map((item) => (
+                                  <DropdownMenuItem
+                                    key={item.id}
+                                    className="text-xs cursor-pointer flex items-center justify-between py-1.5"
+                                    onClick={() => handleShadowChange(ss.id, item.id)}
+                                  >
+                                    <div className="flex flex-col min-w-0">
+                                      <span className="font-medium">{item.label}</span>
+                                      <span className="text-[9.5px] text-muted-foreground">{item.desc}</span>
+                                    </div>
+                                    {getShadowStyleLabel(ss) === item.label && (
+                                      <span className="text-primary text-xs font-bold ml-2">✓</span>
+                                    )}
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuGroup>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+
+                        {/* Clean Status Bar Toggle */}
+                        <div className="flex items-center justify-between pt-1.5 text-[11px]">
+                          <span className="text-muted-foreground flex items-center gap-1.5" title="9:41 AM, 100% Battery & full signal overlay">
+                            <span>🧼</span>
+                            Clean Status Bar
+                          </span>
+                          <div className="flex items-center gap-2">
+                            {ss.mockup?.cleanStatusBar && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const currentTheme = ss.mockup?.statusBarTheme || "dark";
+                                  updateMockup(ss.id, { statusBarTheme: currentTheme === "dark" ? "light" : "dark" });
+                                  useEditorStore.getState().recordHistory();
+                                }}
+                                className="text-[9.5px] px-1.5 py-0.5 rounded bg-secondary/80 hover:bg-secondary font-mono border border-border/50 text-foreground cursor-pointer"
+                                title="Toggle status bar icon color (light/dark)"
+                              >
+                                {ss.mockup?.statusBarTheme === "light" ? "☀️ Light" : "🌙 Dark"}
+                              </button>
+                            )}
+                            <Switch
+                              checked={ss.mockup?.cleanStatusBar ?? false}
+                              onCheckedChange={(checked) => {
+                                updateMockup(ss.id, { cleanStatusBar: checked });
+                                useEditorStore.getState().recordHistory();
+                                toast.info(checked ? "Clean Status Bar enabled (9:41 AM · 100%)" : "Clean Status Bar disabled");
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Store Guidelines Note */}
+                        <div className="flex items-start gap-1.5 text-[10px] text-muted-foreground pt-1 bg-sky-500/5 dark:bg-sky-500/10 p-2 rounded-lg border border-sky-500/20">
+                          <Info className="w-3 h-3 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
+                          <span>
+                            {isIOS
+                              ? isTablet
+                                ? "App Store requires dedicated iPad (12.9\" / 13\") screenshots for universal iOS apps."
+                                : "App Store requires 72 DPI RGB images without transparency."
+                              : isTablet
+                              ? "Google Play requires 7\" & 10\" tablet screenshots for Featured tab eligibility."
+                              : "Google Play recommends 16:9 or 9:16 aspect ratio with min. 1080px."}
+                          </span>
+                        </div>
+
+                        {/* Dual Theme Set Generator Button */}
+                        <div className="pt-2 border-t border-border/40 flex items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <span className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
+                              <Sparkles className="w-3 h-3 text-primary" />
+                              <span>Dual Theme Generator</span>
+                            </span>
+                            <p className="text-[9.5px] text-muted-foreground truncate">
+                              Auto-clone as {(ss.name || "").toLowerCase().includes("dark") ? "Light Mode" : "Dark Mode"} set
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const isDark = (ss.name || "").toLowerCase().includes("dark");
+                              const targetMode = isDark ? "light" : "dark";
+                              generateDualThemeSet(ss.id, targetMode);
+                              toast.success(`✨ Created ${targetMode === "dark" ? "Dark" : "Light"} Mode dual screen set!`);
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-secondary/80 hover:bg-secondary text-foreground text-[11px] font-semibold border border-border/60 hover:border-primary/40 flex items-center gap-1 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
+                          >
+                            <span>{(ss.name || "").toLowerCase().includes("dark") ? "☀️ Create Light Set" : "🌙 Create Dark Set"}</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Bottom Collapse Trigger */}
+                      <button
+                        type="button"
+                        onClick={() => toggleExpand(ss.id)}
+                        className="w-full text-center pt-2 pb-0.5 text-[10.5px] font-semibold text-muted-foreground hover:text-foreground transition-colors border-t border-border/40 flex items-center justify-center gap-1 cursor-pointer"
+                      >
+                        <span>Hide device settings & guidelines</span>
+                        <ChevronUp className="w-3 h-3" />
+                      </button>
                     </div>
-                  </div>
+                  )}
                 </div>
               );
             })}
