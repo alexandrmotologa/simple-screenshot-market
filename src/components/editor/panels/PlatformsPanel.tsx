@@ -268,43 +268,43 @@ export function PlatformsPanel() {
                   <div
                     onClick={() => toggleExpand(ss.id)}
                     className={cn(
-                      "p-3 flex items-center justify-between transition-colors cursor-pointer select-none",
+                      "px-3 py-2.5 flex items-center justify-between transition-colors cursor-pointer select-none gap-2",
                       isExpanded
                         ? "bg-secondary/70 dark:bg-secondary/50 border-b border-border/40"
                         : "hover:bg-secondary/50"
                     )}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-background flex items-center justify-center text-foreground shadow-xs border border-border/60 shrink-0">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <div className="w-7 h-7 rounded-lg bg-background flex items-center justify-center text-foreground shadow-xs border border-border/60 shrink-0">
                         {isIOS ? (
-                          <AppleStoreIcon className="w-4 h-4" />
+                          <AppleStoreIcon className="w-3.5 h-3.5" />
                         ) : (
-                          <GooglePlayIcon className="w-4 h-4" />
+                          <GooglePlayIcon className="w-3.5 h-3.5" />
                         )}
                       </div>
-                      <div className="flex flex-col min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-bold text-foreground truncate">
-                            {setPlatformName}
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="text-[11.5px] font-bold text-foreground truncate">
+                            {isIOS ? (isTablet ? "App Store (iPad)" : "App Store") : (isTablet ? "Google Play (Tab)" : "Google Play")}
                           </span>
                           {isTablet && (
-                            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 shrink-0">
+                            <span className="text-[8.5px] font-bold px-1 py-0.2 rounded bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 shrink-0">
                               Tablet
                             </span>
                           )}
                         </div>
-                        <span className="text-[10.5px] text-muted-foreground truncate">
-                          {deviceObj?.name || ss.preset?.name} · {ss.screens.length} screens
+                        <span className="text-[10px] text-muted-foreground truncate">
+                          {deviceObj?.name || ss.preset?.name}
                         </span>
                       </div>
                     </div>
 
                     {/* Set actions: Readiness Pill, Delete, Expand Chevron */}
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="flex items-center gap-1 shrink-0">
                       {/* Compact status badge */}
                       <span
                         className={cn(
-                          "flex items-center gap-1 text-[9.5px] font-bold px-2 py-0.5 rounded-full border transition-all",
+                          "flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full border transition-all",
                           validation.isReady
                             ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25"
                             : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25"
@@ -331,15 +331,15 @@ export function PlatformsPanel() {
                             removeScreenSet(ss.id);
                             toast.info(`Removed ${setPlatformName}`);
                           }}
-                          className="w-6 h-6 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                          className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                           title={`Delete ${setPlatformName} set`}
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-3 h-3" />
                         </button>
                       )}
 
-                      <div className="w-6 h-6 rounded-md flex items-center justify-center text-muted-foreground">
-                        <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", isExpanded && "rotate-180 text-primary")} />
+                      <div className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground">
+                        <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", isExpanded && "rotate-180 text-primary")} />
                       </div>
                     </div>
                   </div>
@@ -664,11 +664,13 @@ export function PlatformsPanel() {
 
           {/* ── ADD MORE SETS SECTION ── */}
           <div className="space-y-2.5 pt-2 border-t border-border/50">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
-                <span className="text-primary font-bold">+</span> Add Additional Device Set
+            <div className="flex items-center justify-between px-0.5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <span>Add Target Platform</span>
               </span>
-              <span className="text-[10px] text-muted-foreground font-mono">4 platforms</span>
+              <span className="text-[10px] font-medium text-muted-foreground/90 bg-secondary/80 px-2 py-0.5 rounded border border-border/40">
+                4 Presets
+              </span>
             </div>
 
             <div className="flex flex-col gap-2">
@@ -681,21 +683,21 @@ export function PlatformsPanel() {
                 }}
                 className="flex items-center justify-between p-2.5 rounded-xl border border-border/60 bg-secondary/30 hover:bg-secondary/70 hover:border-indigo-500/40 transition-all cursor-pointer group text-left shadow-xs"
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform border border-indigo-500/20">
-                    <AppleStoreIcon className="w-4 h-4 text-foreground" />
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div className="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform border border-indigo-500/20">
+                    <AppleStoreIcon className="w-3.5 h-3.5 text-foreground" />
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors truncate">
-                      + Add iPad Pro Set
+                      + iPad Pro 13&quot; (App Store)
                     </p>
-                    <p className="text-[10px] text-muted-foreground font-mono">
+                    <p className="text-[10px] text-muted-foreground font-mono truncate">
                       2048 × 2732 px · 4:3 Tablet
                     </p>
                   </div>
                 </div>
-                <div className="w-6 h-6 rounded-md bg-secondary/80 flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all shrink-0 ml-2">
-                  <Plus className="w-3.5 h-3.5" />
+                <div className="w-5 h-5 rounded-md bg-secondary/80 flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all shrink-0 ml-1.5">
+                  <Plus className="w-3 h-3" />
                 </div>
               </button>
 
@@ -708,21 +710,21 @@ export function PlatformsPanel() {
                 }}
                 className="flex items-center justify-between p-2.5 rounded-xl border border-border/60 bg-secondary/30 hover:bg-secondary/70 hover:border-emerald-500/40 transition-all cursor-pointer group text-left shadow-xs"
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform border border-emerald-500/20">
-                    <GooglePlayIcon className="w-4 h-4" />
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform border border-emerald-500/20">
+                    <GooglePlayIcon className="w-3.5 h-3.5" />
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold text-foreground group-hover:text-emerald-400 transition-colors truncate">
-                      + Add Android Tab Set
+                      + Android Tab (Google Play)
                     </p>
-                    <p className="text-[10px] text-muted-foreground font-mono">
+                    <p className="text-[10px] text-muted-foreground font-mono truncate">
                       1848 × 2960 px · 16:10 Tablet
                     </p>
                   </div>
                 </div>
-                <div className="w-6 h-6 rounded-md bg-secondary/80 flex items-center justify-center text-muted-foreground group-hover:bg-emerald-500 group-hover:text-white transition-all shrink-0 ml-2">
-                  <Plus className="w-3.5 h-3.5" />
+                <div className="w-5 h-5 rounded-md bg-secondary/80 flex items-center justify-center text-muted-foreground group-hover:bg-emerald-500 group-hover:text-white transition-all shrink-0 ml-1.5">
+                  <Plus className="w-3 h-3" />
                 </div>
               </button>
 
@@ -735,21 +737,21 @@ export function PlatformsPanel() {
                 }}
                 className="flex items-center justify-between p-2.5 rounded-xl border border-border/60 bg-secondary/30 hover:bg-secondary/70 hover:border-blue-500/40 transition-all cursor-pointer group text-left shadow-xs"
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform border border-blue-500/20">
-                    <AppleStoreIcon className="w-4 h-4 text-foreground" />
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform border border-blue-500/20">
+                    <AppleStoreIcon className="w-3.5 h-3.5 text-foreground" />
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold text-foreground group-hover:text-blue-400 transition-colors truncate">
-                      + Add iPhone Set
+                      + iPhone Set (iOS)
                     </p>
-                    <p className="text-[10px] text-muted-foreground font-mono">
+                    <p className="text-[10px] text-muted-foreground font-mono truncate">
                       1320 × 2868 px · 19.5:9 Phone
                     </p>
                   </div>
                 </div>
-                <div className="w-6 h-6 rounded-md bg-secondary/80 flex items-center justify-center text-muted-foreground group-hover:bg-blue-500 group-hover:text-white transition-all shrink-0 ml-2">
-                  <Plus className="w-3.5 h-3.5" />
+                <div className="w-5 h-5 rounded-md bg-secondary/80 flex items-center justify-center text-muted-foreground group-hover:bg-blue-500 group-hover:text-white transition-all shrink-0 ml-1.5">
+                  <Plus className="w-3 h-3" />
                 </div>
               </button>
 
@@ -762,21 +764,21 @@ export function PlatformsPanel() {
                 }}
                 className="flex items-center justify-between p-2.5 rounded-xl border border-border/60 bg-secondary/30 hover:bg-secondary/70 hover:border-teal-500/40 transition-all cursor-pointer group text-left shadow-xs"
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-lg bg-teal-500/10 text-teal-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform border border-teal-500/20">
-                    <GooglePlayIcon className="w-4 h-4" />
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div className="w-7 h-7 rounded-lg bg-teal-500/10 text-teal-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform border border-teal-500/20">
+                    <GooglePlayIcon className="w-3.5 h-3.5" />
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold text-foreground group-hover:text-teal-400 transition-colors truncate">
-                      + Add Android Phone Set
+                      + Android Phone (Google Play)
                     </p>
-                    <p className="text-[10px] text-muted-foreground font-mono">
+                    <p className="text-[10px] text-muted-foreground font-mono truncate">
                       1344 × 2992 px · 20:9 Phone
                     </p>
                   </div>
                 </div>
-                <div className="w-6 h-6 rounded-md bg-secondary/80 flex items-center justify-center text-muted-foreground group-hover:bg-teal-500 group-hover:text-white transition-all shrink-0 ml-2">
-                  <Plus className="w-3.5 h-3.5" />
+                <div className="w-5 h-5 rounded-md bg-secondary/80 flex items-center justify-center text-muted-foreground group-hover:bg-teal-500 group-hover:text-white transition-all shrink-0 ml-1.5">
+                  <Plus className="w-3 h-3" />
                 </div>
               </button>
             </div>
