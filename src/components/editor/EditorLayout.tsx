@@ -87,7 +87,6 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [zoomOpen, setZoomOpen] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
-  const replaceFileRef = useRef<HTMLInputElement>(null);
   const thumbTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Auto-save thumbnail (debounced, 3 s after last change) ────────────────
@@ -150,27 +149,8 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
   }, [screenSets, generateThumbnail]);
 
 
-  // ── Replace screenshot file handler ──────────────────────────────────────
   const activeSet = getActiveSet();
   const activeScreen = getActiveScreen();
-  const activeLayer = activeScreen?.layers.find((l) => l.id === activeLayerId);
-  const isScreenshotSelected = activeLayer?.type === "screenshot";
-
-  const handleReplaceFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !activeSet || !activeScreen || !activeLayerId) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const src = ev.target?.result as string;
-      if (!src) return;
-      updateLayer(activeSet.id, activeScreen.id, activeLayerId, { src } as Partial<ScreenshotLayer>);
-      useEditorStore.getState().addProjectAsset({ name: file.name, dataUrl: src });
-      useEditorStore.getState().recordHistory();
-      toast.success("Screenshot replaced & added to Media Assets!");
-    };
-    reader.readAsDataURL(file);
-    e.target.value = "";
-  };
 
   // ── Quick copy active screen to clipboard ────────────────────────────────
   const handleCopyScreenToClipboard = async () => {
@@ -351,38 +331,6 @@ export function EditorLayout({ projectId }: EditorLayoutProps) {
               <Redo2 className="w-3.5 h-3.5" />
             </IconBtn>
           </div>
-
-          {/* Replace / Clear screenshot — appears when screenshot layer is selected */}
-          {isScreenshotSelected && (
-            <div className="flex items-center gap-1">
-              <input ref={replaceFileRef} type="file" accept="image/*" className="hidden" onChange={handleReplaceFile} />
-              <button
-                type="button"
-                onClick={() => replaceFileRef.current?.click()}
-                className="h-7 flex items-center gap-1.5 px-2.5 text-xs font-semibold rounded-lg bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 ring-1 ring-indigo-500/30 transition-all shadow-xs cursor-pointer"
-                title="Replace selected screenshot"
-              >
-                <Upload className="w-3 h-3 shrink-0" />
-                <span className="show-under-1200">Screenshot</span>
-                <span className="show-from-1200">Replace screenshot</span>
-              </button>
-              {(activeLayer as ScreenshotLayer)?.src && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    updateLayer(activeSet.id, activeScreen.id, activeLayerId!, { src: undefined } as Partial<ScreenshotLayer>);
-                    useEditorStore.getState().recordHistory();
-                    toast.info("Screenshot cleared from mockup.");
-                  }}
-                  className="h-7 flex items-center gap-1 px-2 text-xs font-medium rounded-lg hover:bg-destructive/15 text-destructive/80 hover:text-destructive transition-all cursor-pointer"
-                  title="Clear screenshot from mockup"
-                >
-                  <Trash2 className="w-3 h-3 shrink-0" />
-                  <span className="show-from-1200">Clear</span>
-                </button>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Right Tools: Zoom, Copy, Shortcuts, Theme, Export */}

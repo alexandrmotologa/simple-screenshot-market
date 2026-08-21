@@ -605,11 +605,45 @@ export function FloatingToolbar() {
 
         {/* Layer type badge */}
         <span className={cn(
-          "text-xs font-medium px-1.5 capitalize shrink-0",
-          isScreenshot ? "text-primary" : "text-muted-foreground"
+          "text-xs font-semibold px-2 py-0.5 rounded-lg capitalize shrink-0 flex items-center gap-1.5",
+          isScreenshot ? "bg-primary/10 text-primary border border-primary/25" : "text-muted-foreground"
         )}>
           {isScreenshot ? "📱 Screenshot" : isText ? "✏️ Text" : isShape ? "⬛ Shape" : `${layer.type}`}
         </span>
+
+        {/* ── PROMINENT SCREENSHOT PRIMARY ACTIONS ────────────────────────── */}
+        {isScreenshot && sl && (
+          <>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleScreenshotUpload} />
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                title={sl.src ? "Change screenshot in mockup frame" : "Upload screenshot into mockup frame"}
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-primary/15 hover:bg-primary/25 text-primary font-semibold text-xs border border-primary/35 hover:border-primary/50 shadow-xs active:scale-95 transition-all shrink-0 cursor-pointer"
+              >
+                <Upload className="w-3.5 h-3.5 shrink-0" />
+                <span>{sl.src ? "Change Screenshot" : "Upload Screenshot"}</span>
+              </button>
+
+              {sl.src && (
+                <button
+                  type="button"
+                  title="Clear screenshot from mockup frame"
+                  onClick={() => {
+                    update({ src: undefined } as Partial<ScreenshotLayer>);
+                    useEditorStore.getState().recordHistory();
+                    toast.info("Screenshot cleared from mockup.");
+                  }}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-destructive/10 hover:bg-destructive/20 text-destructive dark:text-rose-400 font-semibold text-xs border border-destructive/25 hover:border-destructive/40 shadow-xs active:scale-95 transition-all shrink-0 cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5 shrink-0 text-destructive dark:text-rose-400" />
+                  <span>Clear</span>
+                </button>
+              )}
+            </div>
+          </>
+        )}
 
         <Separator orientation="vertical" className="h-5 mx-0.5 shrink-0" />
 
@@ -714,35 +748,9 @@ export function FloatingToolbar() {
 
         <Separator orientation="vertical" className="h-5 mx-0.5 shrink-0" />
 
-        {/* ── SCREENSHOT CONTROLS ────────────────────────────────────────── */}
+        {/* ── SCREENSHOT DISPLAY & FIT CONTROLS ─────────────────────────── */}
         {isScreenshot && sl && (
           <>
-            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleScreenshotUpload} />
-            <button
-              type="button"
-              title={sl.src ? "Change screenshot" : "Upload screenshot"}
-              onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/15 hover:bg-primary/25 text-primary text-xs font-medium transition-colors shrink-0 cursor-pointer"
-            >
-              <Upload className="w-3.5 h-3.5" />
-              {sl.src ? "Change" : "Upload"}
-            </button>
-
-            {sl.src && (
-              <button
-                type="button"
-                title="Clear screenshot from mockup"
-                onClick={() => {
-                  update({ src: undefined } as Partial<ScreenshotLayer>);
-                  useEditorStore.getState().recordHistory();
-                  toast.info("Screenshot cleared from mockup.");
-                }}
-                className="flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-destructive/15 text-destructive/80 hover:text-destructive text-xs font-medium transition-colors shrink-0 cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Clear</span>
-              </button>
-            )}
 
             <Btn
               active={sl.objectFit === "contain"}
